@@ -18,4 +18,5 @@ pnpm-debug.log*
 # OS files
 .DS_Store
 Thumbs.db
-*.swp
+# Test artifacts
+screenshots/
