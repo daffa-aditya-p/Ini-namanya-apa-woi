@@ -107,6 +107,9 @@ export const CodePlayground: React.FC<CodePlaygroundProps> = ({
             lineNumbers(),
             langExtension,
             theme,
+            EditorView.contentAttributes.of({
+              'aria-label': title || `Editor ${language === 'javascript' ? 'JavaScript' : 'Python'}`,
+            }),
             EditorView.updateListener.of((update) => {
               if (update.docChanged) {
                 setCode(update.state.doc.toString());

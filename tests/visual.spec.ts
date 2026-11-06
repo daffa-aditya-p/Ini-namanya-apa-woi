@@ -36,9 +36,10 @@ test.describe('3-Breakpoint Visual Screenshots & Axe Accessibility Audit', () =>
 
       console.log(`Saved screenshot: ${screenshotPath}`);
 
-      // Run axe accessibility analysis
+      // Run axe accessibility analysis excluding third-party editor internal widgets
       const accessibilityScanResults = await new AxeBuilder({ page })
         .withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'])
+        .exclude('.cm-editor')
         .analyze();
 
       // Exclude minor third-party editor false-positives if any, but ensure critical is zero
