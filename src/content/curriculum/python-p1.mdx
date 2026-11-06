@@ -1,0 +1,155 @@
+---
+id: "P1"
+track: "python"
+level: "P1"
+title: "Fondasi Pemrograman Python: Struktur Pertama & Bahasa Alami"
+slug: "curriculum/python/p1"
+estimatedMinutes: 90
+prerequisites: []
+learningObjectives:
+  - "Memahami filosofi keterbacaan kode berbasis Zen of Python"
+  - "Menguasai struktur blok berbasis indentasi tanpa kurung kurawal"
+  - "Memahami variabel sebagai name binding dinamis pada memori CPython"
+  - "Menulis fungsi modular dan formatting string modern menggunakan f-strings"
+relatedConcepts:
+  - "CPython 3.12"
+  - "Name Binding"
+  - "Pyodide WASM"
+languageVersion: "Python 3.12"
+summary: "Pelajari bagaimana Python menyederhanakan ekspresi logika komputasi dengan sintaks yang elegan, bersih, dan mendekati bahasa manusia."
+---
+
+import { CodePlayground } from '../../components/CodePlayground';
+
+# Level P1: Fondasi Pemrograman Python
+
+Selamat datang di bengkel Python belajar.in. Di modul ini, kodemu dieksekusi secara nyata oleh runtime CPython 3.12 yang dikompilasi ke WebAssembly (Pyodide). Tidak ada mock palsu; apa yang kamu tulis di sini adalah Python murni.
+
+---
+
+## 1. Filosofi & Perintah Pertama: `print()`
+
+Python dirancang dengan prinsip utama: **keterbacaan kode adalah yang utama** (*Readability counts*). Kita tidak membutuhkan titik-koma (`;`) di akhir baris atau kurung kurawal untuk membungkus kode sederhana.
+
+<CodePlayground
+  client:load
+  language="python"
+  title="Latihan P1.1: Mencetak Output di Python"
+  initialCode={`print("Halo dari Pyodide Python 3.12!")
+print("Tahun:", 2026)
+print("Nilai komputasi:", 2 ** 8)`}
+  expectedOutput={`Halo dari Pyodide Python 3.12!\nTahun: 2026\nNilai komputasi: 256`}
+/>
+
+---
+
+## 2. Variabel Sebagai *Name Binding* (Bukan Kotak Statis)
+
+Di Python, variabel bukanlah "kotak" yang dipatok dengan tipe kaku di memori, melainkan sebuah **label nama** (*name binding*) yang ditempelkan pada objek data di *heap*.
+
+<CodePlayground
+  client:load
+  language="python"
+  title="Latihan P1.2: Dynamic Name Binding"
+  initialCode={`pesan = "Halo belajar.in"
+print("Tipe awal:", type(pesan).__name__)
+
+# Variabel yang sama dapat diikatkan ke objek tipe lain
+pesan = 42
+print("Tipe baru:", type(pesan).__name__)
+print("Nilai pesan:", pesan)`}
+  expectedOutput={`Tipe awal: str\nTipe baru: int\nNilai pesan: 42`}
+/>
+
+---
+
+## 3. Tipe Numerik & Operator Aritmatika Modern
+
+Python mendukung bilangan bulat berpresisi tak-terbatas (`int`) dan bilangan desimal (*floating point* `float`). Perhatikan perbedaan pembagian riil (`/`) dan pembagian bulat (*floor division* `//`):
+
+<CodePlayground
+  client:load
+  language="python"
+  title="Latihan P1.3: Operator Aritmatika"
+  initialCode={`a = 17
+b = 5
+
+print("Pembagian Riil (/):", a / b)
+print("Pembagian Bulat (//):", a // b)
+print("Sisa Bagi (%):", a % b)
+print("Pangkat (**):", b ** 3)`}
+  expectedOutput={`Pembagian Riil (/): 3.4\nPembagian Bulat (//): 3\nSisa Bagi (%): 2\nPangkat (**): 125`}
+/>
+
+---
+
+## 4. Manipulasi String Modern: *f-strings*
+
+Format string modern (*f-strings*) diperkenalkan untuk menyusun teks dinamis secara ringkas, ekspresif, dan cepat.
+
+<CodePlayground
+  client:load
+  language="python"
+  title="Latihan P1.4: Format String Modern"
+  initialCode={`nama = "Sari"
+bahasa = "Python"
+jam_belajar = 15
+
+ringkasan = f"Pembelajar {nama} telah menyelesaikan {jam_belajar} jam latihan {bahasa}."
+print(ringkasan)
+print(f"Prediksi minggu depan: {jam_belajar * 2} jam.")`}
+  expectedOutput={`Pembelajar Sari telah menyelesaikan 15 jam latihan Python.\nPrediksi minggu depan: 30 jam.`}
+/>
+
+---
+
+## 5. Kontrol Alur Berbasis Indentasi (`if`, `elif`, `else`)
+
+Di Python, struktur blok ditentukan secara ketat oleh **indentasi spasi** (standar PEP 8: 4 spasi), bukan tanda kurung. Hal ini menjamin seluruh kode Python di dunia memiliki tata letak visual yang seragam dan mudah dipindai mata.
+
+<CodePlayground
+  client:load
+  language="python"
+  title="Latihan P1.5: Percabangan Keputusan"
+  initialCode={`def evaluasi_nilai(skor):
+    if skor >= 85:
+        return "Penguasaan Sangat Baik (Mastery)"
+    elif skor >= 70:
+        return "Penguasaan Cukup (Competent)"
+    else:
+        return "Perlu Latihan Tambahan"
+
+print("Skor 92:", evaluasi_nilai(92))
+print("Skor 64:", evaluasi_nilai(64))`}
+  expectedOutput={`Skor 92: Penguasaan Sangat Baik (Mastery)\nSkor 64: Perlu Latihan Tambahan`}
+/>
+
+---
+
+## 6. Mini Proyek P1: Evaluasi Simulator Tebak Logika
+
+Mari kita gabungkan fungsi, perulangan `for`, penanganan kondisi, dan koleksi data ke dalam program terpadu.
+
+<CodePlayground
+  client:load
+  language="python"
+  title="Mini Proyek P1: Evaluasi Tebak Target"
+  initialCode={`def uji_tebakan(target, tebakan):
+    hasil = []
+    for t in tebakan:
+        if t == target:
+            hasil.append(f"Tebakan {t}: Tepat Sasaran!")
+            break
+        elif t < target:
+            hasil.append(f"Tebakan {t}: Terlalu Rendah.")
+        else:
+            hasil.append(f"Tebakan {t}: Terlalu Tinggi.")
+    return hasil
+
+target_rahasia = 42
+daftar_tebakan = [20, 50, 42]
+
+for baris in uji_tebakan(target_rahasia, daftar_tebakan):
+    print(baris)`}
+  expectedOutput={`Tebakan 20: Terlalu Rendah.\nTebakan 50: Terlalu Tinggi.\nTebakan 42: Tepat Sasaran!`}
+/>

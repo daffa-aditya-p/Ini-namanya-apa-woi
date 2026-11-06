@@ -5,7 +5,7 @@ export const LessonFrontmatterSchema = z.object({
   track: z.enum(['javascript', 'python']),
   level: z.string(), // e.g. 'J1', 'P1'
   title: z.string(),
-  slug: z.string(),
+  slug: z.string().optional(),
   estimatedMinutes: z.number().int().positive(),
   prerequisites: z.array(z.string()),
   learningObjectives: z.array(z.string()),

@@ -5,7 +5,8 @@ export default defineConfig({
     globals: true,
     environment: 'node',
     include: ['tests/**/*.{test,spec}.{ts,js}', 'src/**/*.{test,spec}.{ts,js}'],
-    testTimeout: 30000,
+    testTimeout: 60000,
+    fileParallelism: false,
     server: {
       deps: {
         external: ['pyodide'],

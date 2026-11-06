@@ -1,0 +1,82 @@
+---
+import { getCollection, render } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+
+export async function getStaticPaths() {
+  const lessons = await getCollection('curriculum');
+  return lessons.map((entry) => {
+    // Strip leading "curriculum/" if present in slug
+    const cleanSlug = entry.slug.replace(/^curriculum\//, '');
+    return {
+      params: { slug: cleanSlug },
+      props: { entry },
+    };
+  });
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+---
+
+<Layout title={entry.data.title} description={entry.data.summary}>
+  <article class="max-w-4xl mx-auto py-4">
+    <!-- Breadcrumbs & Meta -->
+    <div class="mb-8 pb-6 border-b border-[var(--border-default)]">
+      <div class="flex items-center gap-2 font-mono text-xs mb-3 text-[var(--text-muted)]">
+        <a href="/" class="hover:text-[var(--text-primary)]">Beranda</a>
+        <span>/</span>
+        <span class="capitalize">{entry.data.track}</span>
+        <span>/</span>
+        <span class="font-bold text-[var(--accent-terracotta)]">{entry.data.level}</span>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2 mb-3">
+        <span class="px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-[var(--bg-subtle)] text-[var(--accent-terracotta)] border border-[var(--border-default)]">
+          {entry.data.level}
+        </span>
+        <span class="px-2.5 py-0.5 rounded text-xs font-mono bg-[var(--bg-subtle)] text-[var(--text-secondary)] border border-[var(--border-default)]">
+          {entry.data.languageVersion}
+        </span>
+        <span class="px-2.5 py-0.5 rounded text-xs font-mono bg-[var(--bg-subtle)] text-[var(--text-secondary)] border border-[var(--border-default)]">
+          ⏱ {entry.data.estimatedMinutes} Menit
+        </span>
+      </div>
+
+      <h1 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[var(--text-primary)] tracking-tight mb-3">
+        {entry.data.title}
+      </h1>
+      <p class="text-base text-[var(--text-secondary)] leading-relaxed">
+        {entry.data.summary}
+      </p>
+
+      {entry.data.learningObjectives.length > 0 && (
+        <div class="mt-4 p-4 rounded-lg bg-[var(--bg-subtle)] border border-[var(--border-default)] text-xs text-[var(--text-secondary)]">
+          <div class="font-bold font-display text-[var(--text-primary)] mb-1.5">Tujuan Pembelajaran:</div>
+          <ul class="list-disc list-inside space-y-1">
+            {entry.data.learningObjectives.map((obj) => (
+              <li>{obj}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+
+    <!-- Rendered Markdown Body -->
+    <div class="space-y-6 text-base leading-relaxed text-[var(--text-primary)]">
+      <Content />
+    </div>
+
+    <!-- Navigation Footer -->
+    <div class="mt-12 pt-6 border-t border-[var(--border-default)] flex items-center justify-between">
+      <a
+        href="/"
+        class="px-4 py-2 rounded text-sm font-mono border border-[var(--border-default)] bg-[var(--bg-surface)] text-[var(--text-secondary)] hover:border-[var(--border-focused)] hover:text-[var(--text-primary)] transition-colors text-decoration-none"
+      >
+        ← Kembali ke Beranda
+      </a>
+      <span class="text-xs font-mono text-[var(--text-muted)]">
+        Materi Kurikulum Resmi belajar.in
+      </span>
+    </div>
+  </article>
+</Layout>

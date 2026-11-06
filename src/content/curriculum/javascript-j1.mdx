@@ -1,0 +1,159 @@
+---
+id: "J1"
+track: "javascript"
+level: "J1"
+title: "Fundamental JavaScript: Fondasi Komputasi & Nilai"
+slug: "curriculum/javascript/j1"
+estimatedMinutes: 90
+prerequisites: []
+learningObjectives:
+  - "Memahami model eksekusi JavaScript pada runtime modern (ES2024)"
+  - "Membedakan mutabilitas let dan immutabilitas const tanpa menggunakan var"
+  - "Menguasai 7 tipe data primitif dan operator kesetaraan ketat (===)"
+  - "Menulis fungsi modular dan arrow function dengan nilai kembali bersih"
+relatedConcepts:
+  - "ECMAScript 2024"
+  - "Lexical Scope"
+  - "Type Coercion"
+languageVersion: "ES2024"
+summary: "Pelajari bagaimana JavaScript mengingat data, memproses logika, dan mengeksekusi instruksi dari hal paling mendasar."
+---
+
+import { CodePlayground } from '../../components/CodePlayground';
+
+# Level J1: Fundamental JavaScript
+
+Selamat datang di bengkel kerja JavaScript. Di modul ini, kita akan membongkar bagaimana komputer membaca kodemu, menyimpan data dalam memori, dan membuat keputusan komputasional.
+
+---
+
+## 1. Menjalankan Kode Pertama: `console.log`
+
+Ketika kamu menulis kode, kamu memberikan serangkaian instruksi terurut kepada mesin. Perintah paling mendasar untuk melihat apa yang sedang dipikirkan komputer adalah `console.log()`.
+
+<CodePlayground
+  client:load
+  language="javascript"
+  title="Latihan J1.1: Mencetak Nilai Pertama"
+  initialCode={`console.log("Halo, dunia!");
+console.log(2024 + 2);
+console.log("Status belajar:", true);`}
+  expectedOutput={`Halo, dunia!\n2026\nStatus belajar: true`}
+/>
+
+---
+
+## 2. Variabel Modern: `const` dan `let`
+
+Di JavaScript modern (ES2024), kita menolak penggunaan kata kunci lama `var` karena sifat *hoisting* dan ketidakjelasan cakupan (*function-scoped*) yang sering memicu *bug* tak terlihat.
+
+- Gunakan **`const`** secara *default* untuk nilai yang tidak akan pernah diubah referensinya.
+- Gunakan **`let`** hanya jika nilai variabel tersebut memang direncanakan untuk diperbarui (*reassigned*).
+
+<CodePlayground
+  client:load
+  language="javascript"
+  title="Latihan J1.2: Mutabilitas dan Immutabilitas"
+  initialCode={`const namaPlatform = "belajar.in";
+let hitunganSesi = 1;
+
+hitunganSesi = hitunganSesi + 1;
+
+console.log("Platform:", namaPlatform);
+console.log("Sesi ke:", hitunganSesi);`}
+  expectedOutput={`Platform: belajar.in\nSesi ke: 2`}
+/>
+
+---
+
+## 3. Tujuh Tipe Data Primitif
+
+JavaScript memiliki 7 tipe data primitif bawaan:
+1. `string`: Teks berkarakter (`"Halo"`)
+2. `number`: Bilangan bulat maupun pecahan (`42`, `3.14`)
+3. `boolean`: Logika kebenaran (`true` atau `false`)
+4. `null`: Nilai kosong yang sengaja ditentukan
+5. `undefined`: Variabel yang belum diinisialisasi nilai
+6. `bigint`: Angka bilangan bulat ekstra besar (`9007199254740991n`)
+7. `symbol`: Pengenal unik yang tak dapat diduplikasi
+
+<CodePlayground
+  client:load
+  language="javascript"
+  title="Latihan J1.3: Pengecekan Tipe Data"
+  initialCode={`console.log(typeof "Teks");
+console.log(typeof 100);
+console.log(typeof false);
+console.log(typeof undefined);
+console.log(typeof 10n);`}
+  expectedOutput={`string\nnumber\nboolean\nundefined\nbigint`}
+/>
+
+---
+
+## 4. Kesetaraan Ketat (`===`) vs Longgar (`==`)
+
+Aturan emas JavaScript: **selalu gunakan operator kesetaraan ketat `===`**. Operator longgar `==` melakukan *implicit type coercion* yang sering menghasilkan kejanggalan logika.
+
+<CodePlayground
+  client:load
+  language="javascript"
+  title="Latihan J1.4: Perbandingan Nilai"
+  initialCode={`const angka = 5;
+const teks = "5";
+
+console.log("Ketat (===):", angka === teks);
+console.log("Longgar (==):", angka == teks);`}
+  expectedOutput={`Ketat (===): false\nLonggar (==): true`}
+/>
+
+---
+
+## 5. Fungsi Modular & Arrow Function
+
+Fungsi adalah blok kode yang dapat digunakan kembali (*reusable*). Arrow function memberikan sintaks ringkas dan tidak mengikat konteks `this` sendiri.
+
+<CodePlayground
+  client:load
+  language="javascript"
+  title="Latihan J1.5: Arrow Functions"
+  initialCode={`const hitungDiskon = (harga, persentaseDiskon = 10) => {
+  const potongan = (harga * persentaseDiskon) / 100;
+  return harga - potongan;
+};
+
+const hargaAkhir = hitungDiskon(500000, 20);
+console.log("Harga setelah diskon 20%:", hargaAkhir);`}
+  expectedOutput={`Harga setelah diskon 20%: 400000`}
+/>
+
+---
+
+## 6. Mini Proyek J1: Kalkulator Konversi Mata Uang
+
+Mari kita gabungkan seluruh konsep: deklarasi `const/let`, percabangan logika, dan fungsi matematika murni.
+
+<CodePlayground
+  client:load
+  language="javascript"
+  title="Mini Proyek J1: Konversi Rupiah ke USD & JPY"
+  initialCode={`const konversiMataUang = (jumlahIdr, mataUangTujuan) => {
+  const kurs = {
+    USD: 16000,
+    JPY: 105,
+  };
+
+  if (mataUangTujuan === "USD") {
+    return (jumlahIdr / kurs.USD).toFixed(2);
+  } else if (mataUangTujuan === "JPY") {
+    return (jumlahIdr / kurs.JPY).toFixed(2);
+  } else {
+    return "Mata uang tidak didukung";
+  }
+};
+
+const modalBelajar = 320000;
+console.log("Dalam USD: $" + konversiMataUang(modalBelajar, "USD"));
+console.log("Dalam JPY: ¥" + konversiMataUang(modalBelajar, "JPY"));`}
+  expectedOutput={`Dalam USD: $20.00\nDalam JPY: ¥3047.62`}
+/>
