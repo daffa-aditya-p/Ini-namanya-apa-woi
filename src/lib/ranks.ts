@@ -116,27 +116,28 @@ export interface UserRankStatus {
  * Computes rank tier and next-tier progress from total XP.
  */
 export function getRankInfo(xp: number): UserRankStatus {
-  const safeXp = Math.max(0, Math.round(xp));
+  const numericXp = typeof xp === 'number' ? xp : Number(xp);
+  const safeXp = Number.isFinite(numericXp) ? Math.max(0, Math.round(numericXp)) : 0;
 
   let defIndex = 0;
   if (safeXp <= 50) {
-    defIndex = 0; // Bronze I
+    defIndex = 0; // Bronze I (0-50 XP)
   } else if (safeXp <= 100) {
-    defIndex = 1; // Bronze II
+    defIndex = 1; // Bronze II (51-100 XP)
   } else if (safeXp <= 200) {
-    defIndex = 2; // Gold I
+    defIndex = 2; // Gold I (101-200 XP)
   } else if (safeXp <= 300) {
-    defIndex = 3; // Gold II
+    defIndex = 3; // Gold II (201-300 XP)
   } else if (safeXp <= 500) {
-    defIndex = 4; // Diamond
+    defIndex = 4; // Diamond (301-500 XP)
   } else if (safeXp <= 700) {
-    defIndex = 5; // Heroic
+    defIndex = 5; // Heroic (501-700 XP)
   } else if (safeXp <= 1000) {
-    defIndex = 6; // Master
+    defIndex = 6; // Master (701-1000 XP)
   } else if (safeXp <= 2000) {
-    defIndex = 7; // Grandmaster
+    defIndex = 7; // Grandmaster (1001-2000 XP)
   } else {
-    defIndex = 8; // Immortal (2001+)
+    defIndex = 8; // Immortal (2001+ XP)
   }
 
   const definition = RANK_TIERS[defIndex];
