@@ -51,7 +51,7 @@ describe('JavaScript Runner', () => {
     expect(result.result).toBe('Selesai');
   });
 
-  it('enforces execution timeout guard', async () => {
+  it('enforces execution timeout guard on async timeout', async () => {
     const code = `
       return new Promise((resolve) => {
         setTimeout(resolve, 1000);
@@ -60,5 +60,12 @@ describe('JavaScript Runner', () => {
     const result = await runner.run(code, 200); // 200ms timeout
     expect(result.success).toBe(false);
     expect(result.error).toContain('TimeoutError');
+  });
+
+  it('safely interrupts synchronous infinite loop while(true)', async () => {
+    const code = 'while(true) {}';
+    const result = await runner.run(code, 250); // 250ms timeout
+    expect(result.success).toBe(false);
+    expect(result.error).toMatch(/TimeoutError/);
   });
 });

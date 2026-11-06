@@ -26,7 +26,7 @@ export async function getPyodideInstance(): Promise<PyodideInterface> {
     // Check if in Node or browser
     if (typeof window === 'undefined') {
       const { loadPyodide } = await import('pyodide');
-      const path = await import('path');
+      const path = await import(/* @vite-ignore */ 'path');
       const pyodideDir = path.resolve(process.cwd(), 'node_modules/pyodide');
       pyodideInstance = (await loadPyodide({
         indexURL: pyodideDir + '/',
@@ -107,6 +107,13 @@ sys.stderr = sys.__stderr__
         const captured = (await pyodide.runPythonAsync(teardownScript)) as unknown as CapturedTuple;
         const outStr = captured.get(0);
         const errStr = captured.get(1);
+
+        if (typeof (captured as { destroy?: () => void }).destroy === 'function') {
+          (captured as { destroy: () => void }).destroy();
+        }
+        if (pyResult && typeof (pyResult as { destroy?: () => void }).destroy === 'function') {
+          (pyResult as { destroy: () => void }).destroy();
+        }
 
         if (outStr) {
           const lines = outStr.split('\n').filter((l: string) => l.length > 0);

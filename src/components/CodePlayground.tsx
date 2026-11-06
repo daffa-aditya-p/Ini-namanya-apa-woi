@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { JavaScriptRunner } from '../lib/runner/javascript';
 import { PythonRunner } from '../lib/runner/python';
 import type { ExecutionResult } from '../lib/runner/types';
@@ -19,6 +19,9 @@ export const CodePlayground: React.FC<CodePlaygroundProps> = ({
   const [code, setCode] = useState(initialCode.trim());
   const [isRunning, setIsRunning] = useState(false);
   const [output, setOutput] = useState<ExecutionResult | null>(null);
+  const editorContainerRef = useRef<HTMLDivElement>(null);
+  const editorViewRef = useRef<unknown>(null);
+  const [cmReady, setCmReady] = useState(false);
 
   const handleRun = useCallback(async () => {
     setIsRunning(true);
@@ -45,9 +48,108 @@ export const CodePlayground: React.FC<CodePlaygroundProps> = ({
     }
   }, [code, language]);
 
+  // Keyboard shortcut Ctrl/Cmd + Enter
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        e.preventDefault();
+        handleRun();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleRun]);
+
+  // Mount CodeMirror 6 in browser
+  useEffect(() => {
+    let isMounted = true;
+    async function setupEditor() {
+      if (!editorContainerRef.current) return;
+      try {
+        const { EditorView, lineNumbers } = await import('@codemirror/view');
+        const { EditorState } = await import('@codemirror/state');
+        const langExtension =
+          language === 'javascript'
+            ? (await import('@codemirror/lang-javascript')).javascript()
+            : (await import('@codemirror/lang-python')).python();
+
+        if (!isMounted || !editorContainerRef.current) return;
+
+        // Custom Warm Paper theme
+        const theme = EditorView.theme({
+          '&': {
+            fontSize: '14px',
+            fontFamily: 'var(--font-mono, monospace)',
+            backgroundColor: 'transparent',
+            color: 'var(--text-primary)',
+          },
+          '.cm-content': {
+            padding: '12px 14px',
+            caretColor: 'var(--accent-terracotta)',
+          },
+          '.cm-line': {
+            lineHeight: '1.6',
+          },
+          '.cm-gutters': {
+            backgroundColor: 'var(--bg-subtle)',
+            color: 'var(--text-muted)',
+            borderRight: '1px solid var(--border-default)',
+            paddingRight: '6px',
+          },
+          '&.cm-focused': {
+            outline: 'none',
+          },
+        });
+
+        const state = EditorState.create({
+          doc: initialCode.trim(),
+          extensions: [
+            lineNumbers(),
+            langExtension,
+            theme,
+            EditorView.updateListener.of((update) => {
+              if (update.docChanged) {
+                setCode(update.state.doc.toString());
+              }
+            }),
+          ],
+        });
+
+        const view = new EditorView({
+          state,
+          parent: editorContainerRef.current,
+        });
+
+        editorViewRef.current = view;
+        setCmReady(true);
+      } catch {
+        setCmReady(false);
+      }
+    }
+
+    setupEditor();
+
+    return () => {
+      isMounted = false;
+      if (editorViewRef.current) {
+        (editorViewRef.current as { destroy: () => void }).destroy();
+        editorViewRef.current = null;
+      }
+    };
+  }, [initialCode, language]);
+
   const handleReset = useCallback(() => {
     setCode(initialCode.trim());
     setOutput(null);
+    if (editorViewRef.current) {
+      const view = editorViewRef.current as {
+        dispatch: (tr: { changes: { from: number; to: number; insert: string } }) => void;
+        state: { doc: { length: number } };
+      };
+      view.dispatch({
+        changes: { from: 0, to: view.state.doc.length, insert: initialCode.trim() },
+      });
+    }
   }, [initialCode]);
 
   return (
@@ -91,15 +193,22 @@ export const CodePlayground: React.FC<CodePlaygroundProps> = ({
         </div>
       </div>
 
-      {/* Code Editor Textarea */}
-      <div className="relative">
-        <textarea
-          value={code}
-          onChange={(e) => setCode(e.target.value)}
-          spellCheck={false}
-          className="w-full font-mono text-sm p-4 bg-[var(--bg-canvas)] text-[var(--text-primary)] border-none outline-none resize-y min-h-[120px] leading-relaxed focus:ring-1 focus:ring-[var(--border-focused)]"
-          aria-label="Editor Kode"
+      {/* Code Editor: CodeMirror 6 with Textarea SSR/Fallback */}
+      <div className="relative bg-[var(--bg-canvas)] min-h-[120px]">
+        <div
+          ref={editorContainerRef}
+          className={cmReady ? 'block' : 'hidden'}
+          aria-label="Editor CodeMirror 6"
         />
+        {!cmReady && (
+          <textarea
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            spellCheck={false}
+            className="w-full font-mono text-sm p-4 bg-[var(--bg-canvas)] text-[var(--text-primary)] border-none outline-none resize-y min-h-[120px] leading-relaxed focus:ring-1 focus:ring-[var(--border-focused)]"
+            aria-label="Editor Kode"
+          />
+        )}
       </div>
 
       {/* Output Console / Terminal */}
