@@ -1,0 +1,76 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Beranda">
+  <section class="max-w-3xl mx-auto py-8">
+    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono bg-[var(--bg-subtle)] text-[var(--accent-teal)] border border-[var(--border-default)] mb-4">
+      <span class="w-2 h-2 rounded-full bg-[var(--state-success)] animate-pulse"></span>
+      Fase 1-2 • Vertical Slice J1 + P1 Aktif
+    </div>
+
+    <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight mb-4 text-[var(--text-primary)]">
+      Bengkel Kode & Buku Teks Hidup
+    </h1>
+
+    <p class="text-lg leading-relaxed text-[var(--text-secondary)] mb-8">
+      Mari kita mulai dari hal paling mendasar: bagaimana komputer mengingat data dan mengeksekusi instruksi. Setiap contoh kode di halaman ini dapat kamu jalankan dan eksplorasi secara nyata langsung di browsermu tanpa instalasi lokal yang rumit.
+    </p>
+
+    <div class="grid sm:grid-cols-2 gap-6 my-10">
+      <!-- Track JavaScript J1 -->
+      <a
+        href="/curriculum/javascript/j1"
+        class="block p-6 rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface)] hover:border-[var(--border-focused)] transition-all group shadow-xs text-decoration-none"
+      >
+        <div class="flex items-center justify-between mb-3">
+          <span class="px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-[#F7DF1E]/20 text-[#857000] dark:text-[#F7DF1E]">
+            J1 • JavaScript
+          </span>
+          <span class="text-xs font-mono text-[var(--text-muted)]">ES2024</span>
+        </div>
+        <h2 class="text-xl font-bold mb-2 text-[var(--text-primary)] group-hover:text-[var(--accent-terracotta)] transition-colors">
+          Fondasi Komputasi & Nilai
+        </h2>
+        <p class="text-sm text-[var(--text-secondary)] leading-relaxed mb-4">
+          Console.log, eksekusi kode pertama, mutabilitas variabel `let` vs immutabilitas `const`, serta 7 tipe data primitif ECMAScript.
+        </p>
+        <div class="text-xs font-mono font-medium text-[var(--accent-terracotta)] flex items-center gap-1">
+          Buka Modul J1 →
+        </div>
+      </a>
+
+      <!-- Track Python P1 -->
+      <a
+        href="/curriculum/python/p1"
+        class="block p-6 rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface)] hover:border-[var(--border-focused)] transition-all group shadow-xs text-decoration-none"
+      >
+        <div class="flex items-center justify-between mb-3">
+          <span class="px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-[#3776AB]/20 text-[#20527B] dark:text-[#68B0EB]">
+            P1 • Python
+          </span>
+          <span class="text-xs font-mono text-[var(--text-muted)]">Python 3.12 WASM</span>
+        </div>
+        <h2 class="text-xl font-bold mb-2 text-[var(--text-primary)] group-hover:text-[var(--accent-terracotta)] transition-colors">
+          Struktur Pertama & Bahasa Alami
+        </h2>
+        <p class="text-sm text-[var(--text-secondary)] leading-relaxed mb-4">
+          Fungsi print, operator aritmatika, variabel sebagai name binding dinamis, dan eksekusi instan di WebAssembly Pyodide.
+        </p>
+        <div class="text-xs font-mono font-medium text-[var(--accent-terracotta)] flex items-center gap-1">
+          Buka Modul P1 →
+        </div>
+      </a>
+    </div>
+
+    <!-- Technical Manifesto Callout -->
+    <div class="p-6 rounded-lg border border-[var(--border-default)] bg-[var(--bg-subtle)] text-sm leading-relaxed text-[var(--text-secondary)]">
+      <h3 class="font-bold text-[var(--text-primary)] mb-2 font-display">Prinsip Bengkel & Integritas Rekayasa:</h3>
+      <ul class="space-y-1.5 list-disc list-inside">
+        <li><strong>Eksekusi Riil:</strong> Seluruh kode materi dieksekusi di runner JavaScript worker dan Pyodide WebAssembly nyata tanpa simulasi palsu.</li>
+        <li><strong>Zero JS Default:</strong> Konten artikel disajikan statis dan super cepat, hanya memuat runtime interaktif ketika kamu berinteraksi dengan editor.</li>
+        <li><strong>Aksesibilitas Teruji:</strong> Dirancang dengan standar kontras warna WCAG 2.2 AA pada palet Warm Paper & Slate Ink.</li>
+      </ul>
+    </div>
+  </section>
+</Layout>

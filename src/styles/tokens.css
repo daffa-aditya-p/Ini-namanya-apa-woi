@@ -1,0 +1,38 @@
+:root {
+  /* Font Families */
+  --font-display: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-body: 'Source Serif 4', Georgia, serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+
+  /* Semantic Design Tokens: Warm Paper (Light Mode Default) */
+  --bg-canvas: #FBFBF9;
+  --bg-surface: #FFFFFF;
+  --bg-subtle: #F2F2EC;
+  --border-default: #E2E2D8;
+  --border-focused: #1C1D1F;
+  --text-primary: #1A1C1E;
+  --text-secondary: #5A5D63;
+  --text-muted: #686C76;
+  --accent-terracotta: #BA3C23;
+  --accent-teal: #1B6B6D;
+  --state-success: #1E7E34;
+  --state-warning: #B45309;
+  --state-danger: #B91C1C;
+}
+
+[data-theme='dark'], .dark {
+  /* Semantic Design Tokens: Slate Ink (Dark Mode) */
+  --bg-canvas: #111317;
+  --bg-surface: #181B22;
+  --bg-subtle: #212631;
+  --border-default: #2B3240;
+  --border-focused: #EFF1F5;
+  --text-primary: #EFF1F5;
+  --text-secondary: #9BA3AF;
+  --text-muted: #949BA6;
+  --accent-terracotta: #E05D43;
+  --accent-teal: #34B3AD;
+  --state-success: #28A745;
+  --state-warning: #F59E0B;
+  --state-danger: #EF4444;
+}
