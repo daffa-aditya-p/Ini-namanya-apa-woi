@@ -9,7 +9,7 @@ on:
 jobs:
   quality:
     name: Lint, Test & Build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -38,7 +38,7 @@ jobs:
 
   visual-breakpoints:
     name: Playwright 3-Breakpoint Screenshots & Axe-Core Audit
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: quality
     steps:
       - name: Checkout repository
