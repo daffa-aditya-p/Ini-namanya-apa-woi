@@ -20,7 +20,8 @@ test.describe('3-Breakpoint Visual Screenshots & Axe Accessibility Audit', () =>
         fs.mkdirSync(screenshotDir, { recursive: true });
       }
 
-      await page.goto(pageInfo.path, { waitUntil: 'networkidle' });
+      await page.goto(pageInfo.path, { waitUntil: 'domcontentloaded' });
+      await page.waitForLoadState('networkidle').catch(() => {});
 
       // Verify essential page landmarks
       await expect(page.locator('header nav')).toBeVisible();

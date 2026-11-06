@@ -66,6 +66,14 @@ jobs:
       - name: Run Playwright Visual Breakpoint Tests (375px, 768px, 1440px)
         run: npx playwright test tests/visual.spec.ts
 
+      - name: Copy Breakpoints for Review
+        if: always()
+        run: |
+          mkdir -p docs/design-review
+          [ -f screenshots/mobile-375x667/home.png ] && cp screenshots/mobile-375x667/home.png docs/design-review/mobile-375x667.png || true
+          [ -f screenshots/tablet-768x1024/home.png ] && cp screenshots/tablet-768x1024/home.png docs/design-review/tablet-768x1024.png || true
+          [ -f screenshots/desktop-1440x900/home.png ] && cp screenshots/desktop-1440x900/home.png docs/design-review/desktop-1440x900.png || true
+
       - name: Upload 3-Breakpoint Screenshots Artifact
         uses: actions/upload-artifact@v4
         if: always()
