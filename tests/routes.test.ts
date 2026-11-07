@@ -100,4 +100,17 @@ describe('Route Separation & Dedicated Page Architecture', () => {
     expect(content).toContain('href="/forgot-password"');
     expect(content).toContain('window.location.href = \'/dashboard\'');
   });
+
+  it('verifies /placement route and J2/P2 curriculum files exist', () => {
+    const placementPath = path.join(pagesDir, 'placement.astro');
+    expect(fs.existsSync(placementPath)).toBe(true);
+    const content = fs.readFileSync(placementPath, 'utf-8');
+    expect(content).toContain('PlacementTestApp');
+
+    const curriculumDir = path.resolve(process.cwd(), 'src/content/curriculum');
+    expect(fs.existsSync(path.join(curriculumDir, 'javascript-j1.mdx'))).toBe(true);
+    expect(fs.existsSync(path.join(curriculumDir, 'javascript-j2.mdx'))).toBe(true);
+    expect(fs.existsSync(path.join(curriculumDir, 'python-p1.mdx'))).toBe(true);
+    expect(fs.existsSync(path.join(curriculumDir, 'python-p2.mdx'))).toBe(true);
+  });
 });

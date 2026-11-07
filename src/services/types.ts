@@ -46,6 +46,7 @@ export const TutorRequestSchema = z.object({
   userCode: z.string(),
   errorMessage: z.string().optional(),
   prompt: z.string(),
+  hintStage: z.number().min(1).max(4).optional(),
 });
 
 export type TutorRequest = z.infer<typeof TutorRequestSchema>;
@@ -54,6 +55,8 @@ export const TutorResponseSchema = z.object({
   hint: z.string(),
   citations: z.array(z.string()),
   suggestedAction: z.string().optional(),
+  hintStage: z.number().min(1).max(4).optional(),
+  stageTitle: z.string().optional(),
 });
 
 export type TutorResponse = z.infer<typeof TutorResponseSchema>;

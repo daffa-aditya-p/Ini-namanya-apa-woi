@@ -317,24 +317,46 @@ export function Dashboard({ user, onLogout, onUpdateUser }: DashboardProps) {
               Jalur kurikulum berjenjang dengan eksekusi WebAssembly & runtime sandboxed nyata.
             </p>
           </div>
-          <span className="text-xs font-mono text-[var(--text-muted)]">2 Jalur Aktif</span>
+          <span className="text-xs font-mono text-[var(--text-muted)]">4 Modul Aktif • J1, J2, P1, P2</span>
+        </div>
+
+        {/* Fast-Track Placement Test Banner */}
+        <div className="p-5 rounded-xl border border-[var(--border-focused)] bg-[var(--bg-surface)] flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
+          <div>
+            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-[var(--accent-terracotta)]/15 text-[var(--accent-terracotta)] mb-1.5">
+              <SparklesIcon className="w-3 h-3" />
+              Fast-Track Level Test-Out
+            </div>
+            <h3 className="text-base font-bold font-display text-[var(--text-primary)]">
+              Sudah Memiliki Pengalaman Pemrograman?
+            </h3>
+            <p className="text-xs text-[var(--text-secondary)] mt-0.5 max-w-xl leading-relaxed">
+              Ikuti Uji Penempatan Adaptif (Placement Test) untuk membuktikan penguasaan konsep dasar dan langsung membuka Level J2 atau P2.
+            </p>
+          </div>
+          <a
+            href="/placement"
+            className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-mono font-semibold rounded-lg bg-[var(--accent-terracotta)] text-white hover:opacity-95 transition-opacity shrink-0 text-decoration-none shadow-2xs"
+          >
+            Mulai Placement Test <ArrowRightIcon className="w-3.5 h-3.5" />
+          </a>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Kelas Python */}
+          {/* Kelas Python P1 */}
           <div className="p-6 rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] hover:border-[var(--border-focused)] transition-all shadow-xs flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between mb-4">
                 <span className="px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-[#3776AB]/15 text-[#20527B] dark:text-[#68B0EB] border border-[#3776AB]/20">
-                  Kelas Python
+                  Python • Level P1
                 </span>
-                <span className="text-xs font-mono text-[var(--text-muted)]">Python 3.12 (Pyodide WASM)</span>
+                <span className="text-xs font-mono text-[var(--text-muted)]">Python 3.12 WASM</span>
               </div>
               <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2 font-display">
-                Modul P1: Struktur Pertama & Bahasa Alami
+                Fondasi Pemrograman Python
               </h3>
               <p className="text-sm text-[var(--text-secondary)] leading-relaxed mb-6">
-                Mengeksplorasi eksekusi baris instruksi dengan fungsi `print()`, operator aritmatika, name binding variabel dinamis, dan penelusuran runtime Python tanpa instalasi lokal.
+                Fungsi `print()`, operator aritmatika, name binding variabel dinamis di CPython, dan penelusuran kontrol alur berbasis indentasi.
               </p>
             </div>
 
@@ -344,25 +366,53 @@ export function Dashboard({ user, onLogout, onUpdateUser }: DashboardProps) {
                 href="/curriculum/python/p1"
                 className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-mono font-medium rounded-lg bg-[var(--text-primary)] text-[var(--bg-canvas)] hover:opacity-90 transition-opacity"
               >
-                Buka Kelas Python <ArrowRightIcon className="w-3.5 h-3.5" />
+                Buka Level P1 <ArrowRightIcon className="w-3.5 h-3.5" />
               </a>
             </div>
           </div>
 
-          {/* Kelas JavaScript */}
+          {/* Kelas Python P2 (New!) */}
+          <div className="p-6 rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] hover:border-[var(--border-focused)] transition-all shadow-xs flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <span className="px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-[#3776AB]/15 text-[#20527B] dark:text-[#68B0EB] border border-[#3776AB]/20">
+                  Python • Level P2 (Baru)
+                </span>
+                <span className="text-xs font-mono text-[var(--text-muted)]">Python 3.12 MEMFS</span>
+              </div>
+              <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2 font-display">
+                Struktur Data & Manipulasi File
+              </h3>
+              <p className="text-sm text-[var(--text-secondary)] leading-relaxed mb-6">
+                List, Tuple, Dict, Set, Slicing [start:stop:step], Comprehensions, virtual file I/O CSV & JSON di MEMFS Pyodide, dan Exception Handling.
+              </p>
+            </div>
+
+            <div className="pt-4 border-t border-[var(--border-default)] flex items-center justify-between">
+              <span className="text-xs font-mono text-[var(--text-muted)]">5 Latihan + Mini Proyek</span>
+              <a
+                href="/curriculum/python/p2"
+                className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-mono font-medium rounded-lg bg-[#3776AB] text-white hover:opacity-90 transition-opacity"
+              >
+                Buka Level P2 <ArrowRightIcon className="w-3.5 h-3.5" />
+              </a>
+            </div>
+          </div>
+
+          {/* Kelas JavaScript J1 */}
           <div className="p-6 rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] hover:border-[var(--border-focused)] transition-all shadow-xs flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between mb-4">
                 <span className="px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-[#F7DF1E]/20 text-[#857000] dark:text-[#F7DF1E] border border-[#F7DF1E]/30">
-                  Kelas JavaScript
+                  JavaScript • Level J1
                 </span>
                 <span className="text-xs font-mono text-[var(--text-muted)]">ECMAScript 2024</span>
               </div>
               <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2 font-display">
-                Modul J1: Fondasi Komputasi & Nilai
+                Fondasi Komputasi & Nilai
               </h3>
               <p className="text-sm text-[var(--text-secondary)] leading-relaxed mb-6">
-                Console inspector terisolasi, mutabilitas `let` vs immutabilitas `const`, 7 tipe data primitif, dan visualisasi alokasi memori di Web Worker sandbox.
+                Console inspector terisolasi, mutabilitas `let` vs immutabilitas `const`, 7 tipe data primitif, dan fungsi modular di Web Worker sandbox.
               </p>
             </div>
 
@@ -370,9 +420,37 @@ export function Dashboard({ user, onLogout, onUpdateUser }: DashboardProps) {
               <span className="text-xs font-mono text-[var(--text-muted)]">7 Latihan Riil</span>
               <a
                 href="/curriculum/javascript/j1"
+                className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-mono font-medium rounded-lg bg-[var(--text-primary)] text-[var(--bg-canvas)] hover:opacity-90 transition-opacity"
+              >
+                Buka Level J1 <ArrowRightIcon className="w-3.5 h-3.5" />
+              </a>
+            </div>
+          </div>
+
+          {/* Kelas JavaScript J2 (New!) */}
+          <div className="p-6 rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] hover:border-[var(--border-focused)] transition-all shadow-xs flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <span className="px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-[#F7DF1E]/20 text-[#857000] dark:text-[#F7DF1E] border border-[#F7DF1E]/30">
+                  JavaScript • Level J2 (Baru)
+                </span>
+                <span className="text-xs font-mono text-[var(--text-muted)]">ECMAScript 2024</span>
+              </div>
+              <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2 font-display">
+                Core JavaScript: Struktur Data & Closure
+              </h3>
+              <p className="text-sm text-[var(--text-secondary)] leading-relaxed mb-6">
+                Array FP map/filter/reduce, destructuring, alokasi heap memori closure, immutability structuredClone, ES Class (#privateField), dan custom errors.
+              </p>
+            </div>
+
+            <div className="pt-4 border-t border-[var(--border-default)] flex items-center justify-between">
+              <span className="text-xs font-mono text-[var(--text-muted)]">5 Latihan + Mini Proyek</span>
+              <a
+                href="/curriculum/javascript/j2"
                 className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-mono font-medium rounded-lg bg-[var(--accent-terracotta)] text-white hover:opacity-95 transition-opacity"
               >
-                Buka Kelas JavaScript <ArrowRightIcon className="w-3.5 h-3.5" />
+                Buka Level J2 <ArrowRightIcon className="w-3.5 h-3.5" />
               </a>
             </div>
           </div>

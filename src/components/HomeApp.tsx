@@ -228,10 +228,25 @@ print(f"Total elemen: {len(pangkat)}")`}
 
       {/* Curriculum Tracks Preview */}
       <section aria-labelledby="tracks-preview-heading">
-        <h2 id="tracks-preview-heading" className="sr-only">
-          Pilihan Modul Kurikulum
-        </h2>
-        <div className="grid sm:grid-cols-2 gap-6 my-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+          <div>
+            <h2 id="tracks-preview-heading" className="text-xl sm:text-2xl font-bold text-[var(--text-primary)] font-display">
+              Pilihan Modul Kurikulum (Jalur J & P)
+            </h2>
+            <p className="text-xs sm:text-sm text-[var(--text-secondary)] mt-0.5">
+              Tiap level dirancang berjenjang dengan mastery gates dan simulasi WebAssembly murni.
+            </p>
+          </div>
+          <a
+            href="/placement"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-mono font-medium rounded-lg border border-[var(--border-focused)] bg-[var(--bg-surface)] text-[var(--accent-terracotta)] hover:bg-[var(--bg-subtle)] transition-colors w-fit text-decoration-none"
+          >
+            <SparklesIcon className="w-3.5 h-3.5" />
+            Uji Penempatan (Placement Test)
+          </a>
+        </div>
+
+        <div className="grid sm:grid-cols-2 gap-6 my-4">
           {/* Track JavaScript J1 */}
           <a
             href="/curriculum/javascript/j1"
@@ -254,6 +269,28 @@ print(f"Total elemen: {len(pangkat)}")`}
             </div>
           </a>
 
+          {/* Track JavaScript J2 */}
+          <a
+            href="/curriculum/javascript/j2"
+            className="block p-6 rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] hover:border-[var(--border-focused)] transition-all group shadow-xs text-decoration-none"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <span className="px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-[#F7DF1E]/20 text-[#857000] dark:text-[#F7DF1E]">
+                J2 • JavaScript (Baru)
+              </span>
+              <span className="text-xs font-mono text-[var(--text-muted)]">ES2024</span>
+            </div>
+            <h3 className="text-xl font-bold mb-2 text-[var(--text-primary)] group-hover:text-[var(--accent-terracotta)] transition-colors font-display">
+              Core JavaScript & Struktur Data
+            </h3>
+            <p className="text-sm text-[var(--text-secondary)] leading-relaxed mb-4">
+              Array FP (map/filter/reduce), closure di heap memory, immutability structuredClone, dan OOP Class dengan error handling bertingkat.
+            </p>
+            <div className="text-xs font-mono font-medium text-[var(--accent-terracotta)] flex items-center gap-1">
+              Buka Modul J2 <ArrowRightIcon className="w-3 h-3" />
+            </div>
+          </a>
+
           {/* Track Python P1 */}
           <a
             href="/curriculum/python/p1"
@@ -273,6 +310,28 @@ print(f"Total elemen: {len(pangkat)}")`}
             </p>
             <div className="text-xs font-mono font-medium text-[var(--accent-terracotta)] flex items-center gap-1">
               Buka Modul P1 <ArrowRightIcon className="w-3 h-3" />
+            </div>
+          </a>
+
+          {/* Track Python P2 */}
+          <a
+            href="/curriculum/python/p2"
+            className="block p-6 rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] hover:border-[var(--border-focused)] transition-all group shadow-xs text-decoration-none"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <span className="px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-[#3776AB]/20 text-[#20527B] dark:text-[#68B0EB]">
+                P2 • Python (Baru)
+              </span>
+              <span className="text-xs font-mono text-[var(--text-muted)]">Python 3.12 MEMFS</span>
+            </div>
+            <h3 className="text-xl font-bold mb-2 text-[var(--text-primary)] group-hover:text-[var(--accent-terracotta)] transition-colors font-display">
+              Struktur Data & Manipulasi File
+            </h3>
+            <p className="text-sm text-[var(--text-secondary)] leading-relaxed mb-4">
+              List, Tuple, Dict, Set, Slicing, Comprehensions, virtual file I/O CSV & JSON pada Pyodide MEMFS, dan penanganan Exception.
+            </p>
+            <div className="text-xs font-mono font-medium text-[var(--accent-terracotta)] flex items-center gap-1">
+              Buka Modul P2 <ArrowRightIcon className="w-3 h-3" />
             </div>
           </a>
         </div>

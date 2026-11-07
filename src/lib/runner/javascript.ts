@@ -68,6 +68,12 @@ export class JavaScriptRunner implements CodeRunner {
         parseFloat,
         isNaN,
         isFinite,
+        structuredClone: typeof structuredClone !== 'undefined' ? structuredClone : (v: unknown) => JSON.parse(JSON.stringify(v)),
+        Error,
+        TypeError,
+        RangeError,
+        SyntaxError,
+        ReferenceError,
       };
       const context = vm.createContext(sandbox);
 

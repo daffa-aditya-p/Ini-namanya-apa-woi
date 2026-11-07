@@ -1,0 +1,375 @@
+---
+id: "J2"
+track: "javascript"
+level: "J2"
+title: "Core JavaScript: Struktur Data, Closure & Paradigma Objek"
+slug: "curriculum/javascript/j2"
+estimatedMinutes: 120
+prerequisites:
+  - "J1"
+learningObjectives:
+  - "Menguasai transformasi data in-memory fungsional via map, filter, dan reduce"
+  - "Memahami alokasi memori heap pada lexical scope dan closure"
+  - "Menerapkan immutability dengan shallow copy spread vs deep clone structuredClone"
+  - "Membangun relasi data berorientasi objek menggunakan Class modern dan error handling tangguh"
+relatedConcepts:
+  - "Functional Programming"
+  - "Lexical Environment & Heap Memory"
+  - "Prototype Chain & ES Classes"
+  - "Structured Cloning"
+languageVersion: "ES2024"
+summary: "Kuasai paradigma manipulasi data in-memory modern, seluk-beluk closure pada heap memory V8, dan arsitektur objek berorientasi data tanpa efek samping."
+---
+
+import { CodePlayground } from '../../components/CodePlayground';
+import { DualTrackView } from '../../components/DualTrackView';
+import { PredictOutput } from '../../components/PredictOutput';
+import { FadedExample } from '../../components/FadedExample';
+import { SocraticTutorPanel } from '../../components/SocraticTutorPanel';
+import { MiniQuiz } from '../../components/MiniQuiz';
+
+# Level J2: Core JavaScript & Struktur Data
+
+Selamat datang di Level J2. Pada level ini, kita melangkah dari sekadar menulis variabel dan percabangan menuju **arsitektur pengelolaan data in-memory yang tangguh, modular, dan bersih dari mutasi liar**.
+
+---
+
+## 1. HOOK: Masalah Nyata & Analogi Keseharian
+
+<DualTrackView
+  client:load
+  santaiTitle="Jalur Santai: Resep Dapur & Brankas Tertutup"
+  santaiParagraphs={[
+    "Bayangkan kamu memiliki buku resep rahasia keluarga. Ketika seorang koki magang ingin menambahkan variasi rasa pedas, kamu tidak mencoret-coret buku asli (mutasi langsung). Kamu memfotokopi halaman resep tersebut, menambahkan cabai pada fotokopian, lalu menyajikan hidangan baru tanpa merusak arsip asli (immutability).",
+    "Begitu pula dengan closure: bayangkan brankas hotel dengan kode akses leksikal yang hanya bisa diakses oleh tamu pemilik kartu, meskipun resepsionis hotel yang menyerahkan kunci sudah pulang ke rumah."
+  ]}
+  cepatTitle="Jalur Cepat: V8 Heap Allocation & Reference Pollution"
+  cepatParagraphs={[
+    "Di JavaScript, tipe komposit (Array dan Object) dialokasikan pada Heap Memory, sedangkan identifier variabel pada Stack hanya menyimpan pointer referensi memori 64-bit.",
+    "Melakukan penugasan langsung const b = a tidak menduplikasi nilai, melainkan mengalikan pointer. Setiap mutasi in-place pada b akan merusak integritas state a. Level ini membongkar pola functional programming, ES2024 immutability methods (toSorted, toReversed), dan closure containment untuk mencegah state pollution."
+  ]}
+/>
+
+---
+
+## 2. KONSEP INTI: Transformasi Data FP & Model Memori
+
+Pemrograman fungsional modern di JavaScript bersandar pada tiga pilar utama:
+1. **Purity & Immutability:** Jangan mengubah array/objek asli; hasilkan struktur data baru.
+2. **First-Class Functions:** Fungsi dapat dikirimkan sebagai argumen (`map`, `filter`, `reduce`) dan dikembalikan dari fungsi lain.
+3. **Closure & Heap Persistence:** Ketika fungsi luar selesai dieksekusi, variabel di dalam lingkup leksikalnya tidak langsung dihancurkan oleh Garbage Collector jika masih direferensikan oleh fungsi dalam (*inner function*).
+
+---
+
+## 3. CONTOH HIDUP + PREDIKSI OUTPUT
+
+Sebelum menjalankan kode di bawah, uji intuisi mental modelmu terhadap perilaku *closure* dan mutasi array:
+
+<PredictOutput
+  client:load
+  language="javascript"
+  title="Prediksi Output J2.1: Lexical Scope & Closure Counter"
+  code={`function buatPabrikDiskon(persentase) {
+  // Variabel persentase tertahan di heap oleh closure
+  return function(harga) {
+    return harga - (harga * persentase / 100);
+  };
+}
+
+const diskonMember = buatPabrikDiskon(20);
+const diskonFlashSale = buatPabrikDiskon(50);
+
+console.log(diskonMember(100000));
+console.log(diskonFlashSale(100000));`}
+  options={[
+    {
+      text: "80000\\n50000",
+      isCorrect: true,
+      explanation: "Tepat! Setiap pemanggilan buatPabrikDiskon menghasilkan lingkungan leksikal tersendiri di heap memory dengan nilai persentase masing-masing (20 dan 50)."
+    },
+    {
+      text: "50000\\n50000",
+      isCorrect: false,
+      explanation: "Salah. Variabel persentase tidak tertimpa secara global; closure mengisolasi scope masing-masing fungsi yang dikembalikan."
+    },
+    {
+      text: "100000\\n100000",
+      isCorrect: false,
+      explanation: "Salah. Fungsi inner berhasil mengakses nilai persentase dari outer scope dan menghitung potongan harga."
+    }
+  ]}
+/>
+
+<CodePlayground
+  client:load
+  language="javascript"
+  title="Latihan J2.1: Array Functional Pipeline (map, filter, reduce)"
+  initialCode={`const transaksi = [
+  { id: "T1", kategori: "elektronik", nominal: 1200000 },
+  { id: "T2", kategori: "kuliner", nominal: 45000 },
+  { id: "T3", kategori: "elektronik", nominal: 850000 },
+  { id: "T4", kategori: "buku", nominal: 110000 }
+];
+
+// 1. Filter kategori elektronik
+const elektronik = transaksi.filter((t) => t.kategori === "elektronik");
+
+// 2. Map ke daftar nominal
+const daftarNominal = elektronik.map((t) => t.nominal);
+
+// 3. Reduce total akumulasi
+const totalElektronik = daftarNominal.reduce((acc, curr) => acc + curr, 0);
+
+console.log("Total Belanja Elektronik: Rp " + totalElektronik);
+console.log("Jumlah Transaksi:", daftarNominal.length);`}
+  expectedOutput={`Total Belanja Elektronik: Rp 2050000\nJumlah Transaksi: 2`}
+/>
+
+---
+
+## 4. LATIHAN TERPANDU (FADED EXAMPLE)
+
+Lengkapi bagian logika akumulasi menggunakan `reduce` untuk menghitung rekapitulasi data inventaris:
+
+<FadedExample
+  client:load
+  title="Rekapitulasi Kategori Barang dengan Reduce"
+  language="javascript"
+  missingTaskDescription="Gunakan method reduce() untuk menjumlahkan total stok dari semua produk dalam katalog."
+  fadedHint="Inisialisasi akumulator dengan 0, lalu tambahkan item.stok pada setiap iterasi."
+  initialCode={`const katalog = [
+  { nama: "Laptop", stok: 12 },
+  { nama: "Mouse", stok: 45 },
+  { nama: "Keyboard", stok: 28 }
+];
+
+// Lengkapi fungsi akumulator reduce di bawah:
+const totalStok = katalog.reduce((total, item) => {
+  return total + item.stok;
+}, 0);
+
+console.log("Total Stok Gudang:", totalStok);`}
+  expectedOutput={`Total Stok Gudang: 85`}
+/>
+
+---
+
+## 5. LATIHAN MANDIRI (AUTO-GRADED) & TANGGA PETUNJUK
+
+Tuliskan implementasi sistem pemfilteran siswa berprestasi menggunakan destructuring objek dan method array immutability:
+
+<CodePlayground
+  client:load
+  language="javascript"
+  title="Latihan Mandiri J2.2: Destructuring & Student Score Filter"
+  initialCode={`const daftarSiswa = [
+  { nama: "Ahmad", nilai: 92, status: "aktif" },
+  { nama: "Budi", nilai: 74, status: "aktif" },
+  { nama: "Citra", nilai: 88, status: "nonaktif" },
+  { nama: "Dewi", nilai: 95, status: "aktif" }
+];
+
+// Saring siswa aktif dengan nilai >= 85, lalu format teksnya
+const peringkatAtas = daftarSiswa
+  .filter(({ nilai, status }) => status === "aktif" && nilai >= 85)
+  .map(({ nama, nilai }) => nama + " (" + nilai + ")");
+
+console.log("Siswa Berprestasi Aktif:", peringkatAtas.join(", "));`}
+  expectedOutput={`Siswa Berprestasi Aktif: Ahmad (92), Dewi (95)`}
+/>
+
+<CodePlayground
+  client:load
+  language="javascript"
+  title="Latihan Mandiri J2.3: Immutability Deep Clone vs Shallow Copy"
+  initialCode={`const profilAsli = {
+  nama: "Sari",
+  preferensi: { tema: "gelap", bahasa: "id" }
+};
+
+// Gunakan structuredClone untuk deep copy sejati (ES2022+)
+const profilKloning = structuredClone(profilAsli);
+profilKloning.preferensi.tema = "terang";
+
+console.log("Tema Asli:", profilAsli.preferensi.tema);
+console.log("Tema Kloning:", profilKloning.preferensi.tema);`}
+  expectedOutput={`Tema Asli: gelap\nTema Kloning: terang`}
+/>
+
+<CodePlayground
+  client:load
+  language="javascript"
+  title="Latihan Mandiri J2.4: OOP Modern dengan Private Field & Error Handling"
+  initialCode={`class RekeningBank {
+  #saldo = 0; // Private field (ES2022)
+
+  constructor(pemilik, saldoAwal = 0) {
+    this.pemilik = pemilik;
+    if (saldoAwal < 0) {
+      throw new RangeError("Saldo awal tidak boleh negatif.");
+    }
+    this.#saldo = saldoAwal;
+  }
+
+  get saldo() {
+    return this.#saldo;
+  }
+
+  setor(jumlah) {
+    if (jumlah <= 0) throw new Error("Jumlah setor harus lebih dari nol.");
+    this.#saldo += jumlah;
+    return this.#saldo;
+  }
+}
+
+try {
+  const rekening = new RekeningBank("Budi", 500000);
+  rekening.setor(250000);
+  console.log("Pemilik:", rekening.pemilik);
+  console.log("Saldo Terkini:", rekening.saldo);
+} catch (err) {
+  console.error("Error:", err.message);
+}`}
+  expectedOutput={`Pemilik: Budi\nSaldo Terkini: 750000`}
+/>
+
+<CodePlayground
+  client:load
+  language="javascript"
+  title="Mini Proyek J2: In-Memory Task Engine & Custom Error"
+  initialCode={`class TaskNotFoundError extends Error {
+  constructor(taskId) {
+    super("Tugas dengan ID " + taskId + " tidak ditemukan dalam sistem.");
+    this.name = "TaskNotFoundError";
+  }
+}
+
+class TaskEngine {
+  constructor() {
+    this.tasks = [];
+  }
+
+  tambah(id, judul, prioritas) {
+    this.tasks.push({ id, judul, prioritas, selesai: false });
+  }
+
+  selesaikan(id) {
+    const target = this.tasks.find((t) => t.id === id);
+    if (!target) throw new TaskNotFoundError(id);
+    target.selesai = true;
+    return target;
+  }
+
+  rekap() {
+    const total = this.tasks.length;
+    const selesai = this.tasks.filter((t) => t.selesai).length;
+    return "Total: " + total + " | Selesai: " + selesai;
+  }
+}
+
+const engine = new TaskEngine();
+engine.tambah("T-101", "Pelajari Closure", "Tinggi");
+engine.tambah("T-102", "Refactor Immutability", "Sedang");
+engine.selesaikan("T-101");
+
+console.log("Status Engine:", engine.rekap());`}
+  expectedOutput={`Status Engine: Total: 2 | Selesai: 1`}
+/>
+
+{/* Socratic AI Tutor Assistant */}
+<SocraticTutorPanel
+  client:load
+  lessonId="J2"
+  language="javascript"
+  defaultCodeSnippet={`const tasks = [{ id: 1, selesai: true }];`}
+/>
+
+---
+
+## 6. KESALAHAN UMUM (COMMON MISCONCEPTIONS)
+
+1. **Miskonsepsi Shallow Copy:** Menggunakan spread syntax `const copy = { ...asli }` mengira menyalin seluruh objek bersarang (*nested objects*). Kenyataannya, properti objek bersarang tetap berupa referensi pointer yang sama! Perubahan pada `copy.alamat.kota` akan memutasi `asli.alamat.kota`. Gunakan `structuredClone(asli)`.
+2. **Miskonsepsi Callback Loop:** Menggunakan `forEach` saat membutuhkan array hasil transformasi. `forEach` tidak mengembalikan array (return `undefined`). Gunakan `map()`.
+3. **Miskonsepsi Konteks `this`:** Memanggil method objek yang menggunakan arrow function dan mengharapkan `this` merujuk ke instance objek. Arrow function tidak memiliki binding `this` sendiri melainkan mewarisi leksikal dari scope luarnya.
+
+---
+
+## 7. RANGKUMAN & KUIS MINI (RETRIEVAL PRACTICE)
+
+<MiniQuiz
+  client:load
+  lessonId="J2"
+  title="Kuis Mini J2: Penguasaan Struktur Data & Closure"
+  questions={[
+    {
+      question: "Mengapa variabel di dalam outer function tetap dapat diakses oleh inner function meskipun outer function telah selesai dieksekusi?",
+      conceptId: "J2-Closures",
+      options: [
+        {
+          text: "Karena variabel tersebut dipertahankan di Heap Memory oleh Lexical Environment inner function.",
+          isCorrect: true,
+          explanation: "Tepat! Garbage Collector V8 mendeteksi referensi aktif dari inner function ke lexical scope, sehingga memori di heap tidak dibebaskan."
+        },
+        {
+          text: "Karena JavaScript otomatis menyalin seluruh variabel lokal ke window global.",
+          isCorrect: false,
+          explanation: "Salah. Variabel lokal tidak dipromosikan ke objek global window; itu akan memicu kebocoran memori (memory leak) dan tabrakan nama."
+        },
+        {
+          text: "Karena Call Stack menyimpan frame eksekusi selamanya sampai tab browser ditutup.",
+          isCorrect: false,
+          explanation: "Salah. Call stack frame segera di-pop begitu fungsi luar return. Hanya heap environment yang bertahan."
+        }
+      ]
+    },
+    {
+      question: "Apa perbedaan krusial antara Object.assign / spread syntax {...obj} dengan structuredClone(obj)?",
+      conceptId: "J2-Immutability",
+      options: [
+        {
+          text: "Spread operator hanya membuat shallow copy (tingkat atas), sedangkan structuredClone membuat deep clone independen hingga tingkat bersarang terdalam.",
+          isCorrect: true,
+          explanation: "Benar. Properti bersarang pada shallow copy tetap mengarah ke referensi objek yang sama di heap."
+        },
+        {
+          text: "Spread operator mengubah tipe data objek menjadi Map, sedangkan structuredClone mempertahankan tipe Array.",
+          isCorrect: false,
+          explanation: "Salah. Spread operator mempertahankan objek biasa, bukan mengubahnya menjadi Map."
+        },
+        {
+          text: "structuredClone hanya bekerja pada string dan number primitif.",
+          isCorrect: false,
+          explanation: "Salah. structuredClone dirancang khusus untuk struktur objek dan array komposit yang kompleks."
+        }
+      ]
+    },
+    {
+      question: "Manakah method array ES2023+ yang mengurutkan elemen array secara aman tanpa memutasi array asal (immutable)?",
+      conceptId: "J2-Array-FP",
+      options: [
+        {
+          text: "array.toSorted()",
+          isCorrect: true,
+          explanation: "Tepat! toSorted() diperkenalkan pada spesifikasi ECMAScript untuk mengembalikan salinan terurut tanpa memodifikasi array sumber."
+        },
+        {
+          text: "array.sort()",
+          isCorrect: false,
+          explanation: "Salah. sort() tradisional melakukan mutasi in-place pada array asli."
+        },
+        {
+          text: "array.reverse()",
+          isCorrect: false,
+          explanation: "Salah. reverse() juga memutasi array asli secara in-place."
+        }
+      ]
+    }
+  ]}
+/>
+
+---
+
+## 8. SELAMI LEBIH DALAM (DIVE DEEPER)
+
+- **Spesifikasi Formal TC39:** Telusuri spesifikasi [ECMA-262 §23.1.3](https://tc99.es/ecma262/) mengenai *Ordinary Object Internal Methods* dan *Array Exotic Objects*.
+- **V8 Engine Garbage Collection:** Bagaimana V8 Engine membedakan alokasi generasi muda (*Nursery/Scavenger*) dan generasi tua (*Mark-Sweep-Compact*) pada variabel closure yang tertahan lama di memori heap.
