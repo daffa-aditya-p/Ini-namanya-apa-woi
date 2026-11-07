@@ -7,6 +7,7 @@ import {
   isExerciseCompleted,
   type AwardResult,
 } from '../lib/userStore';
+import { QuickCodeSuggestions } from './QuickCodeSuggestions';
 
 interface CodePlaygroundProps {
   initialCode: string;
@@ -118,7 +119,7 @@ export const CodePlayground: React.FC<CodePlaygroundProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleRun]);
 
-  // Mount CodeMirror 6 in browser
+  // Mount CodeMirror 6 in browser with vibrant oneDark syntax highlighting
   useEffect(() => {
     let isMounted = true;
     async function setupEditor() {
@@ -126,6 +127,7 @@ export const CodePlayground: React.FC<CodePlaygroundProps> = ({
       try {
         const { EditorView, lineNumbers } = await import('@codemirror/view');
         const { EditorState } = await import('@codemirror/state');
+        const { oneDark } = await import('@codemirror/theme-one-dark');
         const langExtension =
           language === 'javascript'
             ? (await import('@codemirror/lang-javascript')).javascript()
@@ -133,26 +135,33 @@ export const CodePlayground: React.FC<CodePlaygroundProps> = ({
 
         if (!isMounted || !editorContainerRef.current) return;
 
-        // Custom Warm Paper theme
-        const theme = EditorView.theme({
+        // Vibrant sandbox theme with sleek Slate / Obsidian aesthetics
+        const customTheme = EditorView.theme({
           '&': {
-            fontSize: '14px',
-            fontFamily: 'var(--font-mono, monospace)',
-            backgroundColor: 'transparent',
-            color: 'var(--text-primary)',
+            fontSize: '13.5px',
+            fontFamily: "var(--font-mono, 'JetBrains Mono', monospace)",
+            backgroundColor: '#18181b',
+            color: '#e4e4e7',
           },
           '.cm-content': {
-            padding: '12px 14px',
-            caretColor: 'var(--accent-terracotta)',
+            padding: '14px 16px',
+            caretColor: '#f43f5e',
           },
           '.cm-line': {
-            lineHeight: '1.6',
+            lineHeight: '1.65',
           },
           '.cm-gutters': {
-            backgroundColor: 'var(--bg-subtle)',
-            color: 'var(--text-muted)',
-            borderRight: '1px solid var(--border-default)',
-            paddingRight: '6px',
+            backgroundColor: '#131316',
+            color: '#71717a',
+            borderRight: '1px solid #27272a',
+            paddingRight: '8px',
+          },
+          '.cm-activeLine': {
+            backgroundColor: '#27272a40',
+          },
+          '.cm-activeLineGutter': {
+            backgroundColor: '#27272a60',
+            color: '#f4f4f5',
           },
           '&.cm-focused': {
             outline: 'none',
@@ -164,7 +173,8 @@ export const CodePlayground: React.FC<CodePlaygroundProps> = ({
           extensions: [
             lineNumbers(),
             langExtension,
-            theme,
+            oneDark,
+            customTheme,
             EditorView.contentAttributes.of({
               'aria-label': title || `Editor ${language === 'javascript' ? 'JavaScript' : 'Python'}`,
             }),
@@ -197,7 +207,29 @@ export const CodePlayground: React.FC<CodePlaygroundProps> = ({
         editorViewRef.current = null;
       }
     };
-  }, [initialCode, language]);
+  }, [initialCode, language, safeInitialCode, title]);
+
+  const handleInsertSnippet = useCallback((snippet: string, cursorOffset?: number) => {
+    if (editorViewRef.current) {
+      const view = editorViewRef.current as {
+        state: { selection: { main: { from: number; to: number } } };
+        dispatch: (tr: {
+          changes: { from: number; to: number; insert: string };
+          selection?: { anchor: number };
+        }) => void;
+        focus: () => void;
+      };
+      const { from, to } = view.state.selection.main;
+      const targetAnchor = from + (cursorOffset !== undefined ? cursorOffset : snippet.length);
+      view.dispatch({
+        changes: { from, to, insert: snippet },
+        selection: { anchor: targetAnchor },
+      });
+      view.focus();
+    } else {
+      setCode((prev) => prev + snippet);
+    }
+  }, []);
 
   const handleReset = useCallback(() => {
     setCode(safeInitialCode.trim());
@@ -214,26 +246,37 @@ export const CodePlayground: React.FC<CodePlaygroundProps> = ({
   }, [safeInitialCode]);
 
   return (
-    <div className="my-6 rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface)] overflow-hidden shadow-xs">
-      {/* Header Toolbar */}
-      <div className="flex items-center justify-between px-4 py-2.5 bg-[var(--bg-subtle)] border-b border-[var(--border-default)]">
-        <div className="flex items-center gap-2">
-          <span className="w-2.5 h-2.5 rounded-full bg-[var(--accent-terracotta)]"></span>
-          <span className="font-mono text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">
-            {title || `Editor ${language === 'javascript' ? 'JavaScript (ES2024)' : 'Python 3.12 (Pyodide)'}`}
-          </span>
+    <div className="my-6 rounded-2xl border-2 border-[#27272a] bg-[#18181b] overflow-hidden shadow-lg transition-all">
+      {/* Sleek IDE Header Bar */}
+      <div className="flex flex-wrap items-center justify-between px-4 py-2.5 bg-[#121215] border-b border-[#27272a] gap-2">
+        <div className="flex items-center gap-3">
+          {/* macOS window control dots */}
+          <div className="flex items-center gap-1.5" aria-hidden="true">
+            <span className="w-3 h-3 rounded-full bg-[#ef4444] opacity-80 hover:opacity-100 transition-opacity"></span>
+            <span className="w-3 h-3 rounded-full bg-[#f59e0b] opacity-80 hover:opacity-100 transition-opacity"></span>
+            <span className="w-3 h-3 rounded-full bg-[#10b981] opacity-80 hover:opacity-100 transition-opacity"></span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-terracotta)]"></span>
+            <span className="font-mono text-xs font-semibold tracking-wider text-[#d4d4d8]">
+              {title || `Sandbox ${language === 'javascript' ? 'JavaScript (ES2024)' : 'Python 3.12 (Pyodide WASM)'}`}
+            </span>
+          </div>
         </div>
+
         <div className="flex items-center gap-2">
           {isCompletedInitially && (
-            <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-mono bg-[var(--state-success)]/15 text-[var(--state-success)] border border-[var(--state-success)]/30">
+            <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-mono bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-semibold">
               ✓ Latihan Selesai
             </span>
           )}
           <button
             type="button"
             onClick={handleReset}
-            className="px-2.5 py-1 text-xs font-mono rounded border border-[var(--border-default)] bg-[var(--bg-surface)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-focused)] transition-colors cursor-pointer"
+            className="px-2.5 py-1 text-xs font-mono rounded-lg border border-[#3f3f46] bg-[#27272a] text-[#a1a1aa] hover:text-[#f4f4f5] hover:border-[#52525b] transition-colors cursor-pointer"
             aria-label="Kembalikan kode ke awal"
+            title="Reset kode awal"
           >
             Reset
           </button>
@@ -241,26 +284,31 @@ export const CodePlayground: React.FC<CodePlaygroundProps> = ({
             type="button"
             onClick={handleRun}
             disabled={isRunning}
-            className="px-3 py-1 text-xs font-mono font-semibold rounded bg-[var(--accent-terracotta)] text-white hover:opacity-90 active:scale-98 transition-all disabled:opacity-50 cursor-pointer flex items-center gap-1.5 shadow-2xs"
+            className="px-3.5 py-1 text-xs font-mono font-bold rounded-lg bg-[var(--accent-terracotta)] text-white hover:opacity-95 active:scale-95 transition-all disabled:opacity-50 cursor-pointer flex items-center gap-1.5 shadow-xs"
             aria-label="Jalankan kode"
+            title="Jalankan kode (Ctrl + Enter)"
           >
             {isRunning ? (
               <>
-                <span className="w-2 h-2 rounded-full border-2 border-white border-t-transparent animate-spin"></span>
+                <span className="w-2.5 h-2.5 rounded-full border-2 border-white border-t-transparent animate-spin"></span>
                 <span>Mengeksekusi...</span>
               </>
             ) : (
               <>
                 <span>▶</span>
                 <span>Jalankan</span>
+                <span className="hidden sm:inline text-[10px] opacity-75">(Ctrl+⏎)</span>
               </>
             )}
           </button>
         </div>
       </div>
 
-      {/* Code Editor: CodeMirror 6 with Textarea SSR/Fallback */}
-      <div className="relative bg-[var(--bg-canvas)] min-h-[120px]">
+      {/* Quick Code Suggestions Virtual Toolbar (Mobile & Desktop helper) */}
+      <QuickCodeSuggestions language={language} onInsert={handleInsertSnippet} />
+
+      {/* Code Editor: CodeMirror 6 with vibrant oneDark & Textarea Fallback */}
+      <div className="relative bg-[#18181b] min-h-[140px]">
         <div
           ref={editorContainerRef}
           className={cmReady ? 'block' : 'hidden'}
@@ -271,7 +319,7 @@ export const CodePlayground: React.FC<CodePlaygroundProps> = ({
             value={code}
             onChange={(e) => setCode(e.target.value)}
             spellCheck={false}
-            className="w-full font-mono text-sm p-4 bg-[var(--bg-canvas)] text-[var(--text-primary)] border-none outline-none resize-y min-h-[120px] leading-relaxed focus:ring-1 focus:ring-[var(--border-focused)]"
+            className="w-full font-mono text-sm p-4 bg-[#18181b] text-[#f4f4f5] border-none outline-none resize-y min-h-[140px] leading-relaxed focus:ring-1 focus:ring-zinc-700"
             aria-label="Editor Kode"
           />
         )}
@@ -279,21 +327,25 @@ export const CodePlayground: React.FC<CodePlaygroundProps> = ({
 
       {/* Output Console / Terminal */}
       {output && (
-        <div className="border-t border-[var(--border-default)] bg-[var(--bg-canvas)] p-4 text-xs font-mono">
-          <div className="flex items-center justify-between mb-2 pb-1 border-b border-[var(--border-default)] text-[var(--text-muted)]">
-            <span className="flex items-center gap-1.5 font-semibold">
+        <div className="border-t border-[#27272a] bg-[#0f0f12] p-4 text-xs font-mono">
+          <div className="flex items-center justify-between mb-2.5 pb-2 border-b border-[#27272a] text-[#a1a1aa]">
+            <span className="flex items-center gap-2 font-semibold">
               <span
-                className={`w-2 h-2 rounded-full ${output.success ? 'bg-[var(--state-success)]' : 'bg-[var(--state-danger)]'}`}
+                className={`w-2 h-2 rounded-full ${output.success ? 'bg-emerald-400 shadow-[0_0_8px_#34d399]' : 'bg-rose-500 shadow-[0_0_8px_#f43f5e]'}`}
               ></span>
-              {output.success ? 'Eksekusi Berhasil' : 'Galat (Error)'}
+              <span className={output.success ? 'text-emerald-400' : 'text-rose-400'}>
+                {output.success ? 'Eksekusi Berhasil' : 'Galat (Runtime Error)'}
+              </span>
             </span>
-            <span>{Math.round(output.executionTimeMs)} ms</span>
+            <span className="px-2 py-0.5 rounded bg-[#1c1c22] border border-[#2d2d38] text-[11px] text-[#a1a1aa]">
+              ⚡ {Math.round(output.executionTimeMs)} ms
+            </span>
           </div>
 
           {output.stdout.length > 0 && (
             <div className="space-y-1 mb-2">
               {output.stdout.map((line, idx) => (
-                <div key={idx} className="text-[var(--text-primary)] whitespace-pre-wrap">
+                <div key={idx} className="text-[#f4f4f5] whitespace-pre-wrap leading-relaxed">
                   {line}
                 </div>
               ))}
@@ -301,7 +353,7 @@ export const CodePlayground: React.FC<CodePlaygroundProps> = ({
           )}
 
           {output.stderr.length > 0 && (
-            <div className="space-y-1 text-[var(--state-danger)] whitespace-pre-wrap">
+            <div className="space-y-1 text-rose-400 whitespace-pre-wrap leading-relaxed">
               {output.stderr.map((line, idx) => (
                 <div key={idx}>{line}</div>
               ))}
@@ -310,20 +362,20 @@ export const CodePlayground: React.FC<CodePlaygroundProps> = ({
 
           {/* Gamification & assertion feedback */}
           {expectedOutput && awardResult && (
-            <div className="mt-3 p-3 rounded-lg border border-[var(--state-success)]/40 bg-[var(--state-success)]/10 text-xs">
-              <div className="flex items-center gap-2 font-bold text-[var(--state-success)] font-mono">
+            <div className="mt-3 p-3.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-xs">
+              <div className="flex items-center gap-2 font-bold text-emerald-400 font-mono">
                 <span>✓ Output Valid & Sesuai Ekspektasi!</span>
                 {awardResult.awarded && (
-                  <span className="px-2 py-0.5 rounded-full bg-[var(--state-success)] text-white text-[10px] font-bold">
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-500 text-white text-[10px] font-bold">
                     +{awardResult.xpEarned} XP
                   </span>
                 )}
               </div>
-              <p className="text-[var(--text-secondary)] mt-1 font-sans">
+              <p className="text-[#d4d4d8] mt-1.5 font-sans leading-relaxed">
                 {awardResult.message}{' '}
                 {awardResult.awarded && awardResult.user && (
                   <>
-                    Total XP: <strong className="font-mono text-[var(--text-primary)]">{awardResult.user.xp} XP</strong> • Waktu Belajar: <strong className="font-mono text-[var(--text-primary)]">{awardResult.user.hoursSpent} jam</strong>
+                    Total XP: <strong className="font-mono text-white">{awardResult.user.xp} XP</strong> • Waktu Belajar: <strong className="font-mono text-white">{awardResult.user.hoursSpent} jam</strong>
                   </>
                 )}
                 {!awardResult.awarded && !awardResult.alreadyCompleted && (
@@ -343,8 +395,9 @@ export const CodePlayground: React.FC<CodePlaygroundProps> = ({
           )}
 
           {expectedOutput && !awardResult && output.success && (
-            <div className="mt-2 pt-2 border-t border-[var(--border-default)] text-[var(--text-muted)] text-[11px] font-mono">
-              Output belum sesuai dengan target ekspektasi latihan. Silakan tinjau kembali instruksi.
+            <div className="mt-2 pt-2 border-t border-[#27272a] text-amber-400/90 text-[11px] font-mono flex items-center gap-1.5">
+              <span>⚠️</span>
+              <span>Output belum sesuai dengan target ekspektasi latihan. Silakan tinjau kembali instruksi.</span>
             </div>
           )}
         </div>

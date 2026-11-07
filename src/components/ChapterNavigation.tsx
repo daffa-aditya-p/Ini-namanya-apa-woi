@@ -218,6 +218,15 @@ export const ChapterNavigation: React.FC<ChapterNavigationProps> = ({
                         >
                           ★ Kuis Evaluasi Bab {chap.chapterNumber}
                         </a>
+                        {chap.chapterId === 'python-bab5' && (
+                          <a
+                            href="#ujian-akhir-modul"
+                            onClick={() => setIsMobileOpen(false)}
+                            className="block px-2 py-1.5 rounded text-[11px] font-mono font-bold text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 text-decoration-none border border-amber-500/20 bg-amber-500/5 mt-1"
+                          >
+                            🏆 Ujian Akhir Komprehensif (Bab 1–5)
+                          </a>
+                        )}
                       </div>
                     )}
                   </div>
@@ -376,6 +385,16 @@ export const ChapterNavigation: React.FC<ChapterNavigationProps> = ({
                       <TrophyIcon className="w-3.5 h-3.5 shrink-0" />
                       <span>Kuis Evaluasi Bab {chap.chapterNumber}</span>
                     </a>
+
+                    {chap.chapterId === 'python-bab5' && (
+                      <a
+                        href="#ujian-akhir-modul"
+                        className="flex items-center gap-1.5 px-2.5 py-2 mt-1.5 rounded-lg text-xs font-mono font-bold text-amber-700 dark:text-amber-300 hover:bg-amber-500/15 transition-colors text-decoration-none border border-amber-500/40 bg-amber-500/10 shadow-2xs"
+                      >
+                        <TrophyIcon className="w-3.5 h-3.5 shrink-0 text-amber-500" />
+                        <span>Ujian Akhir Final (Bab 1–5)</span>
+                      </a>
+                    )}
                   </div>
                 )}
               </div>

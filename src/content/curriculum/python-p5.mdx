@@ -33,6 +33,7 @@ import { FadedExample } from '../../components/FadedExample';
 import { SocraticTutorPanel } from '../../components/SocraticTutorPanel';
 import { MiniQuiz } from '../../components/MiniQuiz';
 import { ChapterQuiz } from '../../components/ChapterQuiz';
+import { FinalExam } from '../../components/FinalExam';
 
 # Bab 5: Pemrograman Berorientasi Objek
 
@@ -623,9 +624,25 @@ Selamat! Kamu telah menguasai seluruh fondasi dan 3 Pilar OOP di kurikulum Pytho
   title="Kuis Evaluasi Bab 5: Pemrograman Berorientasi Objek"
   passingScore={80}
   questionsPerAttempt={5}
-  nextChapterUrl="/dashboard"
-  nextChapterTitle="Meja Kerja Dashboard"
+  nextChapterUrl="#ujian-akhir-modul"
+  nextChapterTitle="Ujian Akhir Komprehensif"
 />
+
+</div>
+
+---
+
+<div id="ujian-akhir-modul" className="scroll-mt-24">
+
+## 🏆 Ujian Akhir Komprehensif Python (Bab 1–5)
+
+Sebagai puncak dari seluruh perjalanan kurikulum Python di **belajar.in**, saatnya kamu menguji kemampuanmu dalam **Ujian Akhir Komprehensif**.
+
+Ujian ini merangkum seluruh materi dari **Bab 1 hingga Bab 5** dengan durasi pengerjaan waktu nyata **25 menit**, sistem pengawasan integritas anti-curang (*anti-cheat proctoring*), serta perpaduan soal konseptual dan tantangan **Live Coding di Pyodide WASM**.
+
+Luluskan ujian ini dengan skor minimal **80%** untuk memperoleh **Sertifikat Kelulusan Resmi belajar.in**!
+
+<FinalExam client:load durationMinutes={25} passingScore={80} />
 
 </div>
 

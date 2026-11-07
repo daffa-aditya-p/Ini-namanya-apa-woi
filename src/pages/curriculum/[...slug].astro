@@ -127,6 +127,15 @@ if (isPythonTrack && currentChapter) {
                     <span>★ Kuis Evaluasi Bab (Soal Acak & Standar Lulus)</span>
                     <span class="text-[10px]">↓</span>
                   </a>
+                  {currentChapter.chapterId === 'python-bab5' && (
+                    <a
+                      href="#ujian-akhir-modul"
+                      class="p-2 rounded-lg bg-amber-500/15 border border-amber-500/40 text-amber-800 dark:text-amber-300 font-bold transition-colors flex items-center justify-between text-decoration-none col-span-1 sm:col-span-2 shadow-2xs"
+                    >
+                      <span>🏆 Ujian Akhir Komprehensif (Final Exam Bab 1–5 • Timed 25m)</span>
+                      <span class="text-[10px]">↓</span>
+                    </a>
+                  )}
                 </div>
               </div>
             )}

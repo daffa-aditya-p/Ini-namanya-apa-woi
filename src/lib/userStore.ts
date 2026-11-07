@@ -359,6 +359,68 @@ export function awardChapterQuizCompletion(
 }
 
 /**
+ * Awards XP, coins, study hours, and graduation certificate upon passing the Comprehensive Final Exam (>=80%).
+ */
+export function awardFinalExamCompletion(
+  examId: string = 'exam_python_final',
+  xpAmount: number = 150,
+  coinsAmount: number = 50,
+  hoursAmount: number = 2
+): ChapterAwardResult {
+  const user = getSavedSession();
+  const certId = 'cert_python_graduate';
+  if (!user) {
+    saveGuestCompletion(examId);
+    saveGuestCompletion(certId);
+    return {
+      awarded: false,
+      xpEarned: 0,
+      coinsEarned: 0,
+      user: null,
+      alreadyCompleted: false,
+      message: 'Masuk atau daftar untuk menyimpan kelulusan Ujian Akhir & mengklaim Sertifikat Kelulusan Resmi!',
+    };
+  }
+
+  const completed = user.completedExercises || [];
+  if (completed.includes(examId)) {
+    return {
+      awarded: false,
+      xpEarned: 0,
+      coinsEarned: 0,
+      user,
+      alreadyCompleted: true,
+      message: 'Ujian Akhir ini sudah diselesaikan sebelumnya. Gelar kelulusan telah tercatat.',
+    };
+  }
+
+  const newCompleted = [...completed, examId];
+  if (!newCompleted.includes(certId)) {
+    newCompleted.push(certId);
+  }
+
+  const updatedUser: UserProfile = {
+    ...user,
+    xp: user.xp + xpAmount,
+    coins: (user.coins || 0) + coinsAmount,
+    hoursSpent: (user.hoursSpent || 0) + hoursAmount,
+    lastActiveDate: new Date().toISOString().split('T')[0],
+    completedExercises: newCompleted,
+  };
+
+  saveSession(updatedUser);
+
+  return {
+    awarded: true,
+    xpEarned: xpAmount,
+    coinsEarned: coinsAmount,
+    user: updatedUser,
+    alreadyCompleted: false,
+    message: `🎓 SELAMAT! Kamu Resmi Lulus Ujian Akhir Komprehensif Python! Mendapatkan +${xpAmount} XP, +${coinsAmount} Koin, dan Sertifikat Kelulusan Resmi belajar.in!`,
+  };
+}
+
+/**
  * Client-side mock registration and login service with registry persistence.
  */
 export const LocalAuthManager = {

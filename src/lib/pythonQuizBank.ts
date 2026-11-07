@@ -13,6 +13,25 @@ export interface BankQuestion {
   }[];
 }
 
+export interface LiveCodingChallenge {
+  id: string;
+  conceptId: string;
+  subBab: string;
+  title: string;
+  question: string;
+  starterCode: string;
+  expectedOutput: string;
+  testCases?: {
+    description: string;
+    expectedStdout?: string;
+  }[];
+  hint?: string;
+}
+
+export type MixedQuizItem =
+  | { kind: 'multiple-choice'; data: BankQuestion }
+  | { kind: 'live-coding'; data: LiveCodingChallenge };
+
 export interface ChapterData {
   chapterId: string;
   chapterNumber: number;
@@ -28,6 +47,19 @@ export interface ChapterData {
     description: string;
   }[];
   questions: BankQuestion[];
+  codingChallenges?: LiveCodingChallenge[];
+}
+
+export interface FinalExamData {
+  examId: string;
+  title: string;
+  description: string;
+  durationMinutes: number;
+  passingScore: number;
+  xpReward: number;
+  coinsReward: number;
+  questions: BankQuestion[];
+  codingChallenges: LiveCodingChallenge[];
 }
 
 export const PYTHON_CHAPTERS: ChapterData[] = [
@@ -352,6 +384,56 @@ export const PYTHON_CHAPTERS: ChapterData[] = [
             explanation: 'print() menerima argumen posisi variabel (*objects) tanpa batas.',
           },
         ],
+      },
+    ],
+    codingChallenges: [
+      {
+        id: 'p1-c1',
+        conceptId: 'python.print.sep_end',
+        subBab: '1.1',
+        title: 'Cetak Teks dengan sep & end',
+        question: 'Gunakan fungsi print() dengan argumen "Halo", "Python", "3.12" serta parameter sep="-" dan end="!\\n" untuk menghasilkan output: Halo-Python-3.12!',
+        starterCode: '# Tulis kode print dengan parameter sep dan end\nprint("Halo", "Python", "3.12", sep="-", end="!\\n")',
+        expectedOutput: 'Halo-Python-3.12!',
+        testCases: [
+          {
+            description: 'Mencetak Halo-Python-3.12! dengan tanda pemisah strip',
+            expectedStdout: 'Halo-Python-3.12!',
+          },
+        ],
+        hint: 'Gunakan print("Halo", "Python", "3.12", sep="-", end="!\\n")',
+      },
+      {
+        id: 'p1-c2',
+        conceptId: 'python.fstrings.formatting',
+        subBab: '1.4',
+        title: 'Aritmatika & Format String Modern',
+        question: 'Diberikan panjang = 8 dan lebar = 5. Hitung luasnya dan cetak menggunakan f-string dengan format persis: Luas persegi panjang: 40',
+        starterCode: 'panjang = 8\nlebar = 5\n# Hitung luas dan cetak format f-string\nluas = panjang * lebar\nprint(f"Luas persegi panjang: {luas}")',
+        expectedOutput: 'Luas persegi panjang: 40',
+        testCases: [
+          {
+            description: 'Mencetak Luas persegi panjang: 40',
+            expectedStdout: 'Luas persegi panjang: 40',
+          },
+        ],
+        hint: 'Gunakan print(f"Luas persegi panjang: {panjang * lebar}")',
+      },
+      {
+        id: 'p1-c3',
+        conceptId: 'python.operators.precedence',
+        subBab: '1.3',
+        title: 'Konversi Suhu Celsius ke Fahrenheit',
+        question: 'Diberikan celsius = 30. Hitung fahrenheit = (celsius * 9/5) + 32 lalu cetak: Suhu Fahrenheit: 86.0',
+        starterCode: 'celsius = 30\n# Konversi celsius ke fahrenheit\nfahrenheit = (celsius * 9 / 5) + 32\nprint(f"Suhu Fahrenheit: {fahrenheit}")',
+        expectedOutput: 'Suhu Fahrenheit: 86.0',
+        testCases: [
+          {
+            description: 'Mencetak Suhu Fahrenheit: 86.0',
+            expectedStdout: 'Suhu Fahrenheit: 86.0',
+          },
+        ],
+        hint: 'Gunakan rumus (celsius * 9 / 5) + 32',
       },
     ],
   },
@@ -692,6 +774,56 @@ print(hasil)`,
         ],
       },
     ],
+    codingChallenges: [
+      {
+        id: 'p2-c1',
+        conceptId: 'python.control.if_elif',
+        subBab: '2.1',
+        title: 'Percabangan Evaluasi Nilai if-elif-else',
+        question: 'Diberikan skor = 85. Tulis blok percabangan: jika skor >= 90 cetak "A", jika skor >= 80 cetak "B", jika skor >= 70 cetak "C", selain itu cetak "D".',
+        starterCode: 'skor = 85\n# Tulis percabangan logika\nif skor >= 90:\n    print("A")\nelif skor >= 80:\n    print("B")\nelif skor >= 70:\n    print("C")\nelse:\n    print("D")',
+        expectedOutput: 'B',
+        testCases: [
+          {
+            description: 'Mencetak B untuk skor 85',
+            expectedStdout: 'B',
+          },
+        ],
+        hint: 'Gunakan elif skor >= 80: print("B")',
+      },
+      {
+        id: 'p2-c2',
+        conceptId: 'python.control.for_range_step',
+        subBab: '2.2',
+        title: 'Perulangan Rentang Angka Kelipatan Tiga',
+        question: 'Gunakan loop for dan range() dengan step 3 untuk mencetak angka kelipatan 3 dari 3 sampai 15 dipisahkan spasi (3 6 9 12 15).',
+        starterCode: '# Cetak rentang angka kelipatan 3\nfor i in range(3, 16, 3):\n    print(i, end=" ")\nprint()',
+        expectedOutput: '3 6 9 12 15',
+        testCases: [
+          {
+            description: 'Mencetak 3 6 9 12 15',
+            expectedStdout: '3 6 9 12 15',
+          },
+        ],
+        hint: 'Gunakan range(3, 16, 3) dan end=" "',
+      },
+      {
+        id: 'p2-c3',
+        conceptId: 'python.control.while_break',
+        subBab: '2.3',
+        title: 'Akumulasi Penjumlahan dengan Loop while',
+        question: 'Gunakan perulangan while untuk menjumlahkan angka dari 1 hingga 5 ke dalam variabel total. Cetak f-string: Total: 15',
+        starterCode: 'n = 1\ntotal = 0\n# Loop while untuk akumulasi\nwhile n <= 5:\n    total += n\n    n += 1\nprint(f"Total: {total}")',
+        expectedOutput: 'Total: 15',
+        testCases: [
+          {
+            description: 'Mencetak Total: 15',
+            expectedStdout: 'Total: 15',
+          },
+        ],
+        hint: 'Pastikan n bertambah n += 1 agar loop berhenti saat n > 5',
+      },
+    ],
   },
   {
     chapterId: 'python-bab3',
@@ -1014,6 +1146,56 @@ gabung = profil | kontak`,
             explanation: 'entries() adalah metode JavaScript Object/Map, bukan Python.',
           },
         ],
+      },
+    ],
+    codingChallenges: [
+      {
+        id: 'p3-c1',
+        conceptId: 'python.collections.list_slicing',
+        subBab: '3.1',
+        title: 'Pembalik Urutan List dengan Slicing [::-1]',
+        question: 'Diberikan list huruf = ["a", "b", "c", "d", "e"]. Buat list terbalik menggunakan slicing step -1 lalu cetak hasilnya.',
+        starterCode: 'huruf = ["a", "b", "c", "d", "e"]\n# Balikkan urutan list\nterbalik = huruf[::-1]\nprint(terbalik)',
+        expectedOutput: "['e', 'd', 'c', 'b', 'a']",
+        testCases: [
+          {
+            description: "Mencetak list terbalik ['e', 'd', 'c', 'b', 'a']",
+            expectedStdout: "['e', 'd', 'c', 'b', 'a']",
+          },
+        ],
+        hint: 'Gunakan slicing dengan langkah negatif: huruf[::-1]',
+      },
+      {
+        id: 'p3-c2',
+        conceptId: 'python.collections.dict_merge',
+        subBab: '3.3',
+        title: 'Penggabungan Dictionary Modern (|)',
+        question: 'Diberikan profil = {"nama": "Ahmad"} dan nilai = {"skor": 95}. Gabungkan dengan operator | dan cetak dictionary hasilnya.',
+        starterCode: 'profil = {"nama": "Ahmad"}\nnilai = {"skor": 95}\n# Gabungkan dengan operator |\nhasil = profil | nilai\nprint(hasil)',
+        expectedOutput: "{'nama': 'Ahmad', 'skor': 95}",
+        testCases: [
+          {
+            description: 'Mencetak dictionary gabungan',
+            expectedStdout: "{'nama': 'Ahmad', 'skor': 95}",
+          },
+        ],
+        hint: 'Operator pipe (|) menggabungkan dua dictionary sejak Python 3.9+',
+      },
+      {
+        id: 'p3-c3',
+        conceptId: 'python.collections.set_operations',
+        subBab: '3.4',
+        title: 'Operasi Irisan Himpunan (Set Intersection &)',
+        question: 'Diberikan set_a = {1, 2, 3, 4} dan set_b = {3, 4, 5, 6}. Ambil irisan keduanya menggunakan operator &, ubah ke sorted list, dan cetak.',
+        starterCode: 'set_a = {1, 2, 3, 4}\nset_b = {3, 4, 5, 6}\n# Dapatkan irisan dan cetak sorted list\nirisan = sorted(list(set_a & set_b))\nprint(irisan)',
+        expectedOutput: '[3, 4]',
+        testCases: [
+          {
+            description: 'Mencetak irisan [3, 4]',
+            expectedStdout: '[3, 4]',
+          },
+        ],
+        hint: 'Gunakan operator ampersand (&) untuk mencari elemen yang ada di kedua set',
       },
     ],
   },
@@ -1341,6 +1523,56 @@ print([p[0] for p in produk_urut])`,
             explanation: 'List comprehension mengambil p[0] (nama barang), bukan angkanya.',
           },
         ],
+      },
+    ],
+    codingChallenges: [
+      {
+        id: 'p4-c1',
+        conceptId: 'python.functions.return_values',
+        subBab: '4.1',
+        title: 'Fungsi Modular Menghitung Kuadrat',
+        question: 'Definisikan fungsi kuadrat(n) yang mengembalikan hasil n ** 2. Panggil fungsi dengan print(kuadrat(7)).',
+        starterCode: '# Buat fungsi kuadrat\ndef kuadrat(n):\n    return n ** 2\n\nprint(kuadrat(7))',
+        expectedOutput: '49',
+        testCases: [
+          {
+            description: 'kuadrat(7) menghasilkan 49',
+            expectedStdout: '49',
+          },
+        ],
+        hint: 'Gunakan def kuadrat(n): return n ** 2',
+      },
+      {
+        id: 'p4-c2',
+        conceptId: 'python.functions.default_params',
+        subBab: '4.1',
+        title: 'Fungsi dengan Parameter Default',
+        question: 'Definisikan fungsi hitung_diskon(harga, diskon=10) yang mengembalikan int(harga * (1 - diskon / 100)). Panggil print(hitung_diskon(100000)).',
+        starterCode: '# Definisikan fungsi dengan default parameter diskon\ndef hitung_diskon(harga, diskon=10):\n    return int(harga * (1 - diskon / 100))\n\nprint(hitung_diskon(100000))',
+        expectedOutput: '90000',
+        testCases: [
+          {
+            description: 'hitung_diskon(100000) menghasilkan 90000',
+            expectedStdout: '90000',
+          },
+        ],
+        hint: 'Parameter bawaan ditulis setelah nama parameter, misal diskon=10',
+      },
+      {
+        id: 'p4-c3',
+        conceptId: 'python.comprehensions.filtering',
+        subBab: '4.3',
+        title: 'List Comprehension Kuadrat Ganjil',
+        question: 'Diberikan angka = [1, 2, 3, 4, 5]. Buatlah list baru kuadrat angka ganjil menggunakan comprehension [x**2 for x in angka if x % 2 != 0] dan cetak hasilnya.',
+        starterCode: 'angka = [1, 2, 3, 4, 5]\n# Buat list comprehension untuk angka ganjil\nhasil = [x ** 2 for x in angka if x % 2 != 0]\nprint(hasil)',
+        expectedOutput: '[1, 9, 25]',
+        testCases: [
+          {
+            description: 'Mencetak list kuadrat ganjil [1, 9, 25]',
+            expectedStdout: '[1, 9, 25]',
+          },
+        ],
+        hint: 'Filter angka ganjil dengan klausa if x % 2 != 0',
       },
     ],
   },
@@ -1783,8 +2015,428 @@ print([p[0] for p in produk_urut])`,
         ],
       },
     ],
+    codingChallenges: [
+      {
+        id: 'p5-c1',
+        conceptId: 'python.oop.classes_instances',
+        subBab: '5.1',
+        title: 'Perancangan Class Sederhana & Method Instance',
+        question: 'Buatlah class Kucing dengan __init__(self, nama) dan method suara(self) yang mengembalikan f"{self.nama} bersuara: Meong!". Buat objek k = Kucing("Oyen") dan cetak k.suara().',
+        starterCode: 'class Kucing:\n    def __init__(self, nama):\n        self.nama = nama\n\n    def suara(self):\n        return f"{self.nama} bersuara: Meong!"\n\nk = Kucing("Oyen")\nprint(k.suara())',
+        expectedOutput: 'Oyen bersuara: Meong!',
+        testCases: [
+          {
+            description: 'Memanggil k.suara() menghasilkan Oyen bersuara: Meong!',
+            expectedStdout: 'Oyen bersuara: Meong!',
+          },
+        ],
+        hint: 'Definisikan method di dalam class dengan parameter self pertama kali',
+      },
+      {
+        id: 'p5-c2',
+        conceptId: 'python.oop.encapsulation_property',
+        subBab: '5.2',
+        title: 'Enkapsulasi Data dengan Dekorator @property',
+        question: 'Buatlah class Dompet dengan self._saldo = saldo di __init__. Sediakan getter @property def saldo(self): return self._saldo. Buat d = Dompet(50000) dan cetak d.saldo.',
+        starterCode: 'class Dompet:\n    def __init__(self, saldo):\n        self._saldo = saldo\n\n    @property\n    def saldo(self):\n        return self._saldo\n\nd = Dompet(50000)\nprint(d.saldo)',
+        expectedOutput: '50000',
+        testCases: [
+          {
+            description: 'Mengakses property d.saldo menghasilkan 50000',
+            expectedStdout: '50000',
+          },
+        ],
+        hint: 'Gunakan dekorator @property di atas method getter',
+      },
+      {
+        id: 'p5-c3',
+        conceptId: 'python.oop.super_inheritance',
+        subBab: '5.3',
+        title: 'Pewarisan Hierarkis & Delegasi super()',
+        question: 'Buat class Kendaraan dengan __init__(self, merk), dan subclass Mobil(Kendaraan) dengan __init__(self, merk, roda=4) yang memanggil super().__init__(merk). Cetak f"{m.merk} - {m.roda} roda" untuk Mobil("Toyota").',
+        starterCode: 'class Kendaraan:\n    def __init__(self, merk):\n        self.merk = merk\n\nclass Mobil(Kendaraan):\n    def __init__(self, merk, roda=4):\n        super().__init__(merk)\n        self.roda = roda\n\nm = Mobil("Toyota")\nprint(f"{m.merk} - {m.roda} roda")',
+        expectedOutput: 'Toyota - 4 roda',
+        testCases: [
+          {
+            description: 'Mencetak Toyota - 4 roda',
+            expectedStdout: 'Toyota - 4 roda',
+          },
+        ],
+        hint: 'Panggil super().__init__(merk) di dalam konstruktor class anak',
+      },
+    ],
   },
 ];
+
+export const PYTHON_FINAL_EXAM: FinalExamData = {
+  examId: 'exam_python_final',
+  title: 'Ujian Akhir Komprehensif Python (Bab 1–5)',
+  description: 'Ujian final terintegrasi berstandar industri dengan pengawasan anti-curang, batas waktu pengerjaan 25 menit, dan perpaduan soal konseptual serta tantangan live coding Pyodide WASM.',
+  durationMinutes: 25,
+  passingScore: 80,
+  xpReward: 150,
+  coinsReward: 50,
+  questions: [
+    {
+      id: 'fe-q1',
+      conceptId: 'python.basics.binding',
+      subBab: '1.2',
+      question: 'Di CPython, apa arti teknis saat variabel x mengikat nilai baru x = "belajar" setelah sebelumnya x = 10?',
+      options: [
+        {
+          text: 'Nama x diarahkan merujuk objek PyObject string baru di heap tanpa mengubah objek integer 10 di memori.',
+          isCorrect: true,
+          explanation: 'Variabel di Python adalah name binding dinamis (pointer label), bukan alokasi memori statis.',
+        },
+        {
+          text: 'Memori integer 10 langsung ditimpa menjadi string.',
+          isCorrect: false,
+          explanation: 'Integer di Python immutable, nilainya tidak dapat ditimpa langsung.',
+        },
+        {
+          text: 'Program menghasilkan TypeError saat compile time.',
+          isCorrect: false,
+          explanation: 'Python adalah bahasa dinamis yang mengizinkan reassignment tipe berbeda.',
+        },
+        {
+          text: 'Nilai string otomatis di-cast menjadi angka numerik.',
+          isCorrect: false,
+          explanation: 'Python tidak meng-cast teks secara implisit menjadi angka.',
+        },
+      ],
+    },
+    {
+      id: 'fe-q2',
+      conceptId: 'python.operators.precedence',
+      subBab: '1.3',
+      question: 'Berapakah output dari evaluasi aritmatika 10 + 2 * 3 ** 2 // 2 di Python 3?',
+      options: [
+        {
+          text: '19',
+          isCorrect: true,
+          explanation: 'Urutan operator: eksponen 3**2=9, perkalian 2*9=18, floor division 18//2=9, penjumlahan 10+9=19.',
+        },
+        {
+          text: '54',
+          isCorrect: false,
+          explanation: 'Penjumlahan 10+2 tidak dievaluasi lebih dulu.',
+        },
+        {
+          text: '19.0',
+          isCorrect: false,
+          explanation: 'Floor division // antar integer menghasilkan tipe int (9), bukan float.',
+        },
+        {
+          text: '28',
+          isCorrect: false,
+          explanation: 'Perhatikan presisi operator eksponen lebih tinggi daripada perkalian.',
+        },
+      ],
+    },
+    {
+      id: 'fe-q3',
+      conceptId: 'python.control.shortcircuit',
+      subBab: '2.1',
+      question: 'Bagaimana perilaku evaluasi ekspresi kondisi True or fungsi_berbahaya() di Python?',
+      options: [
+        {
+          text: 'fungsi_berbahaya() tidak akan pernah dieksekusi karena aturan short-circuit evaluation pada operator or.',
+          isCorrect: true,
+          explanation: 'Operator or langsung mengembalikan nilai True tanpa memeriksa operan kedua jika operan pertama sudah Truthy.',
+        },
+        {
+          text: 'Kedua sisi ekspresi selalu dievaluasi bersamaan.',
+          isCorrect: false,
+          explanation: 'Python tidak mengevaluasi sisi kanan jika sisi kiri or sudah cukup menentukan hasil.',
+        },
+        {
+          text: 'Program langsung crash dan memunculkan galat sintaks.',
+          isCorrect: false,
+          explanation: 'Sintaks ekspresi logika ini valid.',
+        },
+        {
+          text: 'Hanya fungsi_berbahaya() yang dieksekusi.',
+          isCorrect: false,
+          explanation: 'Evaluasi berjalan dari kiri ke kanan.',
+        },
+      ],
+    },
+    {
+      id: 'fe-q4',
+      conceptId: 'python.control.range_slice',
+      subBab: '2.2',
+      question: 'Berapa banyak iterasi yang dijalankan oleh loop for i in range(10, 2, -2): dan apa nilai i terakhir yang dicetak?',
+      options: [
+        {
+          text: '4 kali iterasi, mencetak: 10, 8, 6, 4',
+          isCorrect: true,
+          explanation: 'Start 10, step -2: 10, 8, 6, 4. Nilai berikutnya 2 tidak diikutsertakan karena batas stop bersifat eksklusif.',
+        },
+        {
+          text: '5 kali iterasi, mencetak: 10, 8, 6, 4, 2',
+          isCorrect: false,
+          explanation: 'Batas akhir (stop=2) tidak diikutsertakan.',
+        },
+        {
+          text: '0 kali karena start lebih besar dari stop',
+          isCorrect: false,
+          explanation: 'Karena step bernilai negatif (-2), loop dapat bergerak mundur.',
+        },
+        {
+          text: '8 kali iterasi mundur',
+          isCorrect: false,
+          explanation: 'Langkah step -2 melompati angka ganjil.',
+        },
+      ],
+    },
+    {
+      id: 'fe-q5',
+      conceptId: 'python.collections.dict_hashing',
+      subBab: '3.3',
+      question: 'Mengapa list tidak dapat digunakan sebagai kunci (key) dalam dictionary Python?',
+      options: [
+        {
+          text: 'Karena list bersifat mutable sehingga tidak memiliki nilai hash yang konstan (unhashable type: list).',
+          isCorrect: true,
+          explanation: 'Dictionary mengandalkan tabel hash yang mensyaratkan kunci bernilai hash tetap (__hash__) dan immutable (seperti int, str, tuple).',
+        },
+        {
+          text: 'Karena list hanya boleh menyimpan angka integer.',
+          isCorrect: false,
+          explanation: 'List dapat menyimpan tipe data apa saja di Python.',
+        },
+        {
+          text: 'Karena memori list terlalu kecil.',
+          isCorrect: false,
+          explanation: 'Bukan masalah ukuran memori, melainkan protokol hashing.',
+        },
+        {
+          text: 'List boleh jadi kunci jika panjangnya kurang dari 3.',
+          isCorrect: false,
+          explanation: 'Semua list Python tidak hashable terlepas dari berapa pun jumlah elemennya.',
+        },
+      ],
+    },
+    {
+      id: 'fe-q6',
+      conceptId: 'python.collections.set_lookup',
+      subBab: '3.4',
+      question: 'Berapakah kompleksitas waktu rata-rata (average time complexity) untuk operasi pencarian x in data pada Set dan List di Python?',
+      options: [
+        {
+          text: 'O(1) pada Set, dan O(n) pada List',
+          isCorrect: true,
+          explanation: 'Set menggunakan hash lookup langsung O(1), sedangkan List melakukan linear scan sekuensial O(n).',
+        },
+        {
+          text: 'O(n) pada Set, dan O(1) pada List',
+          isCorrect: false,
+          explanation: 'Terbalik; Set jauh lebih cepat untuk pencarian keanggotaan.',
+        },
+        {
+          text: 'Keduanya berkecepatan O(log n)',
+          isCorrect: false,
+          explanation: 'Neither uses binary search by default.',
+        },
+        {
+          text: 'Keduanya berkecepatan O(1)',
+          isCorrect: false,
+          explanation: 'List harus menelusuri elemen satu per satu dari indeks 0.',
+        },
+      ],
+    },
+    {
+      id: 'fe-q7',
+      conceptId: 'python.functions.legb_scope',
+      subBab: '4.2',
+      question: 'Manakah urutan pencarian namespace variabel (LEGB Rule) yang benar di CPython?',
+      options: [
+        {
+          text: 'Local -> Enclosing -> Global -> Built-in',
+          isCorrect: true,
+          explanation: 'Akronim LEGB merepresentasikan Local, Enclosing function locals, Global module, dan Built-in globals.',
+        },
+        {
+          text: 'Global -> Local -> Built-in -> Enclosing',
+          isCorrect: false,
+          explanation: 'Local selalu dicari pertama kali di dalam frame fungsi aktif.',
+        },
+        {
+          text: 'Built-in -> Global -> Enclosing -> Local',
+          isCorrect: false,
+          explanation: 'Built-in adalah lapisan paling luar (paling akhir dicari).',
+        },
+        {
+          text: 'Linear -> External -> Global -> Base',
+          isCorrect: false,
+          explanation: 'Bukan terminologi resmi namespace Python.',
+        },
+      ],
+    },
+    {
+      id: 'fe-q8',
+      conceptId: 'python.functions.kwargs',
+      subBab: '4.1',
+      question: 'Bagaimana Python mengemas argumen yang diterima melalui parameter **kwargs pada fungsi?',
+      options: [
+        {
+          text: 'Dikemas sebagai dictionary berisikan pasangan nama argumen dan nilainya.',
+          isCorrect: true,
+          explanation: 'Prefiks ganda **kwargs mengumpulkan keyword arguments menjadi sebuah dict bawaan.',
+        },
+        {
+          text: 'Dikemas sebagai tuple terurut.',
+          isCorrect: false,
+          explanation: 'Tuple adalah hasil pengemasan dari *args (bintang satu), bukan **kwargs.',
+        },
+        {
+          text: 'Dikemas sebagai string tunggal dipisahkan koma.',
+          isCorrect: false,
+          explanation: 'Python mengemasnya menjadi struktur data dict.',
+        },
+        {
+          text: 'Dibuang dari alokasi memori.',
+          isCorrect: false,
+          explanation: 'Argumen disimpan dan dapat diakses di dalam namespace fungsi.',
+        },
+      ],
+    },
+    {
+      id: 'fe-q9',
+      conceptId: 'python.oop.mangling',
+      subBab: '5.2',
+      question: 'Apa mekanisme yang dilakukan CPython saat kita mendefinisikan atribut dengan dua garis bawah seperti self.__pin?',
+      options: [
+        {
+          text: 'Name Mangling: nama atribut otomatis diubah secara internal menjadi _NamaClass__pin untuk mencegah tabrakan nama pada inheritance.',
+          isCorrect: true,
+          explanation: 'Python menyisipkan nama class berawalan underscore untuk mengisolasi atribut private.',
+        },
+        {
+          text: 'Python mengenkripsi nilai pin dengan algoritma SHA-256 di memori RAM.',
+          isCorrect: false,
+          explanation: 'Name mangling adalah transformasi nama leksikal, bukan enkripsi kriptografi.',
+        },
+        {
+          text: 'Atribut otomatis dihapus setelah konstruktor selesai dieksekusi.',
+          isCorrect: false,
+          explanation: 'Atribut tetap ada di instance __dict__ dengan nama yang telah dimangle.',
+        },
+        {
+          text: 'Membuat variabel dapat dibaca oleh seluruh komputer di jaringan lokal.',
+          isCorrect: false,
+          explanation: 'Name mangling berlaku di lingkup runtime lokal proses.',
+        },
+      ],
+    },
+    {
+      id: 'fe-q10',
+      conceptId: 'python.oop.duck_typing',
+      subBab: '5.3',
+      question: 'Bagaimana prinsip Polimorfisme Duck Typing bekerja pada kode for item in wadah: item.render()?',
+      options: [
+        {
+          text: 'Selama setiap objek di wadah memiliki method render(), program berjalan sukses tanpa mewajibkan silsilah class induk yang sama.',
+          isCorrect: true,
+          explanation: '"If it walks like a duck and quacks like a duck, it is a duck" — kemampuan aksi objek lebih utama dari hierarki tipe formal.',
+        },
+        {
+          text: 'Semua objek wajib mewarisi class Bebek.',
+          isCorrect: false,
+          explanation: 'Duck typing adalah analogi filosofi dinamis, bukan class unggas nyata.',
+        },
+        {
+          text: 'Kode akan error jika objek dibuat tanpa interface Java.',
+          isCorrect: false,
+          explanation: 'Python tidak memerlukan interface deklaratif formal untuk polimorfisme.',
+        },
+        {
+          text: 'Hanya objek pertama di dalam wadah yang boleh dirender.',
+          isCorrect: false,
+          explanation: 'Loop mengeksekusi semua elemen dalam wadah secara sekuensial.',
+        },
+      ],
+    },
+  ],
+  codingChallenges: [
+    {
+      id: 'fe-c1',
+      conceptId: 'python.basics.fstrings',
+      subBab: '1.4',
+      title: 'Tantangan 1 (Bab 1): Pemformatan Nota Tagihan',
+      question: 'Diberikan item = "Laptop", harga = 8500000, dan diskon = 15. Hitung harga_akhir = int(harga * (1 - diskon / 100)) lalu cetak f-string: Nota: Laptop - Total: Rp 7225000',
+      starterCode: 'item = "Laptop"\nharga = 8500000\ndiskon = 15\n# Hitung harga akhir dan cetak nota\nharga_akhir = int(harga * (1 - diskon / 100))\nprint(f"Nota: {item} - Total: Rp {harga_akhir}")',
+      expectedOutput: 'Nota: Laptop - Total: Rp 7225000',
+      testCases: [
+        {
+          description: 'Mencetak nota dengan harga terdiskon',
+          expectedStdout: 'Nota: Laptop - Total: Rp 7225000',
+        },
+      ],
+      hint: 'Gunakan f"Nota: {item} - Total: Rp {harga_akhir}"',
+    },
+    {
+      id: 'fe-c2',
+      conceptId: 'python.control.loop_accumulator',
+      subBab: '2.2',
+      question: 'Tantangan 2 (Bab 2): Penjumlahan Angka Genap 1-10. Gunakan for loop dan range(1, 11) untuk menjumlahkan semua angka genap (i % 2 == 0) ke dalam variabel total_genap, lalu cetak Total Genap: 30.',
+      starterCode: 'total_genap = 0\n# Loop angka 1 sampai 10 dan jumlahkan angka genap\nfor i in range(1, 11):\n    if i % 2 == 0:\n        total_genap += i\nprint(f"Total Genap: {total_genap}")',
+      expectedOutput: 'Total Genap: 30',
+      testCases: [
+        {
+          description: 'Mencetak Total Genap: 30',
+          expectedStdout: 'Total Genap: 30',
+        },
+      ],
+      hint: 'Angka genap dari 1 sampai 10 adalah 2, 4, 6, 8, 10. Jumlahnya adalah 30.',
+    },
+    {
+      id: 'fe-c3',
+      conceptId: 'python.collections.dict_frequency',
+      subBab: '3.3',
+      question: 'Tantangan 3 (Bab 3): Hitung Frekuensi Kata. Diberikan kata_list = ["apel", "jeruk", "apel", "mangga", "apel", "jeruk"]. Buat dictionary frekuensi yang menghitung kemunculan setiap kata, lalu cetak frekuensi["apel"] dan frekuensi["jeruk"] dalam f-string: Apel: 3, Jeruk: 2',
+      starterCode: 'kata_list = ["apel", "jeruk", "apel", "mangga", "apel", "jeruk"]\nfrekuensi = {}\nfor k in kata_list:\n    frekuensi[k] = frekuensi.get(k, 0) + 1\nprint(f"Apel: {frekuensi[\'apel\']}, Jeruk: {frekuensi[\'jeruk\']}")',
+      expectedOutput: 'Apel: 3, Jeruk: 2',
+      testCases: [
+        {
+          description: 'Mencetak hitungan frekuensi Apel: 3, Jeruk: 2',
+          expectedStdout: 'Apel: 3, Jeruk: 2',
+        },
+      ],
+      hint: 'Gunakan metode frekuensi.get(k, 0) + 1 untuk menghitung kemunculan elemen',
+    },
+    {
+      id: 'fe-c4',
+      conceptId: 'python.functions.variadic',
+      subBab: '4.1',
+      question: 'Tantangan 4 (Bab 4): Fungsi Rata-Rata Variadik (*angka). Definisikan fungsi hitung_rerata(*angka) yang mengembalikan sum(angka) / len(angka). Panggil print(f"Rerata: {hitung_rerata(10, 20, 30, 40):.1f}").',
+      starterCode: 'def hitung_rerata(*angka):\n    return sum(angka) / len(angka)\n\nprint(f"Rerata: {hitung_rerata(10, 20, 30, 40):.1f}")',
+      expectedOutput: 'Rerata: 25.0',
+      testCases: [
+        {
+          description: 'Menghitung rata-rata Rerata: 25.0',
+          expectedStdout: 'Rerata: 25.0',
+        },
+      ],
+      hint: 'Parameter *angka menerima jumlah argumen fleksibel sebagai tuple',
+    },
+    {
+      id: 'fe-c5',
+      conceptId: 'python.oop.full_hierarchy',
+      subBab: '5.3',
+      question: 'Tantangan 5 (Bab 5): Sistem Akun Perbankan OOP. Buat class Akun dengan self.pemilik dan self._saldo. Berikan property saldo dan method setor(nominal). Cetak f"Akun {a.pemilik} Saldo: {a.saldo}" setelah menyetor 25000 pada saldo awal 50000.',
+      starterCode: 'class Akun:\n    def __init__(self, pemilik, saldo_awal):\n        self.pemilik = pemilik\n        self._saldo = saldo_awal\n\n    @property\n    def saldo(self):\n        return self._saldo\n\n    def setor(self, nominal):\n        self._saldo += nominal\n\na = Akun("Budi", 50000)\na.setor(25000)\nprint(f"Akun {a.pemilik} Saldo: {a.saldo}")',
+      expectedOutput: 'Akun Budi Saldo: 75000',
+      testCases: [
+        {
+          description: 'Mencetak Akun Budi Saldo: 75000',
+          expectedStdout: 'Akun Budi Saldo: 75000',
+        },
+      ],
+      hint: 'Gunakan @property untuk membaca saldo terlindungi self._saldo',
+    },
+  ],
+};
 
 /**
  * Returns previous Python chapter data if any.
