@@ -1,0 +1,459 @@
+---
+id: "J4"
+track: "javascript"
+level: "J4"
+title: "Modern Engineering, Tooling & Mini Test Runner Bergaya Vitest"
+slug: "curriculum/javascript/j4"
+estimatedMinutes: 150
+prerequisites:
+  - "J1"
+  - "J2"
+  - "J3"
+learningObjectives:
+  - "Menguasai prinsip Test-Driven Development (TDD) dan ekosistem pengujian modern Vitest"
+  - "Membangun mini test runner in-browser dengan antarmuka describe, it, dan assertion expect"
+  - "Membedakan matcher identitas toBe (Object.is) vs kesetaraan struktural toEqual"
+  - "Menerapkan pengujian boundary error handling menggunakan toThrow dan assertion asinkron"
+  - "Merancang Reactive State Store dengan Subscription Pattern yang teruji 100%"
+relatedConcepts:
+  - "Vitest & Test Runners"
+  - "Test-Driven Development (TDD)"
+  - "Deep Equality vs Object.is"
+  - "Reactive Store & Observer Pattern"
+languageVersion: "ES2024"
+summary: "Kuasai ekosistem tooling modern, bangun test runner bergaya Vitest di browser, terapkan prinsip TDD dengan assertions tangguh, dan uji kode bisnismu secara menyeluruh."
+---
+
+import { CodePlayground } from '../../components/CodePlayground';
+import { DualTrackView } from '../../components/DualTrackView';
+import { PredictOutput } from '../../components/PredictOutput';
+import { FadedExample } from '../../components/FadedExample';
+import { SocraticTutorPanel } from '../../components/SocraticTutorPanel';
+import { MiniQuiz } from '../../components/MiniQuiz';
+
+# Level J4: Modern Engineering, Tooling & Unit Testing
+
+Selamat datang di Level J4. Di level ini, kita beralih dari sekadar menulis fitur menjadi **seorang rekayasawan perangkat lunak (*software engineer*) yang menjamin keandalan sistem**. Kita tidak lagi mengandalkan pengecekan manual via `console.log` yang melelahkan, melainkan membangun infrastruktur pengujian otomatis (*automated unit tests*) bergaya **Vitest** langsung di perambanmu.
+
+---
+
+## 1. HOOK: Masalah Nyata & Analogi Keseharian
+
+<DualTrackView
+  client:load
+  santaiTitle="Jalur Santai: Stasiun Uji Tabrak Mobil & Sertifikasi Kelaikan"
+  santaiParagraphs={[
+    "Bayangkan sebuah pabrik otomotif memproduksi mobil baru. Pabrik tidak menunggu mobil dibeli oleh konsumen di jalan raya untuk mengetahui apakah remnya berfungsi atau tidak. Sebelum keluar dari pabrik, mobil diuji di laboratorium simulator: uji akselerasi, uji rem darurat, dan uji kantong udara.",
+    "Unit Testing dan Test Runner seperti Vitest adalah stasiun uji kelaikan kodemu: setiap fungsi diuji dengan puluhan skenario ekstrem (nilai kosong, nilai negatif, jaringan mati) secara otomatis dalam hitungan milidetik sebelum sampai ke tangan pengguna."
+  ]}
+  cepatTitle="Jalur Cepat: ESM Dev Server, In-Process Test Runner & TDD Workflow"
+  cepatParagraphs={[
+    "Vitest memanfaatkan ekosistem native ESM Vite untuk menjalankan pengujian tanpa bundle step perantara yang lambat. Eksekusi test suite berjalan paralel menggunakan worker threads dengan isolasi konteks memori penuh.",
+    "Dalam paradigma Test-Driven Development (TDD: Red-Green-Refactor), kita mendefinisikan assertion spesifikasi (expect) sebelum mengimplementasikan logika bisnis. Level ini membongkar pembuatan Mini Runner dengan matcher Object.is (toBe), recursive deep equality (toEqual), exception capture (toThrow), dan state subscription testing."
+  ]}
+/>
+
+---
+
+## 2. KONSEP INTI: Arsitektur Test Runner & Matchers Vitest
+
+Berdasarkan dokumentasi resmi [Vitest Documentation](https://vitest.dev/) dan panduan pengujian [MDN Web Docs: Testing](https://developer.mozilla.org/en-US/docs/Learn/Tools_and_testing), arsitektur test runner profesional bertumpu pada 4 pilar:
+
+1. **Struktur Pengorganisasian Hierarkis:**
+   - `describe(judul, fn)`: Membungkus kelompok modul atau domain bisnis (*test suite*).
+   - `it(skenario, fn)` atau `test(...)`: Mendefinisikan satu skenario perilaku spesifik (*test case*).
+2. **Assertion & Matchers:**
+   - `expect(actual).toBe(expected)`: Memeriksa kesetaraan identitas referensi menggunakan `Object.is`. Cocok untuk tipe data primitif (`number`, `string`, `boolean`).
+   - `expect(actual).toEqual(expected)`: Memeriksa kesetaraan struktural mendalam (*deep equality*). Wajib digunakan untuk objek dan array!
+   - `expect(actual).toContain(item)`: Memeriksa keberadaan elemen di dalam array atau substring pada teks.
+3. **Pola Pengujian Red-Green-Refactor:**
+   - **Red:** Tulis tes yang gagal karena fiturnya belum dibuat.
+   - **Green:** Tulis kode seminimal mungkin hingga seluruh assertion berhasil lolos (hijau).
+   - **Refactor:** Bersihkan dan optimalkan struktur kode tanpa mengubah hasil tes.
+4. **Isolasi State & Anti State-Leak:**
+   - Setiap tes wajib memiliki state independen. Pengujian yang baik tidak bergantung pada urutan eksekusi tes lain.
+
+---
+
+## 3. CONTOH HIDUP + PREDIKSI OUTPUT
+
+Sebelum mengeksekusi kode di bawah, uji intuisi pemahamanmu mengenai perbedaan `toBe` (identitas referensi) dan `toEqual` (kesetaraan struktural):
+
+<PredictOutput
+  client:load
+  language="javascript"
+  title="Prediksi Output J4.1: Reference Identity (toBe) vs Structural Equality (toEqual)"
+  code={`const obj1 = { id: 1, label: "Frontend" };
+const obj2 = { id: 1, label: "Frontend" };
+
+const isSameIdentity = Object.is(obj1, obj2);
+const isSameStructure = JSON.stringify(obj1) === JSON.stringify(obj2);
+
+console.log("Identitas (toBe):", isSameIdentity);
+console.log("Struktural (toEqual):", isSameStructure);`}
+  options={[
+    {
+      text: "Identitas (toBe): false\\nStruktural (toEqual): true",
+      isCorrect: true,
+      explanation: "Tepat! obj1 dan obj2 adalah dua objek berbeda yang dialokasikan pada dua alamat heap terpisah (Object.is bernilai false). Namun, struktur dan nilai propertinya identik sehingga kesetaraan struktural bernilai true."
+    },
+    {
+      text: "Identitas (toBe): true\\nStruktural (toEqual): true",
+      isCorrect: false,
+      explanation: "Salah. Di JavaScript, dua objek dengan kurung kurawal terpisah {} memiliki alamat memori berbeda, sehingga identitasnya tidak sama."
+    },
+    {
+      text: "Identitas (toBe): false\\nStruktural (toEqual): false",
+      isCorrect: false,
+      explanation: "Salah. Properti kedua objek memiliki kunci dan nilai yang persis sama, sehingga kesetaraan struktural bernilai true."
+    }
+  ]}
+/>
+
+<CodePlayground
+  client:load
+  language="javascript"
+  title="Latihan J4.1: Membangun Assertion Matchers (toBe, toEqual, toContain)"
+  initialCode={`const expect = (actual) => ({
+  toBe: (expected) => {
+    if (!Object.is(actual, expected)) {
+      throw new Error("Expected " + expected + " but received " + actual);
+    }
+    return true;
+  },
+  toEqual: (expected) => {
+    if (JSON.stringify(actual) !== JSON.stringify(expected)) {
+      throw new Error("Structural mismatch: expected " + JSON.stringify(expected) + " but got " + JSON.stringify(actual));
+    }
+    return true;
+  },
+  toContain: (item) => {
+    if (!Array.isArray(actual) || !actual.includes(item)) {
+      throw new Error("Array does not contain " + item);
+    }
+    return true;
+  }
+});
+
+// Verifikasi assertion matcher
+console.log("Test toBe:", expect(100).toBe(100));
+console.log("Test toEqual:", expect({ role: "admin" }).toEqual({ role: "admin" }));
+console.log("Test toContain:", expect(["JS", "Python", "Rust"]).toContain("Python"));`}
+  expectedOutput={`Test toBe: true\nTest toEqual: true\nTest toContain: true`}
+/>
+
+---
+
+## 4. LATIHAN TERPANDU (FADED EXAMPLE)
+
+Lengkapi implementasi mini test runner di bawah ini agar menghitung jumlah tes yang berhasil lolos secara akurat:
+
+<FadedExample
+  client:load
+  title="Pencatat Hasil Uji Mini Runner"
+  language="javascript"
+  missingTaskDescription="Lengkapi blok try pada method it() agar menambah penghitung miniRunner.passed ketika testFn berhasil dieksekusi tanpa galat."
+  fadedHint="Gunakan miniRunner.passed++ di dalam blok try."
+  starterCode={`const miniRunner = {
+  passed: 0,
+  failed: 0,
+  it: (deskripsi, testFn) => {
+    try {
+      testFn();
+      // TODO: Tambahkan counter passed jika fungsi testFn berhasil tanpa error
+      console.log("✓ " + deskripsi);
+    } catch (err) {
+      console.error("✕ " + deskripsi + ": " + err.message);
+    }
+  }
+};
+
+miniRunner.it("menjumlahkan 2 + 3", () => {
+  if (2 + 3 !== 5) throw new Error("Salah hitung");
+});
+
+console.log("Status Uji: Sukses " + miniRunner.passed + " lulus");`}
+  initialCode={`const miniRunner = {
+  passed: 0,
+  failed: 0,
+  it: (deskripsi, testFn) => {
+    try {
+      testFn();
+      miniRunner.passed++;
+      console.log("✓ " + deskripsi);
+    } catch (err) {
+      miniRunner.failed++;
+      console.error("✕ " + deskripsi + ": " + err.message);
+    }
+  }
+};
+
+miniRunner.it("menjumlahkan 2 + 3", () => {
+  if (2 + 3 !== 5) throw new Error("Salah hitung");
+});
+
+console.log("Status Uji: Sukses " + miniRunner.passed + " lulus");`}
+  expectedOutput={`✓ menjumlahkan 2 + 3\nStatus Uji: Sukses 1 lulus`}
+/>
+
+---
+
+## 5. LATIHAN MANDIRI (AUTO-GRADED) & TANGGA PETUNJUK
+
+Selesaikan rangkaian tantangan rekayasa kode teruji di bawah ini:
+
+<CodePlayground
+  client:load
+  language="javascript"
+  title="Latihan Mandiri J4.2: Menguji Logika Bisnis Keranjang Belanja"
+  initialCode={`class KeranjangBelanja {
+  constructor() {
+    this.items = [];
+  }
+  tambah(nama, harga, qty = 1) {
+    this.items.push({ nama, harga, qty });
+  }
+  hitungSubtotal() {
+    return this.items.reduce((total, item) => total + item.harga * item.qty, 0);
+  }
+  hitungDiskon(persen) {
+    const subtotal = this.hitungSubtotal();
+    return subtotal - (subtotal * persen) / 100;
+  }
+}
+
+const keranjang = new KeranjangBelanja();
+keranjang.tambah("Buku JS", 120000, 2);
+keranjang.tambah("Stiker", 15000, 4);
+
+const subtotal = keranjang.hitungSubtotal();
+const bayarDiskon = keranjang.hitungDiskon(10);
+
+console.log("Subtotal:", subtotal);
+console.log("Setelah Diskon 10%:", bayarDiskon);
+console.log("Jumlah Item Unik:", keranjang.items.length);`}
+  expectedOutput={`Subtotal: 300000\nSetelah Diskon 10%: 270000\nJumlah Item Unik: 2`}
+/>
+
+<CodePlayground
+  client:load
+  language="javascript"
+  title="Latihan Mandiri J4.3: Pengujian Penanganan Error Tangguh (Boundary Assertion)"
+  initialCode={`const validasiEmail = (email) => {
+  if (!email || !email.includes("@")) {
+    throw new TypeError("Format email tidak valid: wajib memuat '@'");
+  }
+  return email.trim().toLowerCase();
+};
+
+const assertThrows = (fn, expectedErrorType) => {
+  try {
+    fn();
+    return false;
+  } catch (err) {
+    return err instanceof expectedErrorType;
+  }
+};
+
+const test1 = validasiEmail("Budi@Belajar.in");
+const testError = assertThrows(() => validasiEmail("invalid-email"), TypeError);
+
+console.log("Email Bersih:", test1);
+console.log("Menangkap TypeError:", testError);`}
+  expectedOutput={`Email Bersih: budi@belajar.in\nMenangkap TypeError: true`}
+/>
+
+<CodePlayground
+  client:load
+  language="javascript"
+  title="Latihan Mandiri J4.4: In-Memory Reactive Store dengan Subscription Pattern"
+  initialCode={`const createStore = (initialState) => {
+  let state = { ...initialState };
+  const listeners = new Set();
+
+  return {
+    getState: () => ({ ...state }),
+    setState: (updater) => {
+      state = typeof updater === "function" ? updater(state) : { ...state, ...updater };
+      listeners.forEach((listener) => listener(state));
+    },
+    subscribe: (listener) => {
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    }
+  };
+};
+
+const store = createStore({ counter: 0 });
+const logHistory = [];
+
+const unsubscribe = store.subscribe((s) => {
+  logHistory.push("Nilai: " + s.counter);
+});
+
+store.setState((prev) => ({ counter: prev.counter + 1 }));
+store.setState((prev) => ({ counter: prev.counter + 4 }));
+unsubscribe();
+store.setState({ counter: 99 }); // listener tidak dipanggil setelah unsubscribe
+
+console.log("Riwayat State:", logHistory.join(", "));
+console.log("State Akhir:", store.getState().counter);`}
+  expectedOutput={`Riwayat State: Nilai: 1, Nilai: 5\nState Akhir: 99`}
+/>
+
+<CodePlayground
+  client:load
+  language="javascript"
+  title="Mini Proyek J4: Autocomplete Engine dengan Test Suite Mandiri"
+  initialCode={`// 1. Domain Logic: Autocomplete Search Engine
+class AutocompleteEngine {
+  constructor(dataset) {
+    this.dataset = [...dataset];
+  }
+
+  cari(kueri, limit = 3) {
+    if (!kueri || kueri.trim() === "") return [];
+    const q = kueri.trim().toLowerCase();
+    return this.dataset
+      .filter((item) => item.toLowerCase().includes(q))
+      .slice(0, limit);
+  }
+}
+
+// 2. Test Suite Bergaya Vitest
+const testResults = [];
+const it = (name, testFn) => {
+  try {
+    testFn();
+    testResults.push("PASS: " + name);
+  } catch (err) {
+    testResults.push("FAIL: " + name + " -> " + err.message);
+  }
+};
+
+const engine = new AutocompleteEngine(["JavaScript", "TypeScript", "Python", "Java", "JSON", "Julia"]);
+
+it("menemukan kecocokan substring case-insensitive", () => {
+  const hasil = engine.cari("java");
+  if (hasil.length !== 2 || !hasil.includes("JavaScript") || !hasil.includes("Java")) {
+    throw new Error("Hasil pencarian java tidak sesuai");
+  }
+});
+
+it("menghormati batasan limit hasil", () => {
+  const hasil = engine.cari("j", 2);
+  if (hasil.length !== 2) throw new Error("Limit harus membatasi 2 elemen");
+});
+
+it("mengembalikan array kosong jika kueri spasi kosong", () => {
+  const hasil = engine.cari("   ");
+  if (hasil.length !== 0) throw new Error("Kueri kosong harus mengembalikan []");
+});
+
+for (const line of testResults) {
+  console.log(line);
+}
+console.log("Total Uji Lolos:", testResults.length);`}
+  expectedOutput={`PASS: menemukan kecocokan substring case-insensitive\nPASS: menghormati batasan limit hasil\nPASS: mengembalikan array kosong jika kueri spasi kosong\nTotal Uji Lolos: 3`}
+/>
+
+{/* Socratic AI Tutor Assistant */}
+<SocraticTutorPanel
+  client:load
+  lessonId="J4"
+  language="javascript"
+  defaultCodeSnippet={`expect(actual).toEqual({ id: 1, name: "Test" });`}
+/>
+
+---
+
+## 6. KESALAHAN UMUM (COMMON MISCONCEPTIONS)
+
+1. **Miskonsepsi `toBe` untuk Array/Objek:** Pemula sering menulis `expect([1, 2]).toBe([1, 2])` dan heran mengapa tes gagal (*red*). `toBe` memeriksa identitas pointer memori (`Object.is`). Dua array berbeda tidak akan pernah memiliki alamat heap yang sama. Gunakan `toEqual`.
+2. **Miskonsepsi Lupa Menangani Async Assertion:** Menjalankan promise di dalam `it()` tanpa kata kunci `await` menyebabkan tes berstatus lulus semu (*false positive*) karena eksekusi tes selesai sebelum promise melempar rejection error.
+3. **Miskonsepsi Berbagi Mutasi State Antar Tes (*Shared State Pollution*):** Menggunakan variabel global yang dimutasi oleh Tes A sehingga menyebabkan Tes B gagal secara acak saat urutan tes dibalik. Selalu buat instansiasi baru (*fresh instance*) untuk setiap unit tes.
+4. **Miskonsepsi Testing Implementation Details:** Menguji nama variabel internal privat daripada menguji perilaku (*behavior/output*) publik. Jika Anda merefaktor kode internal tanpa mengubah fungsionalitas, unit test tidak boleh rusak.
+
+---
+
+## 7. RANGKUMAN & KUIS MINI (RETRIEVAL PRACTICE)
+
+<MiniQuiz
+  client:load
+  lessonId="J4"
+  title="Kuis Mini J4: Penguasaan Unit Testing & Modern Tooling"
+  questions={[
+    {
+      question: "Mengapa assertion expect({ a: 1 }).toBe({ a: 1 }) selalu melempar error kegagalan tes?",
+      conceptId: "J4-Assertions",
+      options: [
+        {
+          text: "Karena toBe membandingkan identitas referensi memori (Object.is), dan kedua objek menempati alamat heap yang berbeda.",
+          isCorrect: true,
+          explanation: "Tepat! Untuk memeriksa kesamaan nilai properti objek tanpa mempermasalahkan alamat referensi, gunakan toEqual()."
+        },
+        {
+          text: "Karena JavaScript melarang penggunaan angka 1 sebagai nilai properti objek.",
+          isCorrect: false,
+          explanation: "Salah. Properti objek valid menyimpan angka apa pun."
+        },
+        {
+          text: "Karena matcher toBe hanya boleh digunakan pada tipe boolean.",
+          isCorrect: false,
+          explanation: "Salah. toBe dapat digunakan pada tipe data apa pun, namun bekerja berdasarkan perbandingan identitas Object.is."
+        }
+      ]
+    },
+    {
+      question: "Apa tujuan utama dari siklus Red-Green-Refactor dalam metodologi Test-Driven Development (TDD)?",
+      conceptId: "J4-TDD",
+      options: [
+        {
+          text: "Memastikan tes membuktikan kebutuhan fungsional terlebih dahulu, lalu menulis kode solusi minimal, kemudian merapikan struktur tanpa takut regresi.",
+          isCorrect: true,
+          explanation: "Benar! Siklus ini menjamin setiap baris kode memiliki alasan keberadaan dan teruji secara otomatis sejak detik pertama."
+        },
+        {
+          text: "Mengubah warna tema IDE secara otomatis dari merah ke hijau.",
+          isCorrect: false,
+          explanation: "Salah. Red dan Green adalah metafora status kelulusan test runner."
+        },
+        {
+          text: "Menonaktifkan kompilasi TypeScript agar kode berjalan lebih cepat.",
+          isCorrect: false,
+          explanation: "Salah. TDD tidak berhubungan dengan penonaktifan compiler."
+        }
+      ]
+    },
+    {
+      question: "Bagaimana cara kerja Subscription Pattern pada Reactive State Store yang dibangun di modul ini?",
+      conceptId: "J4-State-Pattern",
+      options: [
+        {
+          text: "Menyimpan fungsi pendengar (listener) dalam Set, memanggilnya setiap kali state diperbarui, dan mengembalikan fungsi unsubscribe untuk melepaskan listener.",
+          isCorrect: true,
+          explanation: "Tepat! Pola Observer/Subscription ini adalah fondasi perpustakaan state modern seperti Zustand, Redux, dan Preact Signals."
+        },
+        {
+          text: "Membuat thread Web Worker baru setiap kali ada pembaruan state.",
+          isCorrect: false,
+          explanation: "Salah. Subscription pattern berjalan pada event dispatch in-memory tanpa perlu membuat thread baru."
+        },
+        {
+          text: "Menyimpan seluruh data ke server cloud setiap kali variabel dibaca.",
+          isCorrect: false,
+          explanation: "Salah. In-memory reactive store beroperasi secara lokal dan sinkron di memori browser."
+        }
+      ]
+    }
+  ]}
+/>
+
+---
+
+## 8. SELAMI LEBIH DALAM (DIVE DEEPER)
+
+- **Dokumentasi Resmi Vitest:** Telusuri dokumentasi lengkap [Vitest: Getting Started & Guide](https://vitest.dev/guide/).
+- **W3Schools Principles of Testing:** Pelajari dasar pengujian di [W3Schools JavaScript Testing Guide](https://www.w3schools.com/js/default.asp).
+- **TypeScript Handbook:** Pelajari anotasi tipe dan generic interfaces di [TypeScript Official Documentation](https://www.typescriptlang.org/docs/handbook/intro.html).
+- **Martin Fowler on TDD:** Telusuri esai klasik Martin Fowler tentang arsitektur [Test-Driven Development](https://martinfowler.com/bliki/TestDrivenDevelopment.html).

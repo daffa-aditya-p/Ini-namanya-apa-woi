@@ -10,50 +10,156 @@ learningObjectives:
   - "Memahami model eksekusi JavaScript pada runtime modern (ES2024)"
   - "Membedakan mutabilitas let dan immutabilitas const tanpa menggunakan var"
   - "Menguasai 7 tipe data primitif dan operator kesetaraan ketat (===)"
+  - "Menangani representasi floating point IEEE-754 menggunakan Number.EPSILON"
   - "Menulis fungsi modular dan arrow function dengan nilai kembali bersih"
 relatedConcepts:
   - "ECMAScript 2024"
-  - "Lexical Scope"
-  - "Type Coercion"
+  - "Lexical Scope & Temporal Dead Zone"
+  - "Type Coercion & IEEE-754"
+  - "First-Class Functions"
 languageVersion: "ES2024"
-summary: "Pelajari bagaimana JavaScript mengingat data, memproses logika, dan mengeksekusi instruksi dari hal paling mendasar."
+summary: "Pelajari bagaimana JavaScript mengingat data, memproses logika, dan mengeksekusi instruksi dari hal paling mendasar menggunakan standar ES2024."
 ---
 
 import { CodePlayground } from '../../components/CodePlayground';
+import { DualTrackView } from '../../components/DualTrackView';
+import { PredictOutput } from '../../components/PredictOutput';
+import { FadedExample } from '../../components/FadedExample';
+import { SocraticTutorPanel } from '../../components/SocraticTutorPanel';
+import { MiniQuiz } from '../../components/MiniQuiz';
 
 # Level J1: Fundamental JavaScript
 
-Selamat datang di bengkel kerja JavaScript. Di modul ini, kita akan membongkar bagaimana komputer membaca kodemu, menyimpan data dalam memori, dan membuat keputusan komputasional.
+Selamat datang di bengkel kerja JavaScript belajar.in. Di modul ini, kita akan membongkar bagaimana komputer membaca kodemu, mengalokasikan data dalam memori, dan membuat keputusan komputasional secara deterministik.
 
 ---
 
-## 1. Menjalankan Kode Pertama: `console.log`
+## 1. HOOK: Masalah Nyata & Analogi Keseharian
 
-Ketika kamu menulis kode, kamu memberikan serangkaian instruksi terurut kepada mesin. Perintah paling mendasar untuk melihat apa yang sedang dipikirkan komputer adalah `console.log()`.
-
-<CodePlayground
+<DualTrackView
   client:load
-  language="javascript"
-  title="Latihan J1.1: Mencetak Nilai Pertama"
-  initialCode={`console.log("Halo, dunia!");
-console.log(2024 + 2);
-console.log("Status belajar:", true);`}
-  expectedOutput={`Halo, dunia!\n2026\nStatus belajar: true`}
+  santaiTitle="Jalur Santai: Resep Masakan & Label Toples Dapur"
+  santaiParagraphs={[
+    "Bayangkan kamu sedang memasak di dapur restoran. Bahan baku yang kamu gunakan perlu disimpan dalam toples dengan label yang jelas. Kata kunci const adalah toples kaca berlabel permanen: isinya minyak zaitun murni dan labelnya tidak boleh dicabut atau diganti dengan cuka.",
+    "Sedangkan let adalah wadah takaran adonan yang isinya bisa bertambah sendok demi sendok selama proses memasak (reassigned). Dan perintah console.log adalah jendela etalase dapur: tempat koki memperlihatkan hidangan siap saji kepada pelanggan tanpa mengubah resep rahasia di dalam dapur."
+  ]}
+  cepatTitle="Jalur Cepat: V8 Stack Allocation, Lexical Environment & IEEE-754"
+  cepatParagraphs={[
+    "JavaScript modern (ES2024) mengeliminasi kelemahan var historis dengan memperkenalkan block scoping via let dan const yang tunduk pada Temporal Dead Zone (TDZ). Identifier primitif dialokasikan secara efisien pada Call Stack frame.",
+    "Nilai number di JavaScript mematuhi standar IEEE-754 double precision (64-bit binary floating point). Memahami representasi bit mantissa dan eksponen mencegah bug klasik 0.1 + 0.2 !== 0.3 di sistem keuangan industri."
+  ]}
 />
 
 ---
 
-## 2. Variabel Modern: `const` dan `let`
+## 2. KONSEP INTI: Fondasi Komputasi & Nilai
 
-Di JavaScript modern (ES2024), kita menolak penggunaan kata kunci lama `var` karena sifat *hoisting* dan ketidakjelasan cakupan (*function-scoped*) yang sering memicu *bug* tak terlihat.
+Berdasarkan dokumentasi resmi [MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web/JavaScript) dan tutorial [W3Schools JavaScript](https://www.w3schools.com/js/), terdapat empat fondasi utama yang wajib kamu kuasai:
 
-- Gunakan **`const`** secara *default* untuk nilai yang tidak akan pernah diubah referensinya.
-- Gunakan **`let`** hanya jika nilai variabel tersebut memang direncanakan untuk diperbarui (*reassigned*).
+1. **Deklarasi Modern (`const` & `let`):**
+   - Hindari `var` selamanya. `var` bersifat *function-scoped* dan mengalami *hoisting* yang membingungkan.
+   - Gunakan `const` sebagai pilihan baku (*default*) untuk referensi yang tidak pernah diubah.
+   - Gunakan `let` hanya jika kamu membutuhkan nilai yang dapat ditugaskan ulang (*reassignment*).
+2. **Tujuh Tipe Data Primitif:**
+   - `string`: Teks berkarakter UTF-16 (`"belajar.in"`).
+   - `number`: Bilangan bulat dan desimal 64-bit IEEE-754 (`42`, `3.14`).
+   - `boolean`: Logika kebenaran (`true` atau `false`).
+   - `undefined`: Nilai bawaan variabel yang belum diberi isi.
+   - `null`: Nilai kosong yang sengaja ditentukan oleh programmer.
+   - `bigint`: Bilangan bulat presisi arbitrer (`9007199254740991n`).
+   - `symbol`: Pengenal unik yang dijamin tak pernah bertabrakan (`Symbol("id")`).
+3. **Kesetaraan Ketat (`===`) vs Kesetaraan Longgar (`==`):**
+   - Operator `===` membandingkan tipe data dan nilai secara bersamaan (*strict equality*).
+   - Operator `==` melakukan *type coercion* otomatis yang tidak terduga (misal: `"" == 0` bernilai `true`). Selalu gunakan `===`.
+4. **Presisi Pecahan Biner (IEEE-754):**
+   - Di tingkat mesin biner, angka pecahan basis 10 seperti `0.1` dan `0.2` tidak dapat direpresentasikan secara eksak. Gunakan `Number.EPSILON` untuk membandingkan toleransi selisih komputasi desimal.
+
+---
+
+## 3. CONTOH HIDUP + PREDIKSI OUTPUT
+
+Sebelum menjalankan kode di bawah, uji model mentalmu terhadap perilaku perbandingan tipe data dan operator `===`:
+
+<PredictOutput
+  client:load
+  language="javascript"
+  title="Prediksi Output J1.1: Strict Equality & Coercion"
+  code={`const x = 0;
+const y = "0";
+const z = false;
+
+console.log(x === y);
+console.log(x == y);
+console.log(y == z);`}
+  options={[
+    {
+      text: "false\\ntrue\\ntrue",
+      isCorrect: true,
+      explanation: "Tepat! x === y bernilai false karena number !== string. Namun x == y bernilai true karena string '0' dikonversi menjadi number 0. Begitu pula '0' == false bernilai true karena boolean false dikonversi menjadi 0."
+    },
+    {
+      text: "true\\ntrue\\ntrue",
+      isCorrect: false,
+      explanation: "Salah. Operator kesetaraan ketat (===) tidak melakukan type coercion; tipe data number dan string tidak akan pernah sama."
+    },
+    {
+      text: "false\\nfalse\\nfalse",
+      isCorrect: false,
+      explanation: "Salah. Operator kesetaraan longgar (==) melakukan konversi implisit sehingga '0' == 0 dan '0' == false bernilai true."
+    }
+  ]}
+/>
 
 <CodePlayground
   client:load
   language="javascript"
-  title="Latihan J1.2: Mutabilitas dan Immutabilitas"
+  title="Latihan J1.1: Mencetak Nilai Pertama & Console Logging"
+  initialCode={`console.log("Halo dari bengkel belajar.in!");
+console.log("Tahun rilis:", 2024 + 2);
+console.log("Status pembelajar:", "Aktif");`}
+  expectedOutput={`Halo dari bengkel belajar.in!\nTahun rilis: 2026\nStatus pembelajar: Aktif`}
+/>
+
+---
+
+## 4. LATIHAN TERPANDU (FADED EXAMPLE)
+
+Lengkapi fungsi penentu harga belanja di bawah ini dengan menghitung potongan diskon secara benar:
+
+<FadedExample
+  client:load
+  title="Kalkulator Potongan Harga Diskon"
+  language="javascript"
+  missingTaskDescription="Hitung nilai potongan diskon berdasarkan persentase yang diberikan, lalu kurangkan dari harga awal."
+  fadedHint="Kalikan harga dengan persentaseDiskon, kemudian bagi dengan 100."
+  starterCode={`const hitungPotongan = (harga, persentaseDiskon = 10) => {
+  // TODO: Hitung potongan harga (harga * persentaseDiskon / 100)
+  const potongan = 0;
+  return harga - potongan;
+};
+
+const bayar = hitungPotongan(100000, 15);
+console.log("Total Bayar:", bayar);`}
+  initialCode={`const hitungPotongan = (harga, persentaseDiskon = 10) => {
+  const potongan = (harga * persentaseDiskon) / 100;
+  return harga - potongan;
+};
+
+const bayar = hitungPotongan(100000, 15);
+console.log("Total Bayar:", bayar);`}
+  expectedOutput={`Total Bayar: 85000`}
+/>
+
+---
+
+## 5. LATIHAN MANDIRI (AUTO-GRADED) & TANGGA PETUNJUK
+
+Selesaikan empat tantangan mandiri di bawah ini secara langsung di editor browser terisolasi:
+
+<CodePlayground
+  client:load
+  language="javascript"
+  title="Latihan Mandiri J1.2: Mutabilitas let vs Immutabilitas const"
   initialCode={`const namaPlatform = "belajar.in";
 let hitunganSesi = 1;
 
@@ -64,79 +170,49 @@ console.log("Sesi ke:", hitunganSesi);`}
   expectedOutput={`Platform: belajar.in\nSesi ke: 2`}
 />
 
----
-
-## 3. Tujuh Tipe Data Primitif
-
-JavaScript memiliki 7 tipe data primitif bawaan:
-1. `string`: Teks berkarakter (`"Halo"`)
-2. `number`: Bilangan bulat maupun pecahan (`42`, `3.14`)
-3. `boolean`: Logika kebenaran (`true` atau `false`)
-4. `null`: Nilai kosong yang sengaja ditentukan
-5. `undefined`: Variabel yang belum diinisialisasi nilai
-6. `bigint`: Angka bilangan bulat ekstra besar (`9007199254740991n`)
-7. `symbol`: Pengenal unik yang tak dapat diduplikasi
-
 <CodePlayground
   client:load
   language="javascript"
-  title="Latihan J1.3: Pengecekan Tipe Data"
-  initialCode={`console.log(typeof "Teks");
-console.log(typeof 100);
-console.log(typeof false);
+  title="Latihan Mandiri J1.3: Pengecekan 7 Tipe Data Primitif"
+  initialCode={`console.log(typeof "belajar.in");
+console.log(typeof 42);
+console.log(typeof true);
 console.log(typeof undefined);
-console.log(typeof 10n);`}
+console.log(typeof 9007199254740991n);`}
   expectedOutput={`string\nnumber\nboolean\nundefined\nbigint`}
 />
 
----
-
-## 4. Kesetaraan Ketat (`===`) vs Longgar (`==`)
-
-Aturan emas JavaScript: **selalu gunakan operator kesetaraan ketat `===`**. Operator longgar `==` melakukan *implicit type coercion* yang sering menghasilkan kejanggalan logika.
-
 <CodePlayground
   client:load
   language="javascript"
-  title="Latihan J1.4: Perbandingan Nilai"
+  title="Latihan Mandiri J1.4: Kesetaraan Ketat (===) & Penanganan IEEE-754"
   initialCode={`const angka = 5;
 const teks = "5";
-
 console.log("Ketat (===):", angka === teks);
-console.log("Longgar (==):", angka == teks);`}
-  expectedOutput={`Ketat (===): false\nLonggar (==): true`}
+console.log("Longgar (==):", angka == teks);
+
+const selisih = Math.abs((0.1 + 0.2) - 0.3);
+console.log("Aman IEEE-754:", selisih < Number.EPSILON);`}
+  expectedOutput={`Ketat (===): false\nLonggar (==): true\nAman IEEE-754: true`}
 />
-
----
-
-## 5. Fungsi Modular & Arrow Function
-
-Fungsi adalah blok kode yang dapat digunakan kembali (*reusable*). Arrow function memberikan sintaks ringkas dan tidak mengikat konteks `this` sendiri.
 
 <CodePlayground
   client:load
   language="javascript"
-  title="Latihan J1.5: Arrow Functions"
-  initialCode={`const hitungDiskon = (harga, persentaseDiskon = 10) => {
-  const potongan = (harga * persentaseDiskon) / 100;
-  return harga - potongan;
+  title="Latihan Mandiri J1.5: Arrow Function Modular & Ternary Operator"
+  initialCode={`const cekKelayakanBelajar = (jamTersedia) => {
+  return jamTersedia >= 2 ? "Siap Belajar Intensif" : "Sesi Mikro Cepat";
 };
 
-const hargaAkhir = hitungDiskon(500000, 20);
-console.log("Harga setelah diskon 20%:", hargaAkhir);`}
-  expectedOutput={`Harga setelah diskon 20%: 400000`}
+console.log("3 Jam:", cekKelayakanBelajar(3));
+console.log("1 Jam:", cekKelayakanBelajar(1));`}
+  expectedOutput={`3 Jam: Siap Belajar Intensif\n1 Jam: Sesi Mikro Cepat`}
 />
-
----
-
-## 6. Mini Proyek J1: Kalkulator Konversi Mata Uang
-
-Mari kita gabungkan seluruh konsep: deklarasi `const/let`, percabangan logika, dan fungsi matematika murni.
 
 <CodePlayground
   client:load
   language="javascript"
-  title="Mini Proyek J1: Konversi Rupiah ke USD & JPY"
+  title="Mini Proyek J1: Kalkulator Konversi Mata Uang & Valuta Asing"
   initialCode={`const konversiMataUang = (jumlahIdr, mataUangTujuan) => {
   const kurs = {
     USD: 16000,
@@ -157,3 +233,103 @@ console.log("Dalam USD: $" + konversiMataUang(modalBelajar, "USD"));
 console.log("Dalam JPY: ¥" + konversiMataUang(modalBelajar, "JPY"));`}
   expectedOutput={`Dalam USD: $20.00\nDalam JPY: ¥3047.62`}
 />
+
+{/* Socratic AI Tutor Assistant */}
+<SocraticTutorPanel
+  client:load
+  lessonId="J1"
+  language="javascript"
+  defaultCodeSnippet={`const hitungDiskon = (harga, persentase) => harga - (harga * persentase / 100);`}
+/>
+
+---
+
+## 6. KESALAHAN UMUM (COMMON MISCONCEPTIONS)
+
+1. **Miskonsepsi `typeof null === "object"`:** Ini adalah *bug* historis implementasi JavaScript pertama tahun 1995 oleh Brendan Eich karena penanda tipe memori objek bernilai `000`. `null` adalah tipe data primitif, bukan objek.
+2. **Miskonsepsi `NaN === NaN`:** Nilai `NaN` (*Not-a-Number*) adalah satu-satunya nilai di JavaScript yang **tidak sama dengan dirinya sendiri**. Jangan gunakan `val === NaN`; selalu gunakan method resmi `Number.isNaN(val)`.
+3. **Miskonsepsi Pecahan Desimal:** Mengira komputer mengalami malfungsi matematika saat `0.1 + 0.2 === 0.30000000000000004`. Komputer menyimpan angka dalam basis 2 (biner); pecahan sepertiga atau sepersepuluh menghasilkan desimal berulang tak terhingga di biner layaknya 1/3 di desimal.
+4. **Miskonsepsi Hoisting `var`:** Mengira `var` aman digunakan seperti `let`. `var` mengangkat deklarasi ke puncak fungsi tanpa inisialisasi, memicu bug silent `undefined` yang sangat sulit dilacak.
+
+---
+
+## 7. RANGKUMAN & KUIS MINI (RETRIEVAL PRACTICE)
+
+<MiniQuiz
+  client:load
+  lessonId="J1"
+  title="Kuis Mini J1: Penguasaan Fundamental JavaScript"
+  questions={[
+    {
+      question: "Mengapa para rekayasawan perangkat lunak modern menolak penggunaan kata kunci 'var'?",
+      conceptId: "J1-Variables",
+      options: [
+        {
+          text: "Karena var bersifat function-scoped dan mengalami hoisting tanpa Temporal Dead Zone, memicu kebocoran scope yang rawan bug.",
+          isCorrect: true,
+          explanation: "Tepat! let dan const mengadopsi block scoping sejati dan Temporal Dead Zone yang mencegah variabel diakses sebelum baris deklarasinya."
+        },
+        {
+          text: "Karena var hanya dapat menyimpan angka dan tidak mendukung string.",
+          isCorrect: false,
+          explanation: "Salah. var dapat menyimpan tipe data apa pun, tetapi memiliki model scoping yang berbahaya."
+        },
+        {
+          text: "Karena var otomatis dihapus dari memori setelah 1 detik.",
+          isCorrect: false,
+          explanation: "Salah. var bertahan sesuai siklus hidup fungsi atau global execution context."
+        }
+      ]
+    },
+    {
+      question: "Apa cara yang direkomendasikan spesifikasi ECMAScript untuk membandingkan kesetaraan hasil perhitungan floating point 0.1 + 0.2 dengan 0.3?",
+      conceptId: "J1-IEEE754",
+      options: [
+        {
+          text: "Memeriksa apakah selisih mutlak kedua angka lebih kecil dari Number.EPSILON.",
+          isCorrect: true,
+          explanation: "Benar! Math.abs((0.1 + 0.2) - 0.3) < Number.EPSILON adalah standar komparasi toleransi presisi mesin IEEE-754."
+        },
+        {
+          text: "Menggunakan operator kesetaraan longgar (0.1 + 0.2 == 0.3).",
+          isCorrect: false,
+          explanation: "Salah. Operator == juga menghasilkan false karena selisih bit mantissa tetap ada."
+        },
+        {
+          text: "Mengubah angka menjadi boolean menggunakan Boolean().",
+          isCorrect: false,
+          explanation: "Salah. Mengubah angka non-nol menjadi boolean selalu menghasilkan true dan menghilangkan nilai perhitungannya."
+        }
+      ]
+    },
+    {
+      question: "Manakah ekspresi di bawah ini yang menghasilkan nilai boolean true?",
+      conceptId: "J1-Equality",
+      options: [
+        {
+          text: "typeof 10n === 'bigint'",
+          isCorrect: true,
+          explanation: "Tepat! Literal 10n adalah tipe data primitif BigInt dan operator typeof mengembalikan string 'bigint'."
+        },
+        {
+          text: "NaN === NaN",
+          isCorrect: false,
+          explanation: "Salah. NaN tidak pernah sama dengan dirinya sendiri menurut standar IEEE-754."
+        },
+        {
+          text: "'5' === 5",
+          isCorrect: false,
+          explanation: "Salah. Operator === memeriksa kesetaraan tipe; string '5' berbeda tipe dari number 5."
+        }
+      ]
+    }
+  ]}
+/>
+
+---
+
+## 8. SELAMI LEBIH DALAM (DIVE DEEPER)
+
+- **Dokumentasi Resmi MDN:** Baca panduan [MDN Web Docs: JavaScript Grammar and Types](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Grammar_and_types).
+- **Spesifikasi Formal ECMA-262:** Telusuri standar [ECMA-262 §6.1 Data Types and Values](https://tc39.es/ecma262/#sec-ecmascript-data-types-and-values) untuk memahami definisi formal spesifikasi V8.
+- **W3Schools JavaScript Tutorial:** Telusuri referensi interaktif [W3Schools JS Variables & Operators](https://www.w3schools.com/js/default.asp).

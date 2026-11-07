@@ -54,7 +54,7 @@ Selamat datang di Level J2. Pada level ini, kita melangkah dari sekadar menulis 
 
 ## 2. KONSEP INTI: Transformasi Data FP & Model Memori
 
-Pemrograman fungsional & modular modern di JavaScript bersandar pada pilar utama:
+Berdasarkan standar resmi [MDN Web Docs: JavaScript Closures](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Closures) dan tutorial [W3Schools JavaScript Array Methods](https://www.w3schools.com/js/js_array_methods.asp), pemrograman fungsional & modular modern di JavaScript bersandar pada pilar utama:
 1. **Purity & Immutability:** Jangan mengubah array/objek asli; hasilkan struktur data baru (via `structuredClone` atau immutable methods seperti `toSorted`).
 2. **First-Class Functions:** Fungsi dapat dikirimkan sebagai argumen (`map`, `filter`, `reduce`) dan dikembalikan dari fungsi lain.
 3. **Closure & Heap Persistence:** Ketika fungsi luar selesai dieksekusi, variabel di dalam lingkup leksikalnya tidak langsung dihancurkan oleh Garbage Collector jika masih direferensikan oleh fungsi dalam (*inner function*).
@@ -418,5 +418,7 @@ console.log("Total Modul ESM:", ModuleRegistry.hitung());`}
 
 ## 8. SELAMI LEBIH DALAM (DIVE DEEPER)
 
+- **Dokumentasi Resmi MDN:** Telusuri panduan komprehensif [MDN Web Docs: Closures & Scoping](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Closures) dan [MDN Inheritance & the prototype chain](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Inheritance_and_the_prototype_chain).
+- **W3Schools JavaScript Guide:** Pelajari panduan praktis [W3Schools JS Classes & Objects](https://www.w3schools.com/js/js_classes.asp).
 - **Spesifikasi Formal TC39:** Telusuri spesifikasi [ECMA-262 §23.1.3](https://tc99.es/ecma262/) mengenai *Ordinary Object Internal Methods* dan *Array Exotic Objects*.
 - **V8 Engine Garbage Collection:** Bagaimana V8 Engine membedakan alokasi generasi muda (*Nursery/Scavenger*) dan generasi tua (*Mark-Sweep-Compact*) pada variabel closure yang tertahan lama di memori heap.

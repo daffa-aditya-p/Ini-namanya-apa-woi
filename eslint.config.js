@@ -5,7 +5,7 @@ export default [
   js.configs.recommended,
   ...tsPlugin.configs.recommended,
   {
-    ignores: ['dist/**', '.astro/**', 'node_modules/**', 'docs/**', 'scripts/**'],
+    ignores: ['dist/**', '.astro/**', 'node_modules/**', 'docs/**', 'scripts/**', 'public/**'],
   },
   {
     rules: {

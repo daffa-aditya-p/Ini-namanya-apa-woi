@@ -7,70 +7,172 @@ slug: "curriculum/python/p1"
 estimatedMinutes: 90
 prerequisites: []
 learningObjectives:
-  - "Memahami filosofi keterbacaan kode berbasis Zen of Python"
-  - "Menguasai struktur blok berbasis indentasi tanpa kurung kurawal"
-  - "Memahami variabel sebagai name binding dinamis pada memori CPython"
-  - "Menulis fungsi modular dan formatting string modern menggunakan f-strings"
+  - "Memahami filosofi keterbacaan kode berbasis The Zen of Python (PEP 20)"
+  - "Menguasai struktur blok berbasis indentasi 4 spasi (PEP 8) tanpa kurung kurawal"
+  - "Memahami variabel sebagai dynamic name binding pada memori heap CPython"
+  - "Membedakan pembagian riil (/), pembagian bulat (//), dan presisi bilangan bulat arbitrer"
+  - "Menulis fungsi modular dan formatting string modern menggunakan f-strings (PEP 498)"
 relatedConcepts:
   - "CPython 3.12"
-  - "Name Binding"
-  - "Pyodide WASM"
+  - "Dynamic Name Binding & PyObject"
+  - "Pyodide WASM Runtime"
+  - "PEP 8 & PEP 20"
 languageVersion: "Python 3.12"
-summary: "Pelajari bagaimana Python menyederhanakan ekspresi logika komputasi dengan sintaks yang elegan, bersih, dan mendekati bahasa manusia."
+summary: "Pelajari bagaimana Python menyederhanakan ekspresi logika komputasi dengan sintaks yang elegan, bersih, dan mendekati bahasa alami manusia."
 ---
 
 import { CodePlayground } from '../../components/CodePlayground';
+import { DualTrackView } from '../../components/DualTrackView';
+import { PredictOutput } from '../../components/PredictOutput';
+import { FadedExample } from '../../components/FadedExample';
+import { SocraticTutorPanel } from '../../components/SocraticTutorPanel';
+import { MiniQuiz } from '../../components/MiniQuiz';
 
 # Level P1: Fondasi Pemrograman Python
 
-Selamat datang di bengkel Python belajar.in. Di modul ini, kodemu dieksekusi secara nyata oleh runtime CPython 3.12 yang dikompilasi ke WebAssembly (Pyodide). Tidak ada mock palsu; apa yang kamu tulis di sini adalah Python murni.
+Selamat datang di bengkel Python belajar.in. Di modul ini, kodemu dieksekusi secara nyata oleh runtime CPython 3.12 yang dikompilasi ke WebAssembly (Pyodide). Tidak ada mock simulasi palsu; apa yang kamu tulis di sini adalah eksekusi Python murni di perambanmu.
 
 ---
 
-## 1. Filosofi & Perintah Pertama: `print()`
+## 1. HOOK: Masalah Nyata & Analogi Keseharian
 
-Python dirancang dengan prinsip utama: **keterbacaan kode adalah yang utama** (*Readability counts*). Kita tidak membutuhkan titik-koma (`;`) di akhir baris atau kurung kurawal untuk membungkus kode sederhana.
-
-<CodePlayground
+<DualTrackView
   client:load
-  language="python"
-  title="Latihan P1.1: Mencetak Output di Python"
-  initialCode={`print("Halo dari Pyodide Python 3.12!")
-print("Tahun:", 2026)
-print("Nilai komputasi:", 2 ** 8)`}
-  expectedOutput={`Halo dari Pyodide Python 3.12!\nTahun: 2026\nNilai komputasi: 256`}
+  santaiTitle="Jalur Santai: Resep Dapur Nenek & Stiker Label Nama"
+  santaiParagraphs={[
+    "Bayangkan kamu menyimpan bumbu masakan di dapur. Di bahasa pemrograman lain, variabel sering dianggap sebagai 'kotak besi' yang dipatenkan sejak awal hanya boleh diisi garam atau merica.",
+    "Di Python, variabel hanyalah selembar stiker label nama yang kamu tempelkan pada stoples. Kamu bisa mencabut stiker label bertuliskan 'stok' dari stoples berisi beras (teks) lalu menempelkannya ke toples berisi 42 butir telur (angka). Dan aturan indentasi spasi Python seperti langkah-langkah memasak yang tertata rapi: kamu tahu persis instruksi mana yang berada di dalam tahapan menumis tanpa perlu tanda kurung kurawal yang membingungkan."
+  ]}
+  cepatTitle="Jalur Cepat: PyObject Pointer Binding, CPython Lexer & Arbitrary Precision"
+  cepatParagraphs={[
+    "Di CPython, variabel adalah pointer referensi leksikal dalam frame namespace lokal/global yang mengarah ke struktur PyObject pada Heap Memory. Melakukan re-assignment hanya memperbarui pointer tanpa merusak struktur objek lama (yang kemudian dibebaskan oleh Reference Counting GC).",
+    "Python 3.12 mengimplementasikan tipe int dengan presisi arbitrer (PyLongObject), mengeliminasi risiko integer overflow 32/64-bit yang lazim ditemui di C atau Java. Tokenizer CPython mendeteksi token INDENT dan DEDENT untuk membentuk Abstract Syntax Tree secara elegan."
+  ]}
 />
 
 ---
 
-## 2. Variabel Sebagai *Name Binding* (Bukan Kotak Statis)
+## 2. KONSEP INTI: Fondasi Sintaks & Dynamic Name Binding
 
-Di Python, variabel bukanlah "kotak" yang dipatok dengan tipe kaku di memori, melainkan sebuah **label nama** (*name binding*) yang ditempelkan pada objek data di *heap*.
+Berdasarkan panduan resmi [Python 3.12 Documentation](https://docs.python.org/3/tutorial/introduction.html) dan [W3Schools Python Tutorial](https://www.w3schools.com/python/), lima prinsip utama Python meliputi:
+
+1. **Keterbacaan Kode di Atas Segalanya (*The Zen of Python* - PEP 20):**
+   - *"Readability counts."* Kode dibaca jauh lebih sering daripada ditulis.
+   - Sintaks Python membuang titik-koma (`;`) dan kurung kurawal (`{}`) untuk meminimalkan beban kognitif mata pembaca.
+2. **Indentasi 4 Spasi Baku (PEP 8):**
+   - Indentasi bukan sekadar gaya penulisan (*beautifier*), melainkan penentu struktur blok logika resmi.
+   - Gunakan selalu 4 spasi untuk setiap tingkatan blok percabangan (`if`) atau perulangan (`for`).
+3. **Variabel Sebagai *Dynamic Name Binding*:**
+   - Variabel dibuat saat pertama kali diberi nilai (*assignment* via `=`).
+   - Tipe data melekat pada nilai objek di memori, bukan pada nama variabelnya.
+4. **Operator Aritmatika Presisi:**
+   - Pembagian Riil (`/`): Selalu menghasilkan tipe desimal `float` (misal: `17 / 5` menghasilkan `3.4`).
+   - Pembagian Bulat (*Floor Division* `//`): Menghasilkan pembulatan ke bawah menuju bilangan bulat terdekat (misal: `17 // 5` menghasilkan `3`).
+   - Modulus (`%`): Menghasilkan sisa bagi pembagian bulat.
+   - Eksponensial (`**`): Menghitung pemangkatan angka secara efisien.
+5. **Format String Modern (*f-strings* - PEP 498):**
+   - Menggunakan prefiks `f"..."` dengan ekspresi yang dibungkus `{ekspresi}` untuk merangkai teks secara cepat dan ekspresif.
+
+---
+
+## 3. CONTOH HIDUP + PREDIKSI OUTPUT
+
+Sebelum menjalankan kode di bawah, uji intuisi mental modelmu terhadap perilaku pembagian dan dynamic name binding Python:
+
+<PredictOutput
+  client:load
+  language="python"
+  title="Prediksi Output P1.1: Pembagian Floor vs Real & Dynamic Binding"
+  code={`x = 10
+y = 4
+
+hasil_riil = x / y
+hasil_bulat = x // y
+
+print(type(hasil_riil).__name__)
+print(type(hasil_bulat).__name__)
+print(hasil_riil)
+print(hasil_bulat)`}
+  options={[
+    {
+      text: "float\\nint\\n2.5\\n2",
+      isCorrect: true,
+      explanation: "Tepat! Di Python 3, operator / selalu menghasilkan float (2.5), sedangkan operator // menghasilkan int (2) pembagian bulat ke bawah."
+    },
+    {
+      text: "int\\nint\\n2\\n2",
+      isCorrect: false,
+      explanation: "Salah. Berbeda dengan C atau Java kuno, operator / di Python 3 tidak membuang pecahan jika operannya bertipe integer."
+    },
+    {
+      text: "float\\nfloat\\n2.5\\n2.0",
+      isCorrect: false,
+      explanation: "Salah. Pembagian bulat (//) antara dua integer menghasilkan integer murni (2), bukan float (2.0)."
+    }
+  ]}
+/>
 
 <CodePlayground
   client:load
   language="python"
-  title="Latihan P1.2: Dynamic Name Binding"
+  title="Latihan P1.1: Mencetak Output di Python 3.12"
+  initialCode={`print("Halo dari Pyodide Python 3.12!")
+print("Tahun rilis:", 2026)
+print("Nilai komputasi:", 2 ** 8)`}
+  expectedOutput={`Halo dari Pyodide Python 3.12!\nTahun rilis: 2026\nNilai komputasi: 256`}
+/>
+
+---
+
+## 4. LATIHAN TERPANDU (FADED EXAMPLE)
+
+Lengkapi fungsi penentu harga belanja di bawah ini dengan menghitung nominal potongan diskon bersih:
+
+<FadedExample
+  client:load
+  title="Kalkulator Potongan Diskon Bersih Toko"
+  language="python"
+  missingTaskDescription="Lengkapi fungsi di bawah untuk menghitung potongan diskon dari harga awal, lalu kembalikan harga bersih dalam bilangan bulat."
+  fadedHint="Gunakan rumus: potongan = (harga_awal * diskon_persen) / 100 lalu kembalikan int(harga_awal - potongan)."
+  starterCode={`def hitung_harga_akhir(harga_awal, diskon_persen=10):
+    # TODO: Hitung nominal potongan dan kembalikan harga bersih
+    potongan = 0
+    return harga_awal - potongan
+
+harga_bersih = hitung_harga_akhir(200000, 25)
+print("Harga Bersih:", harga_bersih)`}
+  initialCode={`def hitung_harga_akhir(harga_awal, diskon_persen=10):
+    potongan = (harga_awal * diskon_persen) / 100
+    return int(harga_awal - potongan)
+
+harga_bersih = hitung_harga_akhir(200000, 25)
+print("Harga Bersih:", harga_bersih)`}
+  expectedOutput={`Harga Bersih: 150000`}
+/>
+
+---
+
+## 5. LATIHAN MANDIRI (AUTO-GRADED) & TANGGA PETUNJUK
+
+Selesaikan rangkaian latihan di bawah langsung di atas runtime CPython WebAssembly Pyodide:
+
+<CodePlayground
+  client:load
+  language="python"
+  title="Latihan Mandiri P1.2: Dynamic Name Binding & Tipe Objek"
   initialCode={`pesan = "Halo belajar.in"
 print("Tipe awal:", type(pesan).__name__)
 
-# Variabel yang sama dapat diikatkan ke objek tipe lain
 pesan = 42
 print("Tipe baru:", type(pesan).__name__)
 print("Nilai pesan:", pesan)`}
   expectedOutput={`Tipe awal: str\nTipe baru: int\nNilai pesan: 42`}
 />
 
----
-
-## 3. Tipe Numerik & Operator Aritmatika Modern
-
-Python mendukung bilangan bulat berpresisi tak-terbatas (`int`) dan bilangan desimal (*floating point* `float`). Perhatikan perbedaan pembagian riil (`/`) dan pembagian bulat (*floor division* `//`):
-
 <CodePlayground
   client:load
   language="python"
-  title="Latihan P1.3: Operator Aritmatika"
+  title="Latihan Mandiri P1.3: Operator Aritmatika & Eksponensial"
   initialCode={`a = 17
 b = 5
 
@@ -81,16 +183,10 @@ print("Pangkat (**):", b ** 3)`}
   expectedOutput={`Pembagian Riil (/): 3.4\nPembagian Bulat (//): 3\nSisa Bagi (%): 2\nPangkat (**): 125`}
 />
 
----
-
-## 4. Manipulasi String Modern: *f-strings*
-
-Format string modern (*f-strings*) diperkenalkan untuk menyusun teks dinamis secara ringkas, ekspresif, dan cepat.
-
 <CodePlayground
   client:load
   language="python"
-  title="Latihan P1.4: Format String Modern"
+  title="Latihan Mandiri P1.4: Format String Modern (f-strings)"
   initialCode={`nama = "Sari"
 bahasa = "Python"
 jam_belajar = 15
@@ -101,16 +197,10 @@ print(f"Prediksi minggu depan: {jam_belajar * 2} jam.")`}
   expectedOutput={`Pembelajar Sari telah menyelesaikan 15 jam latihan Python.\nPrediksi minggu depan: 30 jam.`}
 />
 
----
-
-## 5. Kontrol Alur Berbasis Indentasi (`if`, `elif`, `else`)
-
-Di Python, struktur blok ditentukan secara ketat oleh **indentasi spasi** (standar PEP 8: 4 spasi), bukan tanda kurung. Hal ini menjamin seluruh kode Python di dunia memiliki tata letak visual yang seragam dan mudah dipindai mata.
-
 <CodePlayground
   client:load
   language="python"
-  title="Latihan P1.5: Percabangan Keputusan"
+  title="Latihan Mandiri P1.5: Percabangan Keputusan if, elif, else"
   initialCode={`def evaluasi_nilai(skor):
     if skor >= 85:
         return "Penguasaan Sangat Baik (Mastery)"
@@ -124,16 +214,10 @@ print("Skor 64:", evaluasi_nilai(64))`}
   expectedOutput={`Skor 92: Penguasaan Sangat Baik (Mastery)\nSkor 64: Perlu Latihan Tambahan`}
 />
 
----
-
-## 6. Mini Proyek P1: Evaluasi Simulator Tebak Logika
-
-Mari kita gabungkan fungsi, perulangan `for`, penanganan kondisi, dan koleksi data ke dalam program terpadu.
-
 <CodePlayground
   client:load
   language="python"
-  title="Mini Proyek P1: Evaluasi Tebak Target"
+  title="Mini Proyek P1: Evaluasi Simulator Tebak Logika"
   initialCode={`def uji_tebakan(target, tebakan):
     hasil = []
     for t in tebakan:
@@ -153,3 +237,104 @@ for baris in uji_tebakan(target_rahasia, daftar_tebakan):
     print(baris)`}
   expectedOutput={`Tebakan 20: Terlalu Rendah.\nTebakan 50: Terlalu Tinggi.\nTebakan 42: Tepat Sasaran!`}
 />
+
+{/* Socratic AI Tutor Assistant */}
+<SocraticTutorPanel
+  client:load
+  lessonId="P1"
+  language="python"
+  defaultCodeSnippet={`def cek_ganjil_genap(n):\n    return "Genap" if n % 2 == 0 else "Ganjil"`}
+/>
+
+---
+
+## 6. KESALAHAN UMUM (COMMON MISCONCEPTIONS)
+
+1. **Miskonsepsi Mencampur Spasi dan Tab:** Mencampurkan tombol Spasi dan Tab dalam satu blok kode memicu `IndentationError: unindent does not match any outer indentation level`. Standar PEP 8 mewajibkan penggunaan tepat 4 spasi murni.
+2. **Miskonsepsi Lingkup Variabel Loop `for`:** Berbeda dari bahasa C atau Java di mana variabel loop terisolasi di dalam blok `for`, di Python variabel loop tetap hidup dan dapat diakses setelah perulangan selesai dalam scope fungsi yang sama.
+3. **Miskonsepsi Operator Pembagian:** Mengira `4 / 2` menghasilkan integer `2`. Di Python 3, operator `/` selalu mengembalikan float (`2.0`). Jika kamu menginginkan integer, gunakan `4 // 2`.
+4. **Miskonsepsi Argumen Bawaan yang Dapat Diubah (*Mutable Default Argument*):** Menulis `def fungsi(data=[])` berbahaya karena list default dibuat hanya sekali saat fungsi pertama kali didefinisikan, bukan setiap kali dipanggil. Gunakan `data=None` lalu inisialisasi di dalam badan fungsi.
+
+---
+
+## 7. RANGKUMAN & KUIS MINI (RETRIEVAL PRACTICE)
+
+<MiniQuiz
+  client:load
+  lessonId="P1"
+  title="Kuis Mini P1: Fondasi Bahasa Python"
+  questions={[
+    {
+      question: "Apa tujuan utama penggunaan indentasi 4 spasi wajib pada struktur kode Python (PEP 8)?",
+      conceptId: "P1-Indentation",
+      options: [
+        {
+          text: "Menentukan hierarki blok logika secara gramatikal tanpa memerlukan tanda kurung kurawal, menjamin keterbacaan seragam.",
+          isCorrect: true,
+          explanation: "Tepat! Indentasi di Python menggantikan kurung kurawal {} sehingga seluruh baris kode di dunia memiliki susunan visual yang konsisten."
+        },
+        {
+          text: "Mencegah eksekusi script oleh pengguna yang tidak memiliki hak akses administrator.",
+          isCorrect: false,
+          explanation: "Salah. Indentasi adalah aturan sintaksis bahasa, bukan mekanisme izin sistem operasi."
+        },
+        {
+          text: "Mempercepat alokasi memori RAM sebesar 50%.",
+          isCorrect: false,
+          explanation: "Salah. Indentasi diproses pada tahap parsing tokenizer dan tidak memengaruhi kecepatan alokasi RAM secara langsung."
+        }
+      ]
+    },
+    {
+      question: "Apakah hasil dari ekspresi 15 // 4 di Python 3.12?",
+      conceptId: "P1-Arithmetic",
+      options: [
+        {
+          text: "3 (tipe int, hasil pembulatan ke bawah menuju bilangan bulat terdekat)",
+          isCorrect: true,
+          explanation: "Benar! Floor division // membagi 15 dengan 4 (3.75) lalu membulatkannya ke bawah menjadi 3."
+        },
+        {
+          text: "3.75 (tipe float riil)",
+          isCorrect: false,
+          explanation: "Salah. Nilai 3.75 dihasilkan oleh operator pembagian riil (/), bukan pembagian bulat (//)."
+        },
+        {
+          text: "4 (dibulatkan ke atas)",
+          isCorrect: false,
+          explanation: "Salah. Floor division selalu membulatkan ke bawah (floor), bukan ke atas (ceil)."
+        }
+      ]
+    },
+    {
+      question: "Manakah sintaks format string modern (f-strings) yang valid menurut standar PEP 498?",
+      conceptId: "P1-Strings",
+      options: [
+        {
+          text: "f\"Total pesanan: {harga * jumlah} Rupiah\"",
+          isCorrect: true,
+          explanation: "Tepat! Huruf f di awal string memungkinkan evaluasi ekspresi Python langsung di dalam tanda kurung kurawal {}."
+        },
+        {
+          text: "\"Total pesanan: %d Rupiah\" % (harga * jumlah)",
+          isCorrect: false,
+          explanation: "Salah. Ini adalah gaya lama operator % gaya C kuno yang sudah tidak disarankan untuk kode baru."
+        },
+        {
+          text: "\"Total pesanan: \" + (harga * jumlah) + \" Rupiah\"",
+          isCorrect: false,
+          explanation: "Salah. Menggabungkan string dengan angka secara langsung menggunakan tanda + memicu TypeError di Python."
+        }
+      ]
+    }
+  ]}
+/>
+
+---
+
+## 8. SELAMI LEBIH DALAM (DIVE DEEPER)
+
+- **Dokumentasi Resmi Python:** Pelajari bab tutorial resmi [The Python Tutorial: An Informal Introduction to Python](https://docs.python.org/3/tutorial/introduction.html).
+- **Panduan Gaya Penulisan PEP 8:** Baca standar resmi komunitas [PEP 8 – Style Guide for Python Code](https://peps.python.org/pep-0008/).
+- **Filosofi Bahasa PEP 20:** Baca filosofi desain di [PEP 20 – The Zen of Python](https://peps.python.org/pep-0020/) atau ketikkan `import this` di Python REPL.
+- **W3Schools Python Tutorial:** Eksplorasi latihan interaktif di [W3Schools Python Syntax & Variables](https://www.w3schools.com/python/default.asp).

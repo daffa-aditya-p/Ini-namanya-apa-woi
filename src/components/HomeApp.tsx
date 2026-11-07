@@ -378,6 +378,50 @@ print(f"Total elemen: {len(pangkat)}")`}
               Buka Modul P3 <ArrowRightIcon className="w-3 h-3" />
             </div>
           </a>
+
+          {/* Track JavaScript J4 */}
+          <a
+            href="/curriculum/javascript/j4"
+            className="block p-6 rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] hover:border-[var(--border-focused)] transition-all group shadow-xs text-decoration-none"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <span className="px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-[#F7DF1E]/20 text-[#857000] dark:text-[#F7DF1E]">
+                J4 • JavaScript (Baru)
+              </span>
+              <span className="text-xs font-mono text-[var(--text-muted)]">Vitest & Tooling</span>
+            </div>
+            <h3 className="text-xl font-bold mb-2 text-[var(--text-primary)] group-hover:text-[var(--accent-terracotta)] transition-colors font-display">
+              Modern Tooling & Mini Test Runner
+            </h3>
+            <p className="text-sm text-[var(--text-secondary)] leading-relaxed mb-4">
+              Test-Driven Development (TDD), assertion matchers toBe/toEqual/toThrow, mini Vitest runner, reactive store subscription, dan autocomplete engine.
+            </p>
+            <div className="text-xs font-mono font-medium text-[var(--accent-terracotta)] flex items-center gap-1">
+              Buka Modul J4 <ArrowRightIcon className="w-3 h-3" />
+            </div>
+          </a>
+
+          {/* Track Python P4 */}
+          <a
+            href="/curriculum/python/p4"
+            className="block p-6 rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] hover:border-[var(--border-focused)] transition-all group shadow-xs text-decoration-none"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <span className="px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-[#3776AB]/20 text-[#20527B] dark:text-[#68B0EB]">
+                P4 • Python (Baru)
+              </span>
+              <span className="text-xs font-mono text-[var(--text-muted)]">Python 3.12 Menengah</span>
+            </div>
+            <h3 className="text-xl font-bold mb-2 text-[var(--text-primary)] group-hover:text-[var(--accent-terracotta)] transition-colors font-display">
+              Testing, Dekorator, Generators & Asyncio
+            </h3>
+            <p className="text-sm text-[var(--text-secondary)] leading-relaxed mb-4">
+              Unit testing bergaya Pytest, dekorator @functools.wraps, memory efficiency via Generator yield, Context Manager class, dan asyncio.gather.
+            </p>
+            <div className="text-xs font-mono font-medium text-[var(--accent-terracotta)] flex items-center gap-1">
+              Buka Modul P4 <ArrowRightIcon className="w-3 h-3" />
+            </div>
+          </a>
         </div>
       </section>
 

@@ -54,7 +54,7 @@ Selamat datang di Level P2. Di modul ini, kodemu berinteraksi langsung dengan ko
 
 ## 2. KONSEP INTI: Koleksi Data Bawaan Python
 
-Empat struktur koleksi inti Python memiliki karakteristik unik:
+Berdasarkan dokumentasi resmi [Python 3.12 Documentation: Data Structures](https://docs.python.org/3/tutorial/datastructures.html) dan tutorial [W3Schools Python Collections](https://www.w3schools.com/python/python_lists.asp), empat struktur koleksi inti Python memiliki karakteristik unik:
 1. **List (`[]`):** Berurutan (*ordered*), dapat diubah (*mutable*), mengizinkan duplikat.
 2. **Tuple (`()`):** Berurutan, tidak dapat diubah (*immutable*), hemat memori dan aman sebagai dictionary keys.
 3. **Dictionary (`{key: value}`):** Pemetaan kunci-nilai hash map cepat, kunci wajib bertipe hashable/immutable.
@@ -342,5 +342,7 @@ print("Ringkasan UMKM:", json.dumps(laporan))`}
 
 ## 8. SELAMI LEBIH DALAM (DIVE DEEPER)
 
-- **PEP 584:** Bedah spesifikasi penambahan operator penggabungan `|` dan pembaruan `|=` pada *Dictionary* di Python 3.9.
+- **Dokumentasi Resmi Python:** Telusuri panduan [docs.python.org: Data Structures](https://docs.python.org/3/tutorial/datastructures.html) dan [docs.python.org: Reading and Writing Files](https://docs.python.org/3/tutorial/inputoutput.html#reading-and-writing-files).
+- **W3Schools Python Dictionaries & Lists:** Pelajari latihan interaktif [W3Schools Python Dictionaries](https://www.w3schools.com/python/python_dictionaries.asp).
+- **PEP 584:** Bedah spesifikasi penambahan operator penggabungan `|` dan pembaruan `|=` pada *Dictionary* di Python 3.9+.
 - **CPython Dict Internals:** Arsitektur *compact and ordered dict* karya Raymond Hettinger yang menghemat 20-25% memori dengan memisahkan array index dan dense table entries.
