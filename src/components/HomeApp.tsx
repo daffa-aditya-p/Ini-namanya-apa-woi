@@ -292,46 +292,47 @@ print(f"Total elemen: {len(pangkat)}")`}
           </a>
 
           {/* Track Python P1 */}
+          {/* Track Python Bab 1 */}
           <a
             href="/curriculum/python/p1"
             className="block p-6 rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] hover:border-[var(--border-focused)] transition-all group shadow-xs text-decoration-none"
           >
             <div className="flex items-center justify-between mb-3">
               <span className="px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-[#3776AB]/20 text-[#20527B] dark:text-[#68B0EB]">
-                P1 • Python
+                Bab 1 • Python (P1)
               </span>
               <span className="text-xs font-mono text-[var(--text-muted)]">Python 3.12 WASM</span>
             </div>
             <h3 className="text-xl font-bold mb-2 text-[var(--text-primary)] group-hover:text-[var(--accent-terracotta)] transition-colors font-display">
-              Struktur Pertama & Bahasa Alami
+              Dasar Pemrograman & Variabel
             </h3>
             <p className="text-sm text-[var(--text-secondary)] leading-relaxed mb-4">
-              Fungsi print, operator aritmatika, variabel sebagai name binding dinamis, dan eksekusi instan di WebAssembly Pyodide.
+              Fungsi print, name binding variabel dinamis, operator aritmatika presisi, dan f-strings format PEP 498. Dilengkapi Kuis Evaluasi Bab 1.
             </p>
             <div className="text-xs font-mono font-medium text-[var(--accent-terracotta)] flex items-center gap-1">
-              Buka Modul P1 <ArrowRightIcon className="w-3 h-3" />
+              Buka Bab 1 <ArrowRightIcon className="w-3 h-3" />
             </div>
           </a>
 
-          {/* Track Python P2 */}
+          {/* Track Python Bab 2 */}
           <a
             href="/curriculum/python/p2"
             className="block p-6 rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] hover:border-[var(--border-focused)] transition-all group shadow-xs text-decoration-none"
           >
             <div className="flex items-center justify-between mb-3">
               <span className="px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-[#3776AB]/20 text-[#20527B] dark:text-[#68B0EB]">
-                P2 • Python (Baru)
+                Bab 2 • Python (P2)
               </span>
-              <span className="text-xs font-mono text-[var(--text-muted)]">Python 3.12 MEMFS</span>
+              <span className="text-xs font-mono text-[var(--text-muted)]">Python 3.12 Logika</span>
             </div>
             <h3 className="text-xl font-bold mb-2 text-[var(--text-primary)] group-hover:text-[var(--accent-terracotta)] transition-colors font-display">
-              Struktur Data & Manipulasi File
+              Logika & Alur Kontrol
             </h3>
             <p className="text-sm text-[var(--text-secondary)] leading-relaxed mb-4">
-              List, Tuple, Dict, Set, Slicing, Comprehensions, virtual file I/O CSV & JSON pada Pyodide MEMFS, dan penanganan Exception.
+              Percabangan if-elif-else, perulangan for & range, perulangan while, dan kontrol break/continue. Dilengkapi Kuis Evaluasi Bab 2.
             </p>
             <div className="text-xs font-mono font-medium text-[var(--accent-terracotta)] flex items-center gap-1">
-              Buka Modul P2 <ArrowRightIcon className="w-3 h-3" />
+              Buka Bab 2 <ArrowRightIcon className="w-3 h-3" />
             </div>
           </a>
 
@@ -357,25 +358,25 @@ print(f"Total elemen: {len(pangkat)}")`}
             </div>
           </a>
 
-          {/* Track Python P3 */}
+          {/* Track Python Bab 3 */}
           <a
             href="/curriculum/python/p3"
             className="block p-6 rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] hover:border-[var(--border-focused)] transition-all group shadow-xs text-decoration-none"
           >
             <div className="flex items-center justify-between mb-3">
               <span className="px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-[#3776AB]/20 text-[#20527B] dark:text-[#68B0EB]">
-                P3 • Python (Baru)
+                Bab 3 • Python (P3)
               </span>
-              <span className="text-xs font-mono text-[var(--text-muted)]">Python 3.12 OOP</span>
+              <span className="text-xs font-mono text-[var(--text-muted)]">Python 3.12 Koleksi</span>
             </div>
             <h3 className="text-xl font-bold mb-2 text-[var(--text-primary)] group-hover:text-[var(--accent-terracotta)] transition-colors font-display">
-              OOP, Dataclasses & Standard Library
+              Struktur Data Koleksi
             </h3>
             <p className="text-sm text-[var(--text-secondary)] leading-relaxed mb-4">
-              Class & self, enkapsulasi @property, pewarisan MRO super(), dunder comparison, @dataclass(frozen=True), dan collections/datetime.
+              List & slicing [start:stop:step], Tuple immutability, Dictionary hash map O(1) merge (|), dan Set himpunan. Dilengkapi Kuis Evaluasi Bab 3.
             </p>
             <div className="text-xs font-mono font-medium text-[var(--accent-terracotta)] flex items-center gap-1">
-              Buka Modul P3 <ArrowRightIcon className="w-3 h-3" />
+              Buka Bab 3 <ArrowRightIcon className="w-3 h-3" />
             </div>
           </a>
 
@@ -401,25 +402,25 @@ print(f"Total elemen: {len(pangkat)}")`}
             </div>
           </a>
 
-          {/* Track Python P4 */}
+          {/* Track Python Bab 4 */}
           <a
             href="/curriculum/python/p4"
             className="block p-6 rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] hover:border-[var(--border-focused)] transition-all group shadow-xs text-decoration-none"
           >
             <div className="flex items-center justify-between mb-3">
               <span className="px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-[#3776AB]/20 text-[#20527B] dark:text-[#68B0EB]">
-                P4 • Python
+                Bab 4 • Python (P4)
               </span>
-              <span className="text-xs font-mono text-[var(--text-muted)]">Python 3.12 Menengah</span>
+              <span className="text-xs font-mono text-[var(--text-muted)]">Python 3.12 Fungsi</span>
             </div>
             <h3 className="text-xl font-bold mb-2 text-[var(--text-primary)] group-hover:text-[var(--accent-terracotta)] transition-colors font-display">
-              Testing, Dekorator, Generators & Asyncio
+              Fungsi & Modularitas
             </h3>
             <p className="text-sm text-[var(--text-secondary)] leading-relaxed mb-4">
-              Unit testing bergaya Pytest, dekorator @functools.wraps, memory efficiency via Generator yield, Context Manager class, dan asyncio.gather.
+              Definisi fungsi modular, parameter fleksibel *args & **kwargs, return tuple, LEGB scope, lambda, dan comprehensions. Dilengkapi Kuis Evaluasi Bab 4.
             </p>
             <div className="text-xs font-mono font-medium text-[var(--accent-terracotta)] flex items-center gap-1">
-              Buka Modul P4 <ArrowRightIcon className="w-3 h-3" />
+              Buka Bab 4 <ArrowRightIcon className="w-3 h-3" />
             </div>
           </a>
 
@@ -445,25 +446,25 @@ print(f"Total elemen: {len(pangkat)}")`}
             </div>
           </a>
 
-          {/* Track Python P5 (Baru!) */}
+          {/* Track Python Bab 5 */}
           <a
             href="/curriculum/python/p5"
             className="block p-6 rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] hover:border-[var(--border-focused)] transition-all group shadow-xs text-decoration-none"
           >
             <div className="flex items-center justify-between mb-3">
               <span className="px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-[#3776AB]/20 text-[#20527B] dark:text-[#68B0EB]">
-                P5 • Python (Baru)
+                Bab 5 • Python (P5)
               </span>
-              <span className="text-xs font-mono text-[var(--text-muted)]">Data Science & ML</span>
+              <span className="text-xs font-mono text-[var(--text-muted)]">Python 3.12 OOP</span>
             </div>
             <h3 className="text-xl font-bold mb-2 text-[var(--text-primary)] group-hover:text-[var(--accent-terracotta)] transition-colors font-display">
-              Descriptors, Data Science & Machine Learning
+              Pemrograman Berorientasi Objek
             </h3>
             <p className="text-sm text-[var(--text-secondary)] leading-relaxed mb-4">
-              Protokol Descriptors, hook __init_subclass__, matriks korelasi Pearson, mini REST router in-memory, dan model Regresi Linier OLS dari nol.
+              Class & Object, atribut instance & self, pewarisan super(), enkapsulasi @property & setter, dan magic dunder methods. Dilengkapi Kuis Evaluasi Bab 5.
             </p>
             <div className="text-xs font-mono font-medium text-[var(--accent-terracotta)] flex items-center gap-1">
-              Buka Modul P5 <ArrowRightIcon className="w-3 h-3" />
+              Buka Bab 5 <ArrowRightIcon className="w-3 h-3" />
             </div>
           </a>
         </div>

@@ -2,27 +2,26 @@
 id: "P4"
 track: "python"
 level: "P4"
-title: "Python Tingkat Menengah: Testing Pytest, Dekorator, Generators & Asyncio"
+title: "Bab 4: Fungsi & Modularitas"
 slug: "curriculum/python/p4"
-estimatedMinutes: 150
+estimatedMinutes: 120
 prerequisites:
   - "P1"
   - "P2"
   - "P3"
 learningObjectives:
-  - "Menguasai metodologi unit testing otomatis bergaya Pytest menggunakan assert dan pelaporan test suite"
-  - "Membuat fungsi tingkat tinggi (Higher-Order Functions) dan dekorator menggunakan functools.wraps"
-  - "Menghemat konsumsi memori secara masif menggunakan Generators (yield) dan Generator Expressions"
-  - "Mengimplementasikan Context Manager berbasis class (__enter__ dan __exit__) untuk jaminan resource safety"
-  - "Memahami arsitektur asinkron modern Python menggunakan asyncio, coroutine, dan orkestrasi gather"
+  - "Mendefinisikan fungsi modular dengan argumen posisi, default parameter, dan anotasi tipe"
+  - "Memanfaatkan parameter variabel *args (tuple) dan **kwargs (dictionary) untuk arsitektur fleksibel"
+  - "Memahami siklus hidup variabel, namespace, dan aturan leksikal LEGB serta kata kunci global"
+  - "Menguasai penulisan fungsi anonim lambda satu baris untuk callback pengurutan dan transformasi"
+  - "Menerapkan list comprehension dan dictionary comprehension deklaratif berkecepatan tinggi"
 relatedConcepts:
-  - "Pytest Assertions & Test Automation"
-  - "PEP 318 Decorators & functools.wraps"
-  - "PEP 255 Generators & Lazy Evaluation"
-  - "PEP 343 Context Managers"
-  - "PEP 492 Coroutines & Asyncio Event Loop"
+  - "LEGB Scope Resolution"
+  - "Closures & Higher-Order Functions"
+  - "PEP 3107 Function Annotations"
+  - "Declarative Comprehensions"
 languageVersion: "Python 3.12"
-summary: "Kuasai teknik pemrograman Python tingkat produksi: pengujian otomatis bergaya Pytest, pembuatan dekorator fungsi, efisiensi generator yield, dan konkurensi modern asyncio."
+summary: "Bangun kode modular dan ekspresif: pendefinisian fungsi dengan *args/**kwargs, pemisahan scope variabel lokal/global, fungsi anonim lambda, dan list/dict comprehension."
 ---
 
 import { CodePlayground } from '../../components/CodePlayground';
@@ -30,83 +29,144 @@ import { DualTrackView } from '../../components/DualTrackView';
 import { PredictOutput } from '../../components/PredictOutput';
 import { FadedExample } from '../../components/FadedExample';
 import { SocraticTutorPanel } from '../../components/SocraticTutorPanel';
-import { MiniQuiz } from '../../components/MiniQuiz';
+import { ChapterQuiz } from '../../components/ChapterQuiz';
 
-# Level P4: Python Tingkat Menengah & Pemrograman Asinkron
+# Bab 4: Fungsi & Modularitas
 
-Selamat datang di Level P4. Di level ini, kita melangkah dari sekadar menulis script sekuensial menuju **arsitektur kode tingkat produksi (*production-grade Python*)**. Anda akan menguasai pengujian otomatis (*automated unit testing*) bergaya Pytest, pembuatan dekorator fungsi (*meta-programming*), penghematan memori via Generator, serta konkurensi modern berbasis **Asyncio**.
+Selamat datang di Bab 4. Menulis kode yang berulang-ulang (*copy-paste*) adalah musuh utama rekayasa perangkat lunak. Di bab ini, kamu akan memecah masalah besar menjadi modul-modul fungsi yang bersih, teruji, dan dapat digunakan kembali (*reusable*).
 
 ---
 
-## 1. HOOK: Masalah Nyata & Analogi Keseharian
-
 <DualTrackView
   client:load
-  santaiTitle="Jalur Santai: Jalur Konveyor Pabrik Hemat Energi & Manajer Kunci"
+  santaiTitle="Jalur Santai: Resep Masakan Mandiri & Dapur Bersekat"
   santaiParagraphs={[
-    "Bayangkan sebuah gudang e-commerce memproses 100.000 paket barang. Jika petugas gudang membawa 100.000 paket sekaligus ke atas meja kerja (list konvensional), meja akan patah kehabisan ruang (kehabisan RAM / Out-of-Memory). Generator (yield) seperti jalur ban konveyor otomatis: paket dialirkan satu per satu hanya ketika pekerja siap memprosesnya (lazy evaluation), menghemat 99% ruang meja.",
-    "Dan Context Manager (with) seperti staf pemegang kunci brankas otomatis: begitu Anda selesai mengambil dokumen atau terjadi pemadaman listrik darurat sekalipun, brankas dijamin terkunci rapat kembali secara aman tanpa pernah tertinggal terbuka."
+    "Bayangkan fungsi seperti resep kue: kamu tidak perlu menulis ulang instruksi 'kocok 2 butir telur dan 100gr gula' setiap kali membuat pesanan baru. Cukup panggil fungsi buat_kue(rasa='Cokelat').",
+    "Scope variabel seperti dapur tertutup: sendok garam yang kamu gunakan di dalam ruangan dapur (variabel lokal) tidak akan mengotori meja tamu di ruang depan (variabel global). Dan fungsi lambda seperti pisau saku serbaguna: kecil, praktis, dan langsung dipakai untuk satu potongan cepat tanpa perlu membuka koper peralatan besar."
   ]}
-  cepatTitle="Jalur Cepat: Frame Suspension, CPython Coroutines & Asyncio Loop"
+  cepatTitle="Jalur Cepat: Call Stack Frames, LEGB Lookup & First-Class Functions"
   cepatParagraphs={[
-    "Generator fungsi di CPython menangguhkan (suspend) PyFrameObject ketika menemukan kata kunci yield dan melanjutkan eksekusi saat next() dipanggil, menjaga alokasi heap stabil O(1) independen dari panjang deret.",
-    "Melalui pustaka asyncio (PEP 492), Python menyediakan cooperative multitasking berbasis Single-Threaded Event Loop. Coroutine melepaskan kendali (yield back to loop) saat menunggu I/O jaringan via await, memungkinkan ribuan socket konkuren dilayani tanpa beban overhead thread OS."
+    "Di CPython, pemanggilan fungsi mengalokasikan PyFrameObject baru pada C call stack dengan tabel FAST_LOCALS untuk akses variabel indeks O(1). Variabel diakses mengikuti resolusi LEGB (Local -> Enclosing -> Global -> Built-in).",
+    "Fungsi di Python adalah objek kelas satu (first-class citizens): fungsi dapat disimpan dalam variabel, diteruskan sebagai argumen, atau dikembalikan dari fungsi lain (Higher-Order Functions). List dan dict comprehensions dieksekusi di level opcode C loop teroptimasi yang lebih cepat dibanding perulangan append manual."
   ]}
 />
 
 ---
 
-## 2. KONSEP INTI: Empat Pilar Rekayasa Python Lanjutan
+<div id="subbab-4-1" className="scroll-mt-24">
 
-Berdasarkan panduan resmi [Python 3.12 Documentation: Library Reference](https://docs.python.org/3/library/) dan [W3Schools Python Advanced](https://www.w3schools.com/python/), terdapat 4 fondasi rekayasa perangkat lunak Python:
+## Sub-bab 4.1: Definisi Fungsi & Parameter
 
-1. **Unit Testing Bergaya Pytest:**
-   - Gunakan pernyataan sederhana `assert aktual == ekspektasi` tanpa boilerplate kelas berat.
-   - Menguji *boundary values*, percabangan kondisi, dan penanganan galat (*exception testing*).
-2. **Dekorator & Higher-Order Functions (PEP 318):**
-   - Fungsi adalah warga kelas satu (*first-class citizens*). Fungsi dapat menerima fungsi lain sebagai argumen dan mengembalikan fungsi pembungkus (*wrapper*).
-   - Selalu pasang `@functools.wraps(fn)` pada wrapper agar metadata fungsi asli (`__name__`, `__doc__`) tidak tertimpa.
-3. **Iterators & Generators (PEP 255):**
-   - Kata kunci `yield` mengubah fungsi biasa menjadi generator.
-   - Menghasilkan nilai secara bertahap saat diminta (*lazy evaluation*), sangat krusial saat membaca berkas gigabyte atau data streaming.
-4. **Context Manager (PEP 343) & Konkurensi Asyncio (PEP 492):**
-   - Protokol `__enter__` dan `__exit__` menjamin pembersihan resource (file, koneksi socket, lock database) dieksekusi secara deterministik.
-   - `async def` mendefinisikan coroutine dan `await` menunda eksekusi tanpa memblokir thread utama, diorkestrasikan secara paralel via `asyncio.gather()`.
+Fungsi didefinisikan dengan kata kunci `def`, diikuti nama fungsi dan tanda kurung parameter `def nama_fungsi(parameter):`.
+
+Python mendukung berbagai ragam parameter:
+- **Argumen Posisi (*Positional Arguments*):** Nilai dicocokkan berdasarkan urutan deklarasi.
+- **Nilai Bawaan (*Default Parameters*):** Mengisi nilai otomatis jika pemanggil tidak menyediakannya (`diskon=0.1`).
+- **Argumen Fleksibel (`*args`):** Menampung sembarang banyaknya argumen posisi tambahan ke dalam sebuah **Tuple**.
+- **Argumen Kata Kunci Fleksibel (`**kwargs`):** Menampung argumen `kunci=nilai` tambahan ke dalam sebuah **Dictionary**.
+
+<CodePlayground
+  client:load
+  language="python"
+  title="Latihan 4.1: Pembuatan Fungsi Modular & Argumen Bawaan"
+  initialCode={`def format_faktur(pelanggan, diskon=0.1, pajak=0.11):
+    def hitung_tagihan(subtotal):
+        setelah_diskon = subtotal * (1 - diskon)
+        total_pajak = setelah_diskon * pajak
+        return int(setelah_diskon + total_pajak)
+    return hitung_tagihan
+
+hitung_andi = format_faktur("Andi", 0.2)
+tagihan = hitung_andi(100000)
+print("Tagihan Bersih:", tagihan)`}
+  expectedOutput={`Tagihan Bersih: 88800`}
+/>
+
+<CodePlayground
+  client:load
+  language="python"
+  title="Latihan 4.2: Fleksibilitas Parameter dengan *args dan **kwargs"
+  initialCode={`def catat_pesanan(meja, *makanan, **catatan):
+    print(f"Meja #{meja}: {len(makanan)} pesanan")
+    print("Menu:", list(makanan))
+    if "pedas" in catatan:
+        print("Tingkat Pedas:", catatan["pedas"])
+
+catat_pesanan(4, "Nasi Goreng", "Sate Ayam", pedas="Sedang", catatan="Tanpa bawang")`}
+  expectedOutput={`Meja #4: 2 pesanan\nMenu: ['Nasi Goreng', 'Sate Ayam']\nTingkat Pedas: Sedang`}
+/>
+
+</div>
 
 ---
 
-## 3. CONTOH HIDUP + PREDIKSI OUTPUT
+<div id="subbab-4-2" className="scroll-mt-24">
 
-Sebelum mengeksekusi kode di bawah, uji intuisi mental modelmu terhadap siklus hidup generator `yield`:
+## Sub-bab 4.2: Nilai Balik & Scope
+
+Fungsi mengembalikan hasil komputasi menggunakan kata kunci `return`. Jika kita mencantumkan beberapa nilai yang dipisahkan koma, Python secara otomatis mengemasnya (*packing*) ke dalam sebuah **Tuple**.
+
+Variabel yang dibuat di dalam fungsi bersifat **Lokal** dan akan dibersihkan dari memori saat fungsi selesai dieksekusi. Python mengikuti hierarki pencarian nama **LEGB**:
+1. **L (Local):** Dideklarasikan di dalam fungsi saat ini.
+2. **E (Enclosing):** Di dalam fungsi pembungkus luar (pada fungsi bersarang).
+3. **G (Global):** Di tingkat modul paling luar file.
+4. **B (Built-in):** Fungsi bawaan Python seperti `len()`, `range()`, `print()`.
+
+<CodePlayground
+  client:load
+  language="python"
+  title="Latihan 4.3: Pengembalian Multi-Nilai via Tuple"
+  initialCode={`def statistik_nilai(daftar_angka):
+    rata_rata = sum(daftar_angka) / len(daftar_angka)
+    tertinggi = max(daftar_angka)
+    terendah = min(daftar_angka)
+    return round(rata_rata, 1), tertinggi, terendah
+
+skor_siswa = [78, 85, 92, 64, 89]
+rata, max_val, min_val = statistik_nilai(skor_siswa)
+
+print("Rata-rata:", rata)
+print("Nilai Tertinggi:", max_val)
+print("Nilai Terendah:", min_val)`}
+  expectedOutput={`Rata-rata: 81.6\nNilai Tertinggi: 92\nNilai Terendah: 64`}
+/>
+
+</div>
+
+---
+
+<div id="subbab-4-3" className="scroll-mt-24">
+
+## Sub-bab 4.3: Lambda & Comprehensions
+
+Untuk operasi sederhana yang hanya membutuhkan satu baris perhitungan sementara, gunakan fungsi anonim **Lambda** dengan sintaks `lambda parameter: ekspresi`. Lambda sangat sering digunakan sebagai parameter fungsi `sorted(..., key=lambda ...)`.
+
+Selain itu, **Comprehensions** memungkinkan kamu mentransformasi dan memfilter koleksi secara deklaratif dalam satu baris ekspresif:
+- **List Comprehension:** `[ekspresi for item in koleksi if kondisi]`
+- **Dictionary Comprehension:** `{kunci: nilai for item in koleksi}`
 
 <PredictOutput
   client:load
   language="python"
-  title="Prediksi Output P4.1: Lazy Evaluation & Next() pada Generator"
-  code={`def deret_kuadrat(n):
-    for i in range(1, n + 1):
-        yield i ** 2
-
-gen = deret_kuadrat(3)
-print(type(gen).__name__)
-print(next(gen))
-print(next(gen))
-print(next(gen))`}
+  title="Prediksi Output 4.1: List Comprehension & Filter Genap"
+  code={`angka = [1, 2, 3, 4, 5, 6]
+hasil = [x * 10 for x in angka if x % 2 == 0]
+print(hasil)`}
   options={[
     {
-      text: "generator\\n1\\n4\\n9",
+      text: "[20, 40, 60]",
       isCorrect: true,
-      explanation: "Tepat! Pemanggilan deret_kuadrat(3) tidak langsung menghitung seluruh kuadrat, melainkan mengembalikan objek generator. Setiap pemanggilan next(gen) melanjutkan eksekusi hingga baris yield berikutnya."
+      explanation: "Tepat! Elemen genap (2, 4, 6) disaring oleh klausa if x % 2 == 0, lalu tiap elemen dikalikan 10 sehingga menjadi [20, 40, 60]."
     },
     {
-      text: "list\\n1\\n4\\n9",
+      text: "[10, 20, 30, 40, 50, 60]",
       isCorrect: false,
-      explanation: "Salah. Fungsi dengan yield mengembalikan generator, bukan list."
+      explanation: "Klausa if menyaring angka ganjil sehingga tidak semuanya masuk."
     },
     {
-      text: "generator\\n9\\n4\\n1",
+      text: "[2, 4, 6]",
       isCorrect: false,
-      explanation: "Salah. Range berjalan maju dari 1 sampai n (1, 2, 3), sehingga menghasilkan 1, 4, 9."
+      explanation: "Ekspresi di depan adalah x * 10, bukan x murni."
     }
   ]}
 />
@@ -114,310 +174,85 @@ print(next(gen))`}
 <CodePlayground
   client:load
   language="python"
-  title="Latihan P4.1: Mini Test Runner Bergaya Pytest dengan Assert"
-  initialCode={`def hitung_diskon(harga, persen):
-    if persen < 0 or persen > 100:
-        raise ValueError("Persen tidak valid")
-    return harga - (harga * persen // 100)
+  title="Latihan 4.4: Pengurutan Kustom Menggunakan Lambda"
+  initialCode={`peserta = [
+    {"nama": "Siti", "waktu": 45.2},
+    {"nama": "Budi", "waktu": 38.7},
+    {"nama": "Dewi", "waktu": 41.5},
+]
 
-def test_diskon_20_persen():
-    assert hitung_diskon(100000, 20) == 80000
-
-def test_diskon_nol():
-    assert hitung_diskon(50000, 0) == 50000
-
-def test_diskon_penuh():
-    assert hitung_diskon(75000, 100) == 0
-
-daftar_tes = [test_diskon_20_persen, test_diskon_nol, test_diskon_penuh]
-lulus = 0
-for test_fn in daftar_tes:
-    test_fn()
-    lulus += 1
-    print(f"✓ {test_fn.__name__} PASSED")
-
-print(f"Ringkasan: {lulus} tes lolos")`}
-  expectedOutput={`✓ test_diskon_20_persen PASSED\n✓ test_diskon_nol PASSED\n✓ test_diskon_penuh PASSED\nRingkasan: 3 tes lolos`}
+juara = sorted(peserta, key=lambda x: x["waktu"])
+print("Pemenang Pertama:", juara[0]["nama"], f"({juara[0]['waktu']}s)")
+print("Peringkat Lengkap:", [p["nama"] for p in juara])`}
+  expectedOutput={`Pemenang Pertama: Budi (38.7s)\nPeringkat Lengkap: ['Budi', 'Dewi', 'Siti']`}
 />
+
+<CodePlayground
+  client:load
+  language="python"
+  title="Latihan 4.5: Transformasi Data dengan List & Dict Comprehension"
+  initialCode={`angka = range(1, 11)
+kuadrat_genap = [x ** 2 for x in angka if x % 2 == 0]
+dict_peta = {f"k_{x}": x ** 2 for x in kuadrat_genap}
+
+print("List Kuadrat Genap:", kuadrat_genap)
+print("Banyak Entri Dict:", len(dict_peta))
+print("Entri Pertama:", dict_peta["k_4"])`}
+  expectedOutput={`List Kuadrat Genap: [4, 16, 36, 64, 100]\nBanyak Entri Dict: 5\nEntri Pertama: 16`}
+/>
+
+Sebagai penutup, amati bagaimana sebuah fungsi dapat membungkus fungsi lain menggunakan dekorator sederhana:
+
+<CodePlayground
+  client:load
+  language="python"
+  title="Latihan 4.6: Dekorator & Higher-Order Functions"
+  initialCode={`def pengubah_format(fn):
+    def pembungkus(*args, **kwargs):
+        hasil = fn(*args, **kwargs)
+        return f"*** {hasil.upper()} ***"
+    return pembungkus
+
+@pengubah_format
+def salam_hangat(nama):
+    return f"selamat datang di belajar.in, {nama}"
+
+print(salam_hangat("ahmad"))`}
+  expectedOutput={`*** SELAMAT DATANG DI BELAJAR.IN, AHMAD ***`}
+/>
+
+</div>
 
 ---
 
-## 4. LATIHAN TERPANDU (FADED EXAMPLE)
+<div id="kuis-python-bab4" className="scroll-mt-24">
 
-Lengkapi dekorator `@audit_log` di bawah ini agar mencatat log eksekusi dan mengembalikan hasil fungsi asli secara tepat:
+## Kuis Evaluasi Bab 4
 
-<FadedExample
+Kamu telah menyelesaikan Bab Fungsi & Modularitas! Saatnya menguji keahlianmu di **Kuis Evaluasi Bab 4**.
+
+> **Standar Kelulusan:** Soal diacak secara acak dari materi Bab 4. Kamu harus mencapai skor minimal **80% (maksimal salah 1)** untuk membuka Bab 5 (Pemrograman Berorientasi Objek). Jika gagal, ulang kuis untuk memperoleh soal baru yang berbeda!
+
+<ChapterQuiz
   client:load
-  title="Membangun Dekorator Audit dengan functools.wraps"
-  language="python"
-  missingTaskDescription="Lengkapi fungsi wrapper di bawah: panggil fungsi asli dengan *args dan **kwargs, simpan hasilnya, cetak pesan [AUDIT], dan kembalikan hasil tersebut."
-  fadedHint="Tulis: hasil = fungsi(*args, **kwargs), cetak pesan log, lalu return hasil."
-  starterCode={`import functools
-
-def audit_log(fungsi):
-    @functools.wraps(fungsi)
-    def wrapper(*args, **kwargs):
-        # TODO: Panggil fungsi asli, simpan hasilnya, lalu cetak log audit
-        hasil = None
-        return hasil
-    return wrapper
-
-@audit_log
-def kali(a, b):
-    return a * b
-
-total = kali(6, 7)
-print("Hasil Perkalian:", total)
-print("Nama Fungsi:", kali.__name__)`}
-  initialCode={`import functools
-
-def audit_log(fungsi):
-    @functools.wraps(fungsi)
-    def wrapper(*args, **kwargs):
-        hasil = fungsi(*args, **kwargs)
-        print(f"[AUDIT] {fungsi.__name__} dieksekusi dengan argumen {args}")
-        return hasil
-    return wrapper
-
-@audit_log
-def kali(a, b):
-    return a * b
-
-total = kali(6, 7)
-print("Hasil Perkalian:", total)
-print("Nama Fungsi:", kali.__name__)`}
-  expectedOutput={`[AUDIT] kali dieksekusi dengan argumen (6, 7)\nHasil Perkalian: 42\nNama Fungsi: kali`}
+  chapterId="python-bab4"
+  title="Kuis Evaluasi Bab 4: Fungsi & Modularitas"
+  passingScore={80}
+  questionsPerAttempt={5}
+  nextChapterUrl="/curriculum/python/p5"
+  nextChapterTitle="Bab 5: Pemrograman Berorientasi Objek"
 />
+
+</div>
 
 ---
 
-## 5. LATIHAN MANDIRI (AUTO-GRADED) & TANGGA PETUNJUK
-
-Selesaikan rangkaian modul latihan rekayasa Python menengah di bawah ini:
-
-<CodePlayground
-  client:load
-  language="python"
-  title="Latihan Mandiri P4.2: Generator untuk Pengolahan Deret Besar Hemat Memori"
-  initialCode={`import sys
-
-def generator_kelipatan(faktor, batas):
-    nilai = faktor
-    while nilai <= batas:
-        yield nilai
-        nilai += faktor
-
-# Buat generator vs list konvensional
-gen = generator_kelipatan(5, 50)
-tiga_pertama = [next(gen), next(gen), next(gen)]
-
-print("Tiga elemen pertama:", tiga_pertama)
-print("Tipe objek:", type(gen).__name__)
-print("Ukuran generator di memori (bytes):", sys.getsizeof(gen) < 250)`}
-  expectedOutput={`Tiga elemen pertama: [5, 10, 15]\nTipe objek: generator\nUkuran generator di memori (bytes): True`}
-/>
-
-<CodePlayground
-  client:load
-  language="python"
-  title="Latihan Mandiri P4.3: Context Manager Berbasis Class (__enter__ & __exit__)"
-  initialCode={`class TransaksiDatabaseAman:
-    def __init__(self, nama_tabel):
-        self.nama_tabel = nama_tabel
-        self.log = []
-
-    def __enter__(self):
-        self.log.append(f"TRANSAKSI DIMULAI: {self.nama_tabel}")
-        return self
-
-    def simpan(self, catatan):
-        self.log.append(f"DATA DISIMPAN: {catatan}")
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        if exc_type is not None:
-            self.log.append(f"ROLLBACK KARENA ERROR: {exc_val}")
-            return False # teruskan exception
-        self.log.append("TRANSAKSI COMMIT BERHASIL")
-        return True
-
-db = TransaksiDatabaseAman("akun_pengguna")
-with db as sesi:
-    sesi.simpan("Pengguna #101 terdaftar")
-    sesi.simpan("Profil #101 diverifikasi")
-
-for baris in db.log:
-    print(baris)`}
-  expectedOutput={`TRANSAKSI DIMULAI: akun_pengguna\nDATA DISIMPAN: Pengguna #101 terdaftar\nDATA DISIMPAN: Profil #101 diverifikasi\nTRANSAKSI COMMIT BERHASIL`}
-/>
-
-<CodePlayground
-  client:load
-  language="python"
-  title="Latihan Mandiri P4.4: Konkurensi Asinkron Non-Blocking via asyncio.gather"
-  initialCode={`import asyncio
-
-async def fetch_metrik(nama_layanan, latensi_ms):
-    # Simulasi pembacaan data asinkron non-blocking
-    await asyncio.sleep(0.01)
-    return f"{nama_layanan}: {latensi_ms}ms"
-
-async def main():
-    tugas = [
-        fetch_metrik("Database-Postgres", 12),
-        fetch_metrik("Cache-Redis", 2),
-        fetch_metrik("Auth-Service", 25)
-    ]
-    hasil = await asyncio.gather(*tugas)
-    for baris in hasil:
-        print(baris)
-    print("Total Layanan Termonitor:", len(hasil))
-
-asyncio.run(main())`}
-  expectedOutput={`Database-Postgres: 12ms\nCache-Redis: 2ms\nAuth-Service: 25ms\nTotal Layanan Termonitor: 3`}
-/>
-
-<CodePlayground
-  client:load
-  language="python"
-  title="Mini Proyek P4: Async Data Stream Pipeline & Validator"
-  initialCode={`import asyncio
-import functools
-
-def ukur_durasi(fn):
-    @functools.wraps(fn)
-    async def wrapper(*args, **kwargs):
-        hasil = await fn(*args, **kwargs)
-        return hasil
-    return wrapper
-
-class StreamProcessor:
-    def __init__(self, batch_id):
-        self.batch_id = batch_id
-        self.buffer = []
-
-    def filter_positif(self, data):
-        for angka in data:
-            if angka > 0:
-                yield angka * 2
-
-    @ukur_durasi
-    async def proses_batch(self, data):
-        await asyncio.sleep(0.01)
-        generator_hasil = self.filter_positif(data)
-        self.buffer = list(generator_hasil)
-        return len(self.buffer)
-
-async def uji_sistem():
-    processor = StreamProcessor("BATCH-2026")
-    input_data = [-5, 10, -2, 25, 0, 50]
-    total_valid = await processor.proses_batch(input_data)
-    
-    print(f"Batch ID: {processor.batch_id}")
-    print(f"Elemen Terproses: {processor.buffer}")
-    print(f"Total Elemen Positif Tergandakan: {total_valid}")
-
-asyncio.run(uji_sistem())`}
-  expectedOutput={`Batch ID: BATCH-2026\nElemen Terproses: [20, 50, 100]\nTotal Elemen Positif Tergandakan: 3`}
-/>
-
-{/* Socratic AI Tutor Assistant */}
 <SocraticTutorPanel
   client:load
   lessonId="P4"
-  language="python"
-  defaultCodeSnippet={`def gen():\n    yield 1`}
+  defaultCode={`# Rancang fungsi modular di sini:
+def kuadratkan_semua(*angka):
+    return [n ** 2 for n in angka]
+
+print(kuadratkan_semua(1, 2, 3, 4))`}
 />
-
----
-
-## 6. KESALAHAN UMUM (COMMON MISCONCEPTIONS)
-
-1. **Miskonsepsi Eksekusi Instan Generator:** Mengira saat fungsi generator dipanggil `g = generator_fungsi()`, seluruh kode di dalam fungsi langsung dijalankan. Padahal tidak ada sebaris pun kode dalam fungsi yang berjalan hingga `next(g)` atau loop `for item in g` dieksekusi pertama kali.
-2. **Miskonsepsi Lupa `@functools.wraps`:** Membuat dekorator tanpa `@functools.wraps` menyebabkan `fungsi.__name__` berubah menjadi `'wrapper'` dan string dokumentasi `__doc__` lenyap. Hal ini membingungkan modul testing dan debugger produksi.
-3. **Miskonsepsi Mengembalikan `True` di `__exit__` Secara Ceroboh:** Jika method `__exit__` mengembalikan nilai `True`, seluruh exception yang terjadi di dalam blok `with` akan ditelan (*swallowed*) tanpa dilaporkan. Hanya kembalikan `True` jika exception tersebut memang secara sengaja telah ditangani tuntas.
-4. **Miskonsepsi Memanggil Coroutine Tanpa `await`:** Menulis `hasil = fetch_data()` pada fungsi async tanpa `await`. Pemanggilan tanpa `await` hanya mengembalikan objek coroutine yang belum dijalankan (*unawaited coroutine warning*), bukan hasil data sesungguhnya.
-
----
-
-## 7. RANGKUMAN & KUIS MINI (RETRIEVAL PRACTICE)
-
-<MiniQuiz
-  client:load
-  lessonId="P4"
-  title="Kuis Mini P4: Pemrograman Python Tingkat Menengah"
-  questions={[
-    {
-      question: "Mengapa penggunaan Generator (yield) sangat disarankan saat memproses dataset berukuran gigabyte?",
-      conceptId: "P4-Generators",
-      options: [
-        {
-          text: "Karena Generator mengevaluasi dan menghasilkan data satu per satu saat diminta (lazy evaluation), mengonsumsi RAM konstan O(1).",
-          isCorrect: true,
-          explanation: "Tepat! Berbeda dari list yang memuat seluruh dataset sekaligus ke RAM, generator hanya mengingat state posisi eksekusi saat ini."
-        },
-        {
-          text: "Karena Generator otomatis mengubah kode Python menjadi instruksi bahasa C.",
-          isCorrect: false,
-          explanation: "Salah. Generator adalah fitur bawaan CPython, bukan transpiler bahasa C."
-        },
-        {
-          text: "Karena Generator menghapus seluruh variabel global agar komputer tidak panas.",
-          isCorrect: false,
-          explanation: "Salah. Generator tidak menghapus variabel global."
-        }
-      ]
-    },
-    {
-      question: "Apa fungsi utama dari dekorator @functools.wraps pada pembuatan fungsi dekorator kustom?",
-      conceptId: "P4-Decorators",
-      options: [
-        {
-          text: "Mempertahankan metadata asli fungsi yang didekorasi, seperti __name__, __doc__, dan anotasi tipe parameter.",
-          isCorrect: true,
-          explanation: "Benar! Tanpa @functools.wraps, fungsi yang didekorasi akan kehilangan identitasnya dan bernama 'wrapper'."
-        },
-        {
-          text: "Menghentikan perulangan tak berujung (infinite loop) secara otomatis.",
-          isCorrect: false,
-          explanation: "Salah. wraps hanya menyalin atribut metadata, bukan membatasi durasi perulangan."
-        },
-        {
-          text: "Memaksa fungsi berjalan secara asinkron pada background thread.",
-          isCorrect: false,
-          explanation: "Salah. wraps tidak mengubah sifat konkurensi fungsi."
-        }
-      ]
-    },
-    {
-      question: "Kapan method __exit__ pada sebuah Context Manager dipanggil oleh runtime Python?",
-      conceptId: "P4-ContextManagers",
-      options: [
-        {
-          text: "Selalu dipanggil saat eksekusi keluar dari blok with, baik keluar secara normal maupun akibat terjadinya exception.",
-          isCorrect: true,
-          explanation: "Tepat! Jaminan eksekusi pembersihan ini adalah alasan mengapa context manager digunakan untuk menutup file dan merilis lock koneksi."
-        },
-        {
-          text: "Hanya dipanggil jika komputer mengalami kekurangan memori RAM.",
-          isCorrect: false,
-          explanation: "Salah. __exit__ dipanggil secara teratur setiap kali blok with selesai."
-        },
-        {
-          text: "Hanya dipanggil jika seluruh unit test di dalam file berstatus gagal.",
-          isCorrect: false,
-          explanation: "Salah. __exit__ adalah protokol runtime Python independen dari test runner."
-        }
-      ]
-    }
-  ]}
-/>
-
----
-
-## 8. SELAMI LEBIH DALAM (DIVE DEEPER)
-
-- **Dokumentasi Resmi Python Asyncio:** Telusuri panduan mendalam [docs.python.org: Asyncio](https://docs.python.org/3/library/asyncio.html).
-- **PEP 343 – The "with" Statement:** Pelajari spesifikasi formal context managers di [PEP 343](https://peps.python.org/pep-0343/).
-- **PEP 255 – Simple Generators:** Sejarah dan arsitektur kata kunci `yield` di [PEP 255](https://peps.python.org/pep-0255/).
-- **W3Schools Python Generators & Decorators:** Pelajari latihan interaktif di [W3Schools Python Reference](https://www.w3schools.com/python/).
-- **Dokumentasi Resmi Pytest:** Panduan unit testing di [Pytest Official Documentation](https://docs.pytest.org/).

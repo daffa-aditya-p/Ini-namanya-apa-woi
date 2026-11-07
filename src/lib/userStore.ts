@@ -258,6 +258,70 @@ export function awardExerciseCompletion(
   };
 }
 
+export interface ChapterAwardResult {
+  awarded: boolean;
+  xpEarned: number;
+  coinsEarned: number;
+  user: UserProfile | null;
+  alreadyCompleted: boolean;
+  message: string;
+}
+
+/**
+ * Awards XP and coins upon passing a Chapter Quiz with mastery standard (>=80%).
+ * Prevents double-awarding for repeated practice.
+ */
+export function awardChapterQuizCompletion(
+  chapterQuizId: string,
+  xpAmount: number = 50,
+  coinsAmount: number = 20,
+  hoursAmount: number = 1
+): ChapterAwardResult {
+  const user = getSavedSession();
+  if (!user) {
+    return {
+      awarded: false,
+      xpEarned: 0,
+      coinsEarned: 0,
+      user: null,
+      alreadyCompleted: false,
+      message: 'Masuk atau daftar untuk menyimpan kelulusan Bab dan mengklaim reward!',
+    };
+  }
+
+  const completed = user.completedExercises || [];
+  if (completed.includes(chapterQuizId)) {
+    return {
+      awarded: false,
+      xpEarned: 0,
+      coinsEarned: 0,
+      user,
+      alreadyCompleted: true,
+      message: 'Evaluasi Bab ini sudah diselesaikan sebelumnya. Reward kelulusan telah diklaim.',
+    };
+  }
+
+  const updatedUser: UserProfile = {
+    ...user,
+    xp: user.xp + xpAmount,
+    coins: (user.coins || 0) + coinsAmount,
+    hoursSpent: (user.hoursSpent || 0) + hoursAmount,
+    lastActiveDate: new Date().toISOString().split('T')[0],
+    completedExercises: [...completed, chapterQuizId],
+  };
+
+  saveSession(updatedUser);
+
+  return {
+    awarded: true,
+    xpEarned: xpAmount,
+    coinsEarned: coinsAmount,
+    user: updatedUser,
+    alreadyCompleted: false,
+    message: `Selamat! Kamu lulus Kuis Evaluasi Bab! Mendapatkan +${xpAmount} XP, +${coinsAmount} Koin, dan +${hoursAmount} jam belajar!`,
+  };
+}
+
 /**
  * Client-side mock registration and login service with registry persistence.
  */

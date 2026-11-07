@@ -1,6 +1,8 @@
 ---
 import { getCollection, render } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
+import { ChapterNavigation } from '../../components/ChapterNavigation';
+import { PYTHON_CHAPTERS } from '../../lib/pythonQuizBank';
 
 export async function getStaticPaths() {
   const lessons = await getCollection('curriculum');
@@ -16,67 +18,221 @@ export async function getStaticPaths() {
 
 const { entry } = Astro.props;
 const { Content } = await render(entry);
+
+const isPythonTrack = entry.data.track === 'python';
+const currentLevel = entry.data.level;
+const pythonChapterMap: Record<string, string> = {
+  P1: 'python-bab1',
+  P2: 'python-bab2',
+  P3: 'python-bab3',
+  P4: 'python-bab4',
+  P5: 'python-bab5',
+};
+const chapterId = pythonChapterMap[currentLevel] || 'python-bab1';
+const currentChapter = PYTHON_CHAPTERS.find((c) => c.chapterId === chapterId);
+
+// Previous & Next navigation links for Python chapters
+let prevChapter: { title: string; slug: string; number: number } | null = null;
+let nextChapter: { title: string; slug: string; number: number } | null = null;
+
+if (isPythonTrack && currentChapter) {
+  const currentIdx = PYTHON_CHAPTERS.findIndex((c) => c.chapterId === chapterId);
+  if (currentIdx > 0) {
+    const prev = PYTHON_CHAPTERS[currentIdx - 1];
+    prevChapter = { title: prev.title, slug: prev.slug, number: prev.chapterNumber };
+  }
+  if (currentIdx < PYTHON_CHAPTERS.length - 1) {
+    const next = PYTHON_CHAPTERS[currentIdx + 1];
+    nextChapter = { title: next.title, slug: next.slug, number: next.chapterNumber };
+  }
+}
 ---
 
 <Layout title={entry.data.title} description={entry.data.summary}>
-  <article class="max-w-4xl mx-auto py-4">
-    <!-- Breadcrumbs & Meta -->
-    <div class="mb-8 pb-6 border-b border-[var(--border-default)]">
-      <div class="flex items-center gap-2 font-mono text-xs mb-3 text-[var(--text-muted)]">
-        <a href="/" class="hover:text-[var(--text-primary)]">Beranda</a>
-        <span>/</span>
-        <span class="capitalize">{entry.data.track}</span>
-        <span>/</span>
-        <span class="font-bold text-[var(--accent-terracotta)]">{entry.data.level}</span>
-      </div>
-
-      <div class="flex flex-wrap items-center gap-2 mb-3">
-        <span class="px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-[var(--bg-subtle)] text-[var(--accent-terracotta)] border border-[var(--border-default)]">
-          {entry.data.level}
-        </span>
-        <span class="px-2.5 py-0.5 rounded text-xs font-mono bg-[var(--bg-subtle)] text-[var(--text-secondary)] border border-[var(--border-default)]">
-          {entry.data.languageVersion}
-        </span>
-        <span class="px-2.5 py-0.5 rounded text-xs font-mono bg-[var(--bg-subtle)] text-[var(--text-secondary)] border border-[var(--border-default)]">
-          ⏱ {entry.data.estimatedMinutes} Menit
-        </span>
-      </div>
-
-      <h1 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[var(--text-primary)] tracking-tight mb-3">
-        {entry.data.title}
-      </h1>
-      <p class="text-base text-[var(--text-secondary)] leading-relaxed">
-        {entry.data.summary}
-      </p>
-
-      {entry.data.learningObjectives.length > 0 && (
-        <div class="mt-4 p-4 rounded-lg bg-[var(--bg-subtle)] border border-[var(--border-default)] text-xs text-[var(--text-secondary)]">
-          <div class="font-bold font-display text-[var(--text-primary)] mb-1.5">Tujuan Pembelajaran:</div>
-          <ul class="list-disc list-inside space-y-1">
-            {entry.data.learningObjectives.map((obj) => (
-              <li>{obj}</li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </div>
-
-    <!-- Rendered Markdown Body -->
-    <div class="space-y-6 text-base leading-relaxed text-[var(--text-primary)]">
-      <Content />
-    </div>
-
-    <!-- Navigation Footer -->
-    <div class="mt-12 pt-6 border-t border-[var(--border-default)] flex items-center justify-between">
-      <a
-        href="/"
-        class="px-4 py-2 rounded text-sm font-mono border border-[var(--border-default)] bg-[var(--bg-surface)] text-[var(--text-secondary)] hover:border-[var(--border-focused)] hover:text-[var(--text-primary)] transition-colors text-decoration-none"
-      >
-        ← Kembali ke Beranda
+  <div class="py-2">
+    <!-- Breadcrumbs & Meta Top -->
+    <nav aria-label="Breadcrumb" class="mb-6 flex flex-wrap items-center gap-2 font-mono text-xs text-[var(--text-muted)]">
+      <a href="/" class="hover:text-[var(--text-primary)] transition-colors text-decoration-none">Beranda</a>
+      <span>/</span>
+      <a href="/dashboard" class="capitalize hover:text-[var(--text-primary)] transition-colors text-decoration-none">
+        {entry.data.track}
       </a>
-      <span class="text-xs font-mono text-[var(--text-muted)]">
-        Materi Kurikulum Resmi belajar.in
-      </span>
-    </div>
-  </article>
+      <span>/</span>
+      {isPythonTrack && currentChapter ? (
+        <span class="font-bold text-[var(--accent-terracotta)]">
+          Bab {currentChapter.chapterNumber}: {currentChapter.title}
+        </span>
+      ) : (
+        <span class="font-bold text-[var(--accent-terracotta)]">{entry.data.level}</span>
+      )}
+    </nav>
+
+    {isPythonTrack ? (
+      /* 2-Column Responsive Layout with Sticky Syllabus Sidebar for Python */
+      <div class="lg:flex lg:gap-8 items-start">
+        <ChapterNavigation client:load currentChapterId={chapterId} />
+
+        <article class="flex-1 min-w-0 max-w-4xl mx-auto lg:mx-0">
+          <!-- Chapter Banner Header -->
+          <div class="mb-8 pb-6 border-b border-[var(--border-default)]">
+            <div class="flex flex-wrap items-center gap-2 mb-3">
+              <span class="px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-[#3776AB]/15 text-[#20527B] dark:text-[#68B0EB] border border-[#3776AB]/25">
+                Python • Bab {currentChapter?.chapterNumber} ({entry.data.level})
+              </span>
+              <span class="px-2.5 py-0.5 rounded text-xs font-mono bg-[var(--bg-subtle)] text-[var(--text-secondary)] border border-[var(--border-default)]">
+                {entry.data.languageVersion}
+              </span>
+              <span class="px-2.5 py-0.5 rounded text-xs font-mono bg-[var(--bg-subtle)] text-[var(--text-secondary)] border border-[var(--border-default)]">
+                ⏱ {entry.data.estimatedMinutes} Menit
+              </span>
+              <span class="px-2.5 py-0.5 rounded text-xs font-mono bg-[var(--state-success)]/10 text-[var(--state-success)] border border-[var(--state-success)]/30">
+                ★ Termasuk Kuis Evaluasi Bab
+              </span>
+            </div>
+
+            <h1 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[var(--text-primary)] tracking-tight mb-3 font-display">
+              {entry.data.title}
+            </h1>
+            <p class="text-base text-[var(--text-secondary)] leading-relaxed font-serif">
+              {entry.data.summary}
+            </p>
+
+            {/* Sub-bab Quick Pills */}
+            {currentChapter && (
+              <div class="mt-5 p-4 rounded-xl bg-[var(--bg-subtle)] border border-[var(--border-default)]">
+                <div className="text-xs font-mono font-bold text-[var(--text-primary)] mb-2.5 uppercase tracking-wider flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-[var(--accent-terracotta)]"></span>
+                  Daftar Sub-bab Pembelajaran:
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-mono">
+                  {currentChapter.subBabs.map((sub) => (
+                    <a
+                      href={sub.hash}
+                      class="p-2 rounded-lg bg-[var(--bg-surface)] hover:bg-[var(--accent-terracotta)]/10 border border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--accent-terracotta)] hover:border-[var(--accent-terracotta)]/40 transition-colors flex items-center justify-between text-decoration-none"
+                    >
+                      <span>
+                        <strong class="text-[var(--accent-terracotta)] mr-1">{sub.number}</strong> {sub.title}
+                      </span>
+                      <span class="text-[10px] opacity-60">↓</span>
+                    </a>
+                  ))}
+                  <a
+                    href={`#kuis-${currentChapter.chapterId}`}
+                    class="p-2 rounded-lg bg-[var(--accent-terracotta)]/10 border border-[var(--accent-terracotta)]/30 text-[var(--accent-terracotta)] font-bold transition-colors flex items-center justify-between text-decoration-none col-span-1 sm:col-span-2"
+                  >
+                    <span>★ Kuis Evaluasi Bab (Soal Acak & Standar Lulus)</span>
+                    <span class="text-[10px]">↓</span>
+                  </a>
+                </div>
+              </div>
+            )}
+
+            {entry.data.learningObjectives.length > 0 && (
+              <div class="mt-4 p-4 rounded-lg bg-[var(--bg-subtle)] border border-[var(--border-default)] text-xs text-[var(--text-secondary)]">
+                <div class="font-bold font-display text-[var(--text-primary)] mb-1.5">Tujuan Pembelajaran:</div>
+                <ul class="list-disc list-inside space-y-1">
+                  {entry.data.learningObjectives.map((obj) => (
+                    <li>{obj}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+
+          <!-- Rendered Markdown Body -->
+          <div class="space-y-6 text-base leading-relaxed text-[var(--text-primary)]">
+            <Content />
+          </div>
+
+          <!-- Chapter Navigation Footer -->
+          <div class="mt-12 pt-6 border-t border-[var(--border-default)] flex flex-wrap items-center justify-between gap-4 font-mono text-xs">
+            {prevChapter ? (
+              <a
+                href={`/${prevChapter.slug}`}
+                class="px-4 py-2.5 rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface)] text-[var(--text-secondary)] hover:border-[var(--border-focused)] hover:text-[var(--text-primary)] transition-colors text-decoration-none flex items-center gap-1.5 shadow-2xs"
+              >
+                ← Bab {prevChapter.number}: {prevChapter.title}
+              </a>
+            ) : (
+              <a
+                href="/"
+                class="px-4 py-2.5 rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface)] text-[var(--text-secondary)] hover:border-[var(--border-focused)] hover:text-[var(--text-primary)] transition-colors text-decoration-none"
+              >
+                ← Beranda
+              </a>
+            )}
+
+            {nextChapter ? (
+              <a
+                href={`/${nextChapter.slug}`}
+                class="px-5 py-2.5 rounded-lg bg-[var(--accent-terracotta)] text-white font-bold hover:opacity-95 transition-opacity text-decoration-none flex items-center gap-1.5 shadow-2xs"
+              >
+                <span>Lanjut ke Bab {nextChapter.number}: {nextChapter.title}</span>
+                <span>→</span>
+              </a>
+            ) : (
+              <a
+                href="/dashboard"
+                class="px-5 py-2.5 rounded-lg bg-[var(--accent-terracotta)] text-white font-bold hover:opacity-95 transition-opacity text-decoration-none flex items-center gap-1.5 shadow-2xs"
+              >
+                <span>Kembali ke Meja Kerja (Selesai!)</span>
+                <span>✓</span>
+              </a>
+            )}
+          </div>
+        </article>
+      </div>
+    ) : (
+      /* Default Layout for JavaScript Track */
+      <article class="max-w-4xl mx-auto py-2">
+        <div class="mb-8 pb-6 border-b border-[var(--border-default)]">
+          <div class="flex flex-wrap items-center gap-2 mb-3">
+            <span class="px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-[var(--bg-subtle)] text-[var(--accent-terracotta)] border border-[var(--border-default)]">
+              {entry.data.level}
+            </span>
+            <span class="px-2.5 py-0.5 rounded text-xs font-mono bg-[var(--bg-subtle)] text-[var(--text-secondary)] border border-[var(--border-default)]">
+              {entry.data.languageVersion}
+            </span>
+            <span class="px-2.5 py-0.5 rounded text-xs font-mono bg-[var(--bg-subtle)] text-[var(--text-secondary)] border border-[var(--border-default)]">
+              ⏱ {entry.data.estimatedMinutes} Menit
+            </span>
+          </div>
+
+          <h1 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[var(--text-primary)] tracking-tight mb-3">
+            {entry.data.title}
+          </h1>
+          <p class="text-base text-[var(--text-secondary)] leading-relaxed">
+            {entry.data.summary}
+          </p>
+
+          {entry.data.learningObjectives.length > 0 && (
+            <div class="mt-4 p-4 rounded-lg bg-[var(--bg-subtle)] border border-[var(--border-default)] text-xs text-[var(--text-secondary)]">
+              <div class="font-bold font-display text-[var(--text-primary)] mb-1.5">Tujuan Pembelajaran:</div>
+              <ul class="list-disc list-inside space-y-1">
+                {entry.data.learningObjectives.map((obj) => (
+                  <li>{obj}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+
+        <div class="space-y-6 text-base leading-relaxed text-[var(--text-primary)]">
+          <Content />
+        </div>
+
+        <div class="mt-12 pt-6 border-t border-[var(--border-default)] flex items-center justify-between">
+          <a
+            href="/"
+            class="px-4 py-2 rounded text-sm font-mono border border-[var(--border-default)] bg-[var(--bg-surface)] text-[var(--text-secondary)] hover:border-[var(--border-focused)] hover:text-[var(--text-primary)] transition-colors text-decoration-none"
+          >
+            ← Kembali ke Beranda
+          </a>
+          <span class="text-xs font-mono text-[var(--text-muted)]">
+            Materi Kurikulum Resmi belajar.in
+          </span>
+        </div>
+      </article>
+    )}
+  </div>
 </Layout>

@@ -2,23 +2,23 @@
 id: "P2"
 track: "python"
 level: "P2"
-title: "Struktur Data & Manipulasi File: Koleksi, Slicing & Format Pertukaran"
+title: "Bab 2: Logika & Alur Kontrol"
 slug: "curriculum/python/p2"
-estimatedMinutes: 120
+estimatedMinutes: 100
 prerequisites:
   - "P1"
 learningObjectives:
-  - "Menguasai struktur koleksi bawaan Python: list, tuple, dictionary, dan set"
-  - "Memanfaatkan teknik slicing lanjut [start:stop:step] dan list comprehensions"
-  - "Melakukan persistensi file virtual menggunakan context manager with open() pada Pyodide MEMFS"
-  - "Membaca dan memproses format pertukaran data standar CSV dan JSON dengan penanganan exception tangguh"
+  - "Menguasai struktur percabangan if-elif-else dengan indentasi 4 spasi baku (PEP 8)"
+  - "Menerapkan operator perbandingan (==, !=, <, >) dan operator logika (and, or, not) dengan evaluasi short-circuit"
+  - "Melakukan perulangan terstruktur menggunakan for dan fungsi range(start, stop, step)"
+  - "Mengontrol alur perulangan while dengan pencegahan infinite loop, klausa break, dan continue"
 relatedConcepts:
-  - "CPython Data Model"
-  - "Hash Maps & Mutability"
-  - "Pyodide In-Memory Filesystem (MEMFS)"
-  - "Context Managers & Resource Safety"
+  - "Abstract Syntax Tree & Control Flow"
+  - "Short-Circuit Logical Evaluation"
+  - "PEP 8 Indentation Rules"
+  - "Loop Invariant & Termination"
 languageVersion: "Python 3.12"
-summary: "Pelajari pengelolaan koleksi data terstruktur, teknik manipulasi string/slicing tingkat tinggi, pertukaran data CSV & JSON, dan eksekusi file virtual di browser."
+summary: "Kuasai pembuatan keputusan terstruktur: percabangan if-elif-else, iterasi sekuensial for & range(), serta perulangan dinamis while & break/continue."
 ---
 
 import { CodePlayground } from '../../components/CodePlayground';
@@ -26,323 +26,249 @@ import { DualTrackView } from '../../components/DualTrackView';
 import { PredictOutput } from '../../components/PredictOutput';
 import { FadedExample } from '../../components/FadedExample';
 import { SocraticTutorPanel } from '../../components/SocraticTutorPanel';
-import { MiniQuiz } from '../../components/MiniQuiz';
+import { ChapterQuiz } from '../../components/ChapterQuiz';
 
-# Level P2: Struktur Data Python & Manipulasi File
+# Bab 2: Logika & Alur Kontrol
 
-Selamat datang di Level P2. Di modul ini, kodemu berinteraksi langsung dengan koleksi data bawaan Python (List, Tuple, Dict, Set) serta berkas file virtual in-memory Pyodide CPython 3.12.
+Selamat datang di Bab 2. Di bab ini, programmu tidak lagi sekadar berjalan lurus dari atas ke bawah. Kamu akan mengajarkan komputer cara mengambil keputusan logis, menyaring data melalui percabangan, dan mengotomatisasi pekerjaan berulang menggunakan loop terstruktur.
 
 ---
 
-## 1. HOOK: Masalah Nyata & Analogi Keseharian
-
 <DualTrackView
   client:load
-  santaiTitle="Jalur Santai: Lemari Arsip Toko & Buku Kas Warung"
+  santaiTitle="Jalur Santai: Rel Kereta Api Wesel & Mesin Cuci Otomatis"
   santaiParagraphs={[
-    "Bayangkan kamu mengelola warung kelontong. Sebuah List adalah daftar belanjaan yang bisa kamu coret atau tambahi sewaktu-waktu. Sebuah Tuple adalah nomor akta pendirian tokomu: sekali dicatat, tidak boleh diubah selamanya (immutable).",
-    "Sebuah Dictionary adalah rak bumbu berlabel: kamu tidak mencari merica berdasarkan nomor urut rak 0, 1, 2, melainkan langsung mencari label nama Merica (key-value lookup instan). Dan ketika mencatat buku kas ke dalam file, kamu menggunakan prosedur with open() seperti mengunci pintu lemari arsip secara otomatis setelah selesai mencatat agar tidak ada berkas yang hilang."
+    "Bayangkan jalur rel kereta api yang memiliki tuas wesel pemindah jalur. Saat kondisi wesel mengarah ke kanan (kondisi bernilai True), kereta akan meluncur ke jalur stasiun express. Jika mengarah ke kiri (False), kereta melintas di jalur lokal.",
+    "Dan perulangan adalah siklus putaran mesin cuci: perulangan 'for' seperti mencuci 5 lembar baju satu per satu sampai habis, sedangkan perulangan 'while' seperti membilas pakaian terus-menerus selama sensor mendeteksi busa sabun belum hilang (berhenti seketika dengan 'break' jika pintu dibuka)."
   ]}
-  cepatTitle="Jalur Cepat: Hash Tables, O(1) Amortized & MEMFS Virtual I/O"
+  cepatTitle="Jalur Cepat: Conditional Jumps, Short-Circuit Logic & Iterator Protocol"
   cepatParagraphs={[
-    "Python dict dan set diimplementasikan menggunakan compact hash table berbasis algoritma probing terbuka (open-addressing dengan quadratic perturbation), memberikan kompleksitas pencarian O(1) amortized.",
-    "Pada runtime Pyodide WebAssembly, modul open(), pathlib.Path, dan serialisasi data csv/json beroperasi di atas Emscripten In-Memory Virtual Filesystem (MEMFS). Hal ini memberikan isolasi sandbox penuh tanpa risiko menyentuh hard disk fisik host."
+    "Pada tingkat bytecode CPython, struktur if-elif dikompilasi menjadi instruksi lompatan bersyarat POP_JUMP_IF_FALSE. Python mengoptimalkan evaluasi logika dengan short-circuit: pada ekspresi (A or B), jika A bernilai True maka operand B tidak akan pernah dievaluasi.",
+    "Perulangan for di Python beroperasi di atas protokol iterator resmi (GET_ITER dan FOR_ITER), mengonsumsi elemen sekuensial hingga iterator melempar sinyal StopIteration. Fungsi range() menghasilkan objek rentang memori hemat berukuran O(1) tanpa mengalokasikan array fisik di memori RAM."
   ]}
 />
 
 ---
 
-## 2. KONSEP INTI: Koleksi Data Bawaan Python
+<div id="subbab-2-1" className="scroll-mt-24">
 
-Berdasarkan dokumentasi resmi [Python 3.12 Documentation: Data Structures](https://docs.python.org/3/tutorial/datastructures.html) dan tutorial [W3Schools Python Collections](https://www.w3schools.com/python/python_lists.asp), empat struktur koleksi inti Python memiliki karakteristik unik:
-1. **List (`[]`):** Berurutan (*ordered*), dapat diubah (*mutable*), mengizinkan duplikat.
-2. **Tuple (`()`):** Berurutan, tidak dapat diubah (*immutable*), hemat memori dan aman sebagai dictionary keys.
-3. **Dictionary (`{key: value}`):** Pemetaan kunci-nilai hash map cepat, kunci wajib bertipe hashable/immutable.
-4. **Set (`{}`):** Tidak berurutan, unik (tanpa duplikat), mendukung operasi matematika himpunan (irisan, gabungan).
+## Sub-bab 2.1: Percabangan if-elif-else
 
----
+Komputer mengambil keputusan berdasarkan evaluasi kondisi boolean (`True` atau `False`). Di Python, percabangan ditulis menggunakan kata kunci `if`, `elif` (*else if* opsional bertingkat), dan diakhiri dengan `else` (jika tidak ada kondisi yang terpenuhi).
 
-## 3. CONTOH HIDUP + PREDIKSI OUTPUT
-
-Sebelum mengeksekusi kode di bawah, uji pemahamanmu mengenai mutabilitas List dan manipulasi Slicing:
+Aturan baku PEP 8 mewajibkan **indentasi 4 spasi** untuk membatasi blok kode yang dieksekusi saat kondisi bernilai benar.
 
 <PredictOutput
   client:load
   language="python"
-  title="Prediksi Output P2.1: Slicing Lanjut & Reference Mutation"
-  code={`angka = [10, 20, 30, 40, 50, 60]
-sub_list = angka[1:5:2]
+  title="Prediksi Output 2.1: Percabangan Bertingkat & Short-Circuit"
+  code={`nilai = 78
+if nilai >= 85:
+    kategori = "A"
+elif nilai >= 70:
+    kategori = "B"
+else:
+    kategori = "C"
 
-# Menambahkan elemen baru ke list asal
-angka.append(70)
-
-print("Sub-list:", sub_list)
-print("Panjang angka:", len(angka))`}
+print("Kategori:", kategori)
+print("Lulus:", nilai >= 70)`}
   options={[
     {
-      text: "Sub-list: [20, 40]\\nPanjang angka: 7",
+      text: "Kategori: B\\nLulus: True",
       isCorrect: true,
-      explanation: "Tepat! Slicing [1:5:2] mengambil indeks 1 (20) dan indeks 3 (40) dengan lompatan step 2. Slicing menghasilkan list baru yang independen, sehingga append(70) hanya menambah panjang list angka menjadi 7."
+      explanation: "Tepat! Nilai 78 tidak memenuhi nilai >= 85 (False), namun memenuhi nilai >= 70 (True). Cabang elif pertama yang cocok langsung dieksekusi."
     },
     {
-      text: "Sub-list: [20, 30, 40, 50]\\nPanjang angka: 6",
+      text: "Kategori: B\\nKategori: C\\nLulus: True",
       isCorrect: false,
-      explanation: "Salah. Parameter step :2 melompati setiap satu elemen, bukan mengambil seluruh rentang secara sekuensial."
+      explanation: "Salah. Rangkaian if-elif bersifat eksklusif: hanya satu blok pertama yang cocok yang dieksekusi."
     },
     {
-      text: "Sub-list: [10, 30]\\nPanjang angka: 7",
+      text: "Kategori: A\\nLulus: False",
       isCorrect: false,
-      explanation: "Salah. Indeks 1 bernilai 20, bukan 10."
+      explanation: "78 tidak lebih besar dari atau sama dengan 85."
     }
   ]}
 />
 
+Jalankan evaluasi kelulusan pada playground interaktif berikut:
+
 <CodePlayground
   client:load
   language="python"
-  title="Latihan P2.1: Operasi Slicing & List Mutation"
-  initialCode={`data = [10, 20, 30, 40, 50, 60]
-print("Slice ganjil:", data[1::2])
-data.append(70)
-print("Panjang data:", len(data))`}
-  expectedOutput={`Slice ganjil: [20, 40, 60]\nPanjang data: 7`}
+  title="Latihan 2.1: Klasifikasi Tingkat Kelulusan"
+  initialCode={`skor = 85
+if skor >= 90:
+    predikat = "Istimewa (A)"
+elif skor >= 75:
+    predikat = "Sangat Baik (B)"
+elif skor >= 60:
+    predikat = "Cukup (C)"
+else:
+    predikat = "Kurang (D)"
+
+print("Status Kelulusan:", predikat)
+print("Apakah Lulus:", skor >= 75)`}
+  expectedOutput={`Status Kelulusan: Sangat Baik (B)\nApakah Lulus: True`}
 />
+
+Untuk logika yang lebih kompleks, kamu dapat menggabungkan kondisi menggunakan operator logika `and` (semua harus benar), `or` (salah satu cukup), dan `not` (membalik nilai boolean).
+
+<CodePlayground
+  client:load
+  language="python"
+  title="Latihan 2.2: Verifikasi Kelayakan Izin Mengemudi"
+  initialCode={`umur = 20
+punya_sim = True
+skor_tes = 88
+
+if umur >= 17 and punya_sim:
+    if skor_tes >= 80:
+        hasil = "Izin Mengemudi Penuh Diterbitkan"
+    else:
+        hasil = "Ujian Praktik Ulang"
+else:
+    hasil = "Syarat Usia/Dokumen Belum Terpenuhi"
+
+print("Hasil Verifikasi:", hasil)`}
+  expectedOutput={`Hasil Verifikasi: Izin Mengemudi Penuh Diterbitkan`}
+/>
+
+</div>
 
 ---
 
-## 4. LATIHAN TERPANDU (FADED EXAMPLE)
+<div id="subbab-2-2" className="scroll-mt-24">
 
-Lengkapi bagian pemetaan Dictionary dan penggabungan operator union `|` (Python 3.9+):
+## Sub-bab 2.2: Perulangan for & range
 
-<FadedExample
+Saat kamu mengetahui berapa kali kode harus diulang atau ingin menelusuri setiap elemen di dalam koleksi, gunakan perulangan `for`.
+
+Fungsi bawaan `range(start, stop, step)` menghasilkan deret angka aritmatika:
+- `start` (opsional, default 0): angka awal.
+- `stop` (wajib): batas akhir yang bersifat **eksklusif** (tidak diikutsertakan).
+- `step` (opsional, default 1): kelipatan loncatan angka per putaran.
+
+<CodePlayground
   client:load
-  title="Penggabungan Menu Warung dengan Dict Merge"
   language="python"
-  missingTaskDescription="Gabungkan profil produk dengan data tambahan stok menggunakan operator | lalu cetak ringkasannya."
-  fadedHint="Gunakan operator profil | tambahan untuk menghasilkan dictionary baru."
-  starterCode={`titik = (100, 250)
-x, y = titik
-profil = {"nama": "Kopi Aceh", "harga": 18000}
-tambahan = {"stok": 50, "kategori": "Minuman"}
+  title="Latihan 2.3: Penelusuran Deret Kelipatan dengan range()"
+  initialCode={`deret = []
+for i in range(3, 16, 3):
+    deret.append(i)
 
-# Lengkapi penggabungan dictionary di bawah ini:
-menu = profil # TODO: Gabungkan dengan tambahan menggunakan operator |
-
-print(f"Item: {menu['nama']} | Harga: Rp{menu['harga']} | Stok: {menu.get('stok', 0)}")`}
-  initialCode={`titik = (100, 250)
-x, y = titik
-profil = {"nama": "Kopi Aceh", "harga": 18000}
-tambahan = {"stok": 50, "kategori": "Minuman"}
-
-# Lengkapi penggabungan dictionary di bawah ini:
-menu = profil | tambahan
-
-print(f"Item: {menu['nama']} | Harga: Rp{menu['harga']} | Stok: {menu['stok']}")`}
-  expectedOutput={`Item: Kopi Aceh | Harga: Rp18000 | Stok: 50`}
+print("Kelipatan 3:", deret)
+print("Total Jumlah:", sum(deret))
+print("Banyak Elemen:", len(deret))`}
+  expectedOutput={`Kelipatan 3: [3, 6, 9, 12, 15]\nTotal Jumlah: 45\nBanyak Elemen: 5`}
 />
+
+</div>
 
 ---
 
-## 5. LATIHAN MANDIRI (AUTO-GRADED) & TANGGA PETUNJUK
+<div id="subbab-2-3" className="scroll-mt-24">
+
+## Sub-bab 2.3: Perulangan while & Break/Continue
+
+Jika jumlah perulangan tidak dapat dipastikan di awal dan bergantung pada perubahan kondisi saat program berjalan, gunakan perulangan `while`.
+
+> **Peringatan Penting:** Pastikan kondisi pada loop `while` akan suatu saat bernilai `False`. Jika tidak, program akan terjebak dalam *infinite loop* (perulangan tak terhingga) yang membuat browser membeku.
+
+Untuk mengendalikan alur loop secara manual:
+- **`break`:** Menghentikan loop seketika dan langsung keluar dari blok perulangan.
+- **`continue`:** Melewati sisa kode pada iterasi saat ini dan langsung melompat ke putaran berikutnya.
 
 <CodePlayground
   client:load
   language="python"
-  title="Latihan Mandiri P2.2: Operasi Himpunan Set Matematika"
-  initialCode={`pesanan_pagi = {"Teh", "Kopi", "Roti"}
-pesanan_siang = {"Kopi", "Nasi Goreng", "Es Jeruk"}
-
-gabungan = pesanan_pagi | pesanan_siang
-irisan = pesanan_pagi & pesanan_siang
-
-print("Menu Unik:", sorted(list(gabungan)))
-print("Menu Muncul di Kedua Sesi:", sorted(list(irisan)))`}
-  expectedOutput={`Menu Unik: ['Es Jeruk', 'Kopi', 'Nasi Goreng', 'Roti', 'Teh']\nMenu Muncul di Kedua Sesi: ['Kopi']`}
-/>
-
-<CodePlayground
-  client:load
-  language="python"
-  title="Latihan Mandiri P2.3: Virtual File I/O CSV & JSON (Pyodide MEMFS)"
-  initialCode={`import csv, json, pathlib
-
-data_warung = """produk,jumlah,harga
-Beras,2,15000
-Minyak,1,28000
-Telur,3,3000"""
-
-file_path = pathlib.Path("/tmp/transaksi_warung.csv")
-file_path.write_text(data_warung.strip())
-
+  title="Latihan 2.4: Akumulator Dinamis dengan while"
+  initialCode={`target = 50
 total = 0
-items = []
-with open(file_path, mode="r", encoding="utf-8") as f:
-    reader = csv.DictReader(f)
-    for row in reader:
-        subtotal = int(row["jumlah"]) * int(row["harga"])
-        total += subtotal
-        items.append({"produk": row["produk"], "subtotal": subtotal})
+langkah = 0
 
-rekap = {"total_belanja": total, "jumlah_item": len(items)}
-print("Rekap JSON:", json.dumps(rekap))`}
-  expectedOutput={`Rekap JSON: {"total_belanja": 67000, "jumlah_item": 3}`}
+while total < target:
+    langkah += 1
+    total += langkah * 2
+
+print("Langkah yang ditempuh:", langkah)
+print("Total terakumulasi:", total)`}
+  expectedOutput={`Langkah yang ditempuh: 7\nTotal terakumulasi: 56`}
 />
 
 <CodePlayground
   client:load
   language="python"
-  title="Latihan Mandiri P2.4: Penanganan Exception Terstruktur & Custom Exception"
-  initialCode={`class SaldoKurangError(Exception):
-    pass
+  title="Latihan 2.5: Pengendalian Alur dengan continue dan break"
+  initialCode={`bilangan = [12, 7, 19, 24, 35, 42, 51]
+genap_terpilih = []
 
-def tarik_dana(saldo, nominal):
-    if nominal > saldo:
-        raise SaldoKurangError(f"Saldo Rp{saldo} tidak mencukupi untuk penarikan Rp{nominal}.")
-    return saldo - nominal
+for b in bilangan:
+    if b % 2 != 0:
+        continue  # Lewati bilangan ganjil
+    if b > 40:
+        break     # Hentikan pencarian jika menemukan genap > 40
+    genap_terpilih.append(b)
 
-try:
-    sisa = tarik_dana(50000, 20000)
-    print("Sisa Saldo:", sisa)
-    tarik_dana(sisa, 40000)
-except SaldoKurangError as e:
-    print("Peringatan:", e)`}
-  expectedOutput={`Sisa Saldo: 30000\nPeringatan: Saldo Rp30000 tidak mencukupi untuk penarikan Rp40000.`}
+print("Bilangan Genap Sebelum 40:", genap_terpilih)`}
+  expectedOutput={`Bilangan Genap Sebelum 40: [12, 24]`}
 />
+
+Sebagai tantangan terpadu, mari kita buat algoritma penapisan bilangan prima menggunakan perulangan bersarang (*nested loops*) dan klausa `break`:
 
 <CodePlayground
   client:load
   language="python"
-  title="Mini Proyek P2: Analisis Transaksi Keuangan CSV Warung UMKM"
-  initialCode={`import csv, json, pathlib
+  title="Latihan 2.6: Algoritma Penapisan Bilangan Prima"
+  initialCode={`def saring_bilangan_prima(maksimal):
+    prima = []
+    for num in range(2, maksimal + 1):
+        adalah_prima = True
+        for pembagi in range(2, int(num ** 0.5) + 1):
+            if num % pembagi == 0:
+                adalah_prima = False
+                break
+        if adalah_prima:
+            prima.append(num)
+    return prima
 
-data_csv = """tanggal,kategori,tipe,nominal
-2026-11-01,Penjualan,pemasukan,450000
-2026-11-02,Bahan Baku,pengeluaran,180000
-2026-11-03,Penjualan,pemasukan,620000
-2026-11-04,Listrik,pengeluaran,75000"""
-
-csv_file = pathlib.Path("/tmp/pembukuan_umkm.csv")
-csv_file.write_text(data_csv.strip())
-
-pemasukan = 0
-pengeluaran = 0
-
-with open(csv_file, mode="r") as f:
-    for baris in csv.DictReader(f):
-        nom = int(baris["nominal"])
-        if baris["tipe"] == "pemasukan":
-            pemasukan += nom
-        else:
-            pengeluaran += nom
-
-laba_bersih = pemasukan - pengeluaran
-laporan = {
-    "total_pemasukan": pemasukan,
-    "total_pengeluaran": pengeluaran,
-    "laba_bersih": laba_bersih,
-    "status": "Untung" if laba_bersih > 0 else "Rugi"
-}
-
-print("Ringkasan UMKM:", json.dumps(laporan))`}
-  expectedOutput={`Ringkasan UMKM: {"total_pemasukan": 1070000, "total_pengeluaran": 255000, "laba_bersih": 815000, "status": "Untung"}`}
+daftar_prima = saring_bilangan_prima(20)
+print("Bilangan Prima <= 20:", daftar_prima)
+print("Jumlah Prima:", len(daftar_prima))`}
+  expectedOutput={`Bilangan Prima <= 20: [2, 3, 5, 7, 11, 13, 17, 19]\nJumlah Prima: 8`}
 />
 
-{/* Socratic AI Tutor Assistant */}
+</div>
+
+---
+
+<div id="kuis-python-bab2" className="scroll-mt-24">
+
+## Kuis Evaluasi Bab 2
+
+Kamu telah menuntaskan seluruh materi Logika & Alur Kontrol! Sekarang saatnya menguji penguasaanmu di **Kuis Evaluasi Bab 2**.
+
+> **Aturan Kelulusan:** Soal dipilih dan diacak secara dinamis dari materi Bab 2. Kamu harus meraih skor minimal **80% (maksimal salah 1)** untuk lulus dan membuka Bab 3. Jika terlalu banyak salah, kamu harus mengulang dengan set soal baru!
+
+<ChapterQuiz
+  client:load
+  chapterId="python-bab2"
+  title="Kuis Evaluasi Bab 2: Logika & Alur Kontrol"
+  passingScore={80}
+  questionsPerAttempt={5}
+  nextChapterUrl="/curriculum/python/p3"
+  nextChapterTitle="Bab 3: Struktur Data Koleksi"
+/>
+
+</div>
+
+---
+
 <SocraticTutorPanel
   client:load
   lessonId="P2"
-  language="python"
-  defaultCodeSnippet={`with open("/tmp/data.csv") as f:\n    pass`}
+  defaultCode={`# Uji logika percabangan dan perulanganmu di sini:
+for i in range(1, 6):
+    status = "Genap" if i % 2 == 0 else "Ganjil"
+    print(f"Angka {i} adalah {status}")`}
 />
-
----
-
-## 6. KESALAHAN UMUM (COMMON MISCONCEPTIONS)
-
-1. **Miskonsepsi Default Argumen List:** Mendefinisikan fungsi seperti `def simpan(item, daftar=[])`. Di Python, objek default argument dievaluasi hanya sekali saat modul dimuat, bukan setiap fungsi dipanggil. Menggunakan list mutable sebagai default argument akan membuat state akumulasi bocor antar-pemanggilan fungsi. Gunakan `daftar=None` lalu inisialisasi di dalam tubuh fungsi.
-2. **Miskonsepsi Tuple Tunggal:** Menulis `t = (42)` tidak membuat tuple melainkan integer biasa. Untuk membuat tuple dengan satu elemen, koma wajib disertakan: `t = (42,)`.
-3. **Miskonsepsi Modifikasi List Saat Loop:** Menghapus elemen dari list (`list.remove()` atau `del`) di tengah-tengah perulangan `for x in list`. Hal ini menyebabkan pergeseran indeks internal iterator dan elemen berikutnya terlewat. Gunakan list comprehension atau iterasi salinan `for x in list[:]`.
-
----
-
-## 7. RANGKUMAN & KUIS MINI (RETRIEVAL PRACTICE)
-
-<MiniQuiz
-  client:load
-  lessonId="P2"
-  title="Kuis Mini P2: Penguasaan Struktur Data & File I/O Python"
-  questions={[
-    {
-      question: "Mengapa tuple dapat digunakan sebagai kunci (key) dalam dictionary, sedangkan list tidak diizinkan?",
-      conceptId: "P2-Tuples-Hashable",
-      options: [
-        {
-          text: "Karena tuple bersifat immutable sehingga hash value-nya konstan sepanjang hidup program (hashable).",
-          isCorrect: true,
-          explanation: "Tepat! Dictionary bergantung pada kestabilan hash table. List bersifat mutable sehingga hash-nya tidak dapat dijamin stabil."
-        },
-        {
-          text: "Karena tuple hanya menyimpan angka dan tidak mendukung string.",
-          isCorrect: false,
-          explanation: "Salah. Tuple dapat menyimpan objek apapun termasuk string, float, atau tuple lain."
-        },
-        {
-          text: "Karena CPython mengalokasikan tuple langsung pada register CPU.",
-          isCorrect: false,
-          explanation: "Salah. Tuple dialokasikan pada heap memory CPython sama seperti objek lainnya."
-        }
-      ]
-    },
-    {
-      question: "Apa keuntungan utama menggunakan context manager with open(...) dibanding pemanggilan open() biasa?",
-      conceptId: "P2-ContextManagers",
-      options: [
-        {
-          text: "Menjamin file descriptor otomatis ditutup dengan aman bahkan jika terjadi error di dalam blok kode.",
-          isCorrect: true,
-          explanation: "Benar. Protokol context manager memanggil __exit__ secara otomatis saat keluar dari blok with."
-        },
-        {
-          text: "Membuat file otomatis tersinkronisasi ke cloud storage Google Drive.",
-          isCorrect: false,
-          explanation: "Salah. open() beroperasi pada filesystem lokal/MEMFS, bukan layanan cloud eksternal."
-        },
-        {
-          text: "Menghapus kebutuhan menyertakan mode pembacaan 'r'.",
-          isCorrect: false,
-          explanation: "Salah. Mode default tetap 'r' baik menggunakan with maupun tidak."
-        }
-      ]
-    },
-    {
-      question: "Manakah sintaks list comprehension yang benar untuk mengambil kuadrat bilangan ganjil saja dari koleksi angka?",
-      conceptId: "P2-Comprehensions",
-      options: [
-        {
-          text: "[x ** 2 for x in angka if x % 2 != 0]",
-          isCorrect: true,
-          explanation: "Tepat! Klausa if x % 2 != 0 menyaring bilangan ganjil, lalu ekspresi x ** 2 menghitung kuadratnya."
-        },
-        {
-          text: "[for x in angka if x % 2 != 0 then x ** 2]",
-          isCorrect: false,
-          explanation: "Salah. Python tidak memiliki kata kunci 'then' pada ekspresi comprehension."
-        },
-        {
-          text: "map(lambda x: x ** 2, filter(angka, lambda x: x % 2 != 0))",
-          isCorrect: false,
-          explanation: "Salah. Urutan argumen filter salah dan bukan merupakan bentuk list comprehension."
-        }
-      ]
-    }
-  ]}
-/>
-
----
-
-## 8. SELAMI LEBIH DALAM (DIVE DEEPER)
-
-- **Dokumentasi Resmi Python:** Telusuri panduan [docs.python.org: Data Structures](https://docs.python.org/3/tutorial/datastructures.html) dan [docs.python.org: Reading and Writing Files](https://docs.python.org/3/tutorial/inputoutput.html#reading-and-writing-files).
-- **W3Schools Python Dictionaries & Lists:** Pelajari latihan interaktif [W3Schools Python Dictionaries](https://www.w3schools.com/python/python_dictionaries.asp).
-- **PEP 584:** Bedah spesifikasi penambahan operator penggabungan `|` dan pembaruan `|=` pada *Dictionary* di Python 3.9+.
-- **CPython Dict Internals:** Arsitektur *compact and ordered dict* karya Raymond Hettinger yang menghemat 20-25% memori dengan memisahkan array index dan dense table entries.

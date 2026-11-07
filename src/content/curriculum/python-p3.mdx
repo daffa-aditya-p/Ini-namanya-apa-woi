@@ -2,27 +2,25 @@
 id: "P3"
 track: "python"
 level: "P3"
-title: "Pemrograman Berorientasi Objek, Dataclasses & Standard Library Python"
+title: "Bab 3: Struktur Data Koleksi"
 slug: "curriculum/python/p3"
-estimatedMinutes: 150
+estimatedMinutes: 120
 prerequisites:
   - "P1"
   - "P2"
 learningObjectives:
-  - "Menguasai paradigma OOP modern: Class, Instance, atribut, method __init__, dan parameter self"
-  - "Menerapkan enkapsulasi dengan konvensi _protected, name mangling __private, dan dekorator @property"
-  - "Memahami pewarisan (inheritance) dan Method Resolution Order (MRO) via super()"
-  - "Mengimplementasikan Dunder (Magic) Methods (__str__, __repr__, __eq__, __lt__)"
-  - "Memanfaatkan modul @dataclass(frozen=True) untuk pemodelan data bersih dan immutable"
-  - "Menguasai standard library esensial: collections (Counter, defaultdict), datetime, dan typing"
+  - "Menguasai struktur koleksi bawaan Python: list, tuple, dictionary, dan set"
+  - "Memanfaatkan teknik pemotongan slicing [start:stop:step] dan manipulasi list in-place"
+  - "Memahami sifat immutability tuple dan teknik unpacking multi-variabel"
+  - "Mengelola pemetaan kunci-nilai hash map dictionary O(1) dan penggabungan via operator pipe (|)"
+  - "Menerapkan operasi teori himpunan matematika pada set: union, irisan, dan selisih"
 relatedConcepts:
-  - "PyTypeObject & CPython Object Model"
-  - "C3 Linearization / MRO"
-  - "Dunder Protocols & Operator Overloading"
-  - "PEP 557 Dataclasses"
-  - "PEP 484 Type Hints"
+  - "CPython Compact Hash Tables"
+  - "Mutability vs Immutability in Memory"
+  - "Array Slicing & Memory References"
+  - "Set Theory & Mathematical Operations"
 languageVersion: "Python 3.12"
-summary: "Kuasai arsitektur OOP modern Python, enkapsulasi via @property, Dunder methods, pemodelan data immutability via @dataclass, dan pustaka collections/datetime."
+summary: "Kuasai empat pilar struktur data bawaan Python: List terurut & slicing, Tuple immutable, Dictionary hash map O(1), dan Set operasi himpunan unik."
 ---
 
 import { CodePlayground } from '../../components/CodePlayground';
@@ -30,443 +28,232 @@ import { DualTrackView } from '../../components/DualTrackView';
 import { PredictOutput } from '../../components/PredictOutput';
 import { FadedExample } from '../../components/FadedExample';
 import { SocraticTutorPanel } from '../../components/SocraticTutorPanel';
-import { MiniQuiz } from '../../components/MiniQuiz';
+import { ChapterQuiz } from '../../components/ChapterQuiz';
 
-# Level P3: Pemrograman Berorientasi Objek & Standard Library
+# Bab 3: Struktur Data Koleksi
 
-Selamat datang di Level P3. Di level ini, kamu beralih dari sekadar menyusun fungsi dan struktur data terpisah menuju **arsitektur kode modular, terstruktur, dan dapat diskalakan** menggunakan paradigma Pemrograman Berorientasi Objek (*Object-Oriented Programming* / OOP) dan pustaka standar Python yang kaya.
+Selamat datang di Bab 3. Dalam pemrograman dunia nyata, kamu jarang mengolah satu angka atau satu teks tunggal. Kamu akan mengelola ribuan data pengguna, katalog produk, dan matriks koordinat. Python menyediakan empat struktur koleksi bawaan yang sangat fleksibel dan berkinerja tinggi.
 
 ---
 
-## 1. HOOK: Masalah Nyata & Analogi Keseharian
-
 <DualTrackView
   client:load
-  santaiTitle="Jalur Santai: Cetak Biru Rumah & Blangko KTP"
+  santaiTitle="Jalur Santai: Lemari Arsip, Akta Notaris, Rak Bumbu & Kartu Anggota"
   santaiParagraphs={[
-    "Bayangkan kamu memesan KTP di kantor Dukcapil. Blangko KTP kosong yang memiliki kolom Nama, NIK, dan Alamat adalah Class (cetak biru/blueprint). KTP fisik yang tercetak dengan foto dan identitas pribadimu adalah Instance (objek nyata hasil cetak).",
-    "Ketika dua orang memperlihatkan KTP, petugas membandingkan nomor NIK-nya untuk menentukan apakah mereka orang yang sama. Di Python, kamu mengatur cara perbandingan tersebut menggunakan Dunder method __eq__, sehingga objekmu berperilaku pintar layaknya benda di dunia nyata."
+    "Bayangkan kamu mengelola sebuah toko. Sebuah List adalah keranjang belanja yang bebas kamu tambahi atau kurangi barangnya kapan saja. Sebuah Tuple adalah nomor seri akta tokomu: sekali dicetak, tidak boleh diubah selamanya (immutable).",
+    "Sebuah Dictionary adalah rak bumbu berlabel nama: kamu tidak mencari merica dengan menghitung rak nomor 0, 1, 2, melainkan langsung mencari label 'Merica' secara instan. Dan sebuah Set adalah daftar kartu member unik: sistem otomatis menolak pendaftaran nomor ganda sehingga tidak ada data kembar."
   ]}
-  cepatTitle="Jalur Cepat: PyTypeObject, Descriptor Protocol & C3 MRO"
+  cepatTitle="Jalur Cepat: Open-Addressing Hash Maps, Amortized O(1) & Dynamic Arrays"
   cepatParagraphs={[
-    "Di CPython, setiap Class direpresentasikan sebagai PyTypeObject pada tingkat runtime C. Atribut dan method disimpan dalam dictionary __dict__ objek atau dioptimalkan melalui __slots__ untuk efisiensi memori.",
-    "Python menerapkan C3 Linearization untuk menyelesaikan Method Resolution Order (MRO) pada pewarisan berganda. Melalui dekorator @property, Python memanfaatkan Descriptor Protocol (__get__, __set__) guna menyediakan enkapsulasi murni tanpa overhead sintaksis getter/setter gaya Java."
+    "Di CPython, list diimplementasikan sebagai dynamic array of pointers (PyListObject) yang mengalokasikan kapasitas lebih untuk mencapai penambahan O(1) amortized. Slicing membuat salinan pointer baru secara efisien.",
+    "Dictionary dan set CPython menggunakan compact hash table modern dengan quadratic perturbation probing. Pencarian kunci beroperasi dalam waktu O(1) konstan rata-rata, dengan syarat kunci harus merupakan objek immutable yang memiliki fungsi hash deterministik (PyObject_Hash)."
   ]}
 />
 
 ---
 
-## 2. KONSEP INTI: Pilar OOP & Anatomi Kelas Python
+<div id="subbab-3-1" className="scroll-mt-24">
 
-Berdasarkan standar resmi [Python 3.12 Documentation: Classes](https://docs.python.org/3/tutorial/classes.html) dan tutorial praktis [W3Schools Python OOP](https://www.w3schools.com/python/python_classes.asp), empat konsep kunci yang menjadi fondasi Level P3:
+## Sub-bab 3.1: List & Slicing
 
-1. **Class, Instance, dan Parameter `self`:**
-   - `self` mewakili instance objek yang sedang aktif. Python mewajibkan `self` ditulis eksplisit pada pendefinisian method agar relasi atribut transparan.
-2. **Enkapsulasi & Dekorator `@property`:**
-   - Gunakan awalan `_variabel` untuk menandai atribut terproteksi (konvensi) dan proteksi validasi via getter/setter `@property`.
-3. **Dunder (Double Underscore / Magic) Methods:**
-   - `__init__`: Konstruktor inisialisasi instance.
-   - `__eq__`: Logika kesetaraan perbandingan `==`.
-   - `__lt__`: Logika perbandingan lebih kecil `<` (memungkinkan fungsi `sort()` bekerja otomatis).
-4. **Modern Data Modeling: `@dataclass`:**
-   - Sejak Python 3.7 (PEP 557), dekorator `@dataclass` otomatis menghasilkan `__init__`, `__repr__`, dan `__eq__` tanpa boilerplate manual. Gunakan `frozen=True` untuk menjamin immutability.
+List adalah deret data berurutan (*ordered*) yang dapat dimutasi (*mutable*) dan mengizinkan elemen duplikat. List diapit dengan kurung siku `[]`.
 
----
-
-## 3. CONTOH HIDUP + PREDIKSI OUTPUT
-
-Uji intuisimu mengenai bagaimana perbandingan objek `==` dan `<` bekerja saat dunder methods diimplementasikan:
+Teknik paling ampuh untuk memanipulasi list adalah **Slicing** dengan notasi `list[start:stop:step]`:
+- `start`: indeks awal pengambilan (inklusif).
+- `stop`: indeks batas akhir (eksklusif).
+- `step`: interval lompatan (positif untuk maju, negatif untuk mundur/membalik data).
 
 <PredictOutput
   client:load
   language="python"
-  title="Prediksi Output P3.1: Dunder Equality & Comparison"
-  code={`class NilaiMahasiswa:
-    def __init__(self, nama: str, skor: float):
-        self.nama = nama
-        self.skor = skor
-
-    def __eq__(self, other):
-        if not isinstance(other, NilaiMahasiswa):
-            return False
-        return self.skor == other.skor
-
-    def __lt__(self, other):
-        if not isinstance(other, NilaiMahasiswa):
-            return NotImplemented
-        return self.skor < other.skor
-
-m1 = NilaiMahasiswa("Budi", 85.0)
-m2 = NilaiMahasiswa("Siti", 85.0)
-m3 = NilaiMahasiswa("Andi", 92.5)
-
-print(m1 == m2)
-print(m1 < m3)`}
+  title="Prediksi Output 3.1: Pemotongan List Slicing & Indeks Negatif"
+  code={`angka = [10, 20, 30, 40, 50]
+sub_a = angka[1:4]
+sub_b = angka[-2:]
+print("Sub A:", sub_a)
+print("Sub B:", sub_b)`}
   options={[
     {
-      text: "True\\nTrue",
+      text: "Sub A: [20, 30, 40]\\nSub B: [40, 50]",
       isCorrect: true,
-      explanation: "Tepat! Method __eq__ membandingkan skor m1 (85.0) dan m2 (85.0) sehingga bernilai True. Method __lt__ membandingkan skor m1 (85.0) < m3 (92.5) sehingga juga bernilai True."
+      explanation: "Tepat! Indeks 1:4 mengambil elemen indeks 1, 2, 3 (20, 30, 40). Indeks negatif -2: mengambil dua elemen terakhir dari kanan (40, 50)."
     },
     {
-      text: "False\\nTrue",
+      text: "Sub A: [10, 20, 30]\\nSub B: [50]",
       isCorrect: false,
-      explanation: "Salah. Jika __eq__ tidak dioverride, Python akan membandingkan alamat memori (id), tetapi di sini __eq__ telah disesuaikan untuk membandingkan atribut skor."
+      explanation: "Indeks 1 menunjuk ke 20, bukan 10."
     },
     {
-      text: "True\\nFalse",
+      text: "Sub A: [20, 30, 40, 50]\\nSub B: [40, 50]",
       isCorrect: false,
-      explanation: "Salah. Skor 85.0 lebih kecil daripada 92.5, sehingga m1 < m3 menghasilkan True."
+      explanation: "Batas stop 4 bersifat eksklusif sehingga indeks 4 (50) tidak diikutsertakan."
     }
   ]}
 />
 
----
-
-## 4. LATIHAN TERPANDU (FADED EXAMPLE)
-
-Pelajari bagaimana Dataclasses dipadukan dengan agregasi bisnis untuk mengelola inventaris gudang secara aman:
-
-<FadedExample
+<CodePlayground
   client:load
-  title="Sistem Manajemen Inventaris Gudang dengan Dataclass"
   language="python"
-  missingTaskDescription="Lengkapi method tambah_barang dan total_valuasi pada kelas GudangInventaris menggunakan agregasi generator sum()."
-  fadedHint="Simpan barang ke dalam dictionary self._stok dengan kunci barang.sku, dan gunakan sum(b.nilai_total for b in self._stok.values()) untuk menghitung total valuasi."
-  starterCode={`from dataclasses import dataclass
-
-@dataclass
-class StokBarang:
-    sku: str
-    nama: str
-    jumlah: int
-    harga_satuan: int
-
-    @property
-    def nilai_total(self) -> int:
-        return self.jumlah * self.harga_satuan
-
-class GudangInventaris:
-    def __init__(self):
-        self._stok: dict[str, StokBarang] = {}
-
-    def tambah_barang(self, barang: StokBarang) -> None:
-        # TODO: Masukkan barang ke dalam self._stok dengan kunci barang.sku
-        pass
-
-    def total_valuasi(self) -> int:
-        # TODO: Kembalikan total nilai seluruh barang dalam gudang
-        return 0
-
-    def ringkasan(self) -> str:
-        return f"Gudang: {len(self._stok)} SKU | Valuasi: Rp{self.total_valuasi():,}"
-
-gudang = GudangInventaris()
-gudang.tambah_barang(StokBarang("BRG-1", "Beras Ramos 5kg", 10, 75000))
-gudang.tambah_barang(StokBarang("BRG-2", "Minyak Goreng 2L", 25, 34000))
-
-print(gudang.ringkasan())`}
-  initialCode={`from dataclasses import dataclass
-
-@dataclass
-class StokBarang:
-    sku: str
-    nama: str
-    jumlah: int
-    harga_satuan: int
-
-    @property
-    def nilai_total(self) -> int:
-        return self.jumlah * self.harga_satuan
-
-class GudangInventaris:
-    def __init__(self):
-        self._stok: dict[str, StokBarang] = {}
-
-    def tambah_barang(self, barang: StokBarang) -> None:
-        self._stok[barang.sku] = barang
-
-    def total_valuasi(self) -> int:
-        return sum(b.nilai_total for b in self._stok.values())
-
-    def ringkasan(self) -> str:
-        return f"Gudang: {len(self._stok)} SKU | Valuasi: Rp{self.total_valuasi():,}"
-
-gudang = GudangInventaris()
-gudang.tambah_barang(StokBarang("BRG-1", "Beras Ramos 5kg", 10, 75000))
-gudang.tambah_barang(StokBarang("BRG-2", "Minyak Goreng 2L", 25, 34000))
-
-print(gudang.ringkasan())`}
-  expectedOutput={`Gudang: 2 SKU | Valuasi: Rp1,600,000`}
+  title="Latihan 3.1: Operasi List dan Slicing Presisi"
+  initialCode={`data = [10, 20, 30, 40, 50, 60]
+print("Slice ganjil:", data[1::2])
+data.append(70)
+print("Panjang data:", len(data))
+print("Tiga elemen terakhir:", data[-3:])`}
+  expectedOutput={`Slice ganjil: [20, 40, 60]\nPanjang data: 7\nTiga elemen terakhir: [50, 60, 70]`}
 />
+
+</div>
 
 ---
 
-## 5. LATIHAN MANDIRI (AUTO-GRADED) & TANGGA PETUNJUK
+<div id="subbab-3-2" className="scroll-mt-24">
 
-Ujilah materi OOP dan Standard Library langsung di browser melalui runtime WebAssembly Pyodide:
+## Sub-bab 3.2: Tuple & Immutability
+
+Tuple adalah deret data berurutan yang bersifat **immutable** (tidak dapat diubah, ditambah, atau dihapus setelah dibuat). Tuple diapit dengan tanda kurung biasa `()`.
+
+Karena sifatnya yang tidak berubah, Tuple lebih hemat alokasi memori dibandingkan List, aman dari mutasi tanpa sengaja, dan dapat dijadikan sebagai kunci di Dictionary.
+
+Kita dapat membongkar seluruh elemen tuple ke dalam beberapa variabel terpisah secara sekaligus melalui teknik **Tuple Unpacking**:
 
 <CodePlayground
   client:load
   language="python"
-  title="Latihan Mandiri P3.1: Dunder Equality & Comparison Operator Overloading"
-  initialCode={`class NilaiMahasiswa:
-    def __init__(self, nama: str, skor: float):
-        self.nama = nama
-        self.skor = skor
-
-    def __eq__(self, other):
-        if not isinstance(other, NilaiMahasiswa):
-            return False
-        return self.skor == other.skor
-
-    def __lt__(self, other):
-        if not isinstance(other, NilaiMahasiswa):
-            return NotImplemented
-        return self.skor < other.skor
-
-m1 = NilaiMahasiswa("Budi", 85.0)
-m2 = NilaiMahasiswa("Siti", 85.0)
-m3 = NilaiMahasiswa("Andi", 92.5)
-
-print(m1 == m2)
-print(m1 < m3)`}
-  expectedOutput={`True\nTrue`}
+  title="Latihan 3.2: Tuple Immutability & Unpacking"
+  initialCode={`titik = (100, 250, 400)
+x, y, z = titik
+print(f"Koordinat X={x}, Y={y}, Z={z}")
+print("Tipe titik:", type(titik).__name__)`}
+  expectedOutput={`Koordinat X=100, Y=250, Z=400\nTipe titik: tuple`}
 />
 
+</div>
+
+---
+
+<div id="subbab-3-3" className="scroll-mt-24">
+
+## Sub-bab 3.3: Dictionary & Hash Map
+
+Dictionary adalah pemetaan pasangan kunci dan nilai (*key-value pairs*) yang diapit oleh kurung kurawal `{kunci: nilai}`. Pencarian nilai berdasarkan kunci berjalan sangat cepat ($O(1)$ amortized).
+
+Sejak Python 3.9+, kita dapat menggabungkan dua dictionary secara bersih menggunakan operator pipa (`|`). Jika terdapat kunci yang sama, nilai dari dictionary sisi kanan yang akan digunakan.
+
 <CodePlayground
   client:load
   language="python"
-  title="Latihan Mandiri P3.2: Enkapsulasi & Proteksi Mutasi Saldo Bank"
-  initialCode={`class RekeningBank:
-    def __init__(self, nomor: str, saldo_awal: float = 0.0):
-        self.nomor = nomor
-        self._saldo = max(0.0, float(saldo_awal))
+  title="Latihan 3.3: Penggabungan Dictionary dengan Operator Pipe (|)"
+  initialCode={`profil = {"nama": "Kopi Aceh", "harga": 18000}
+tambahan = {"stok": 50, "kategori": "Minuman"}
 
-    @property
-    def saldo(self) -> float:
-        return self._saldo
-
-    def setor(self, jumlah: float) -> None:
-        if jumlah <= 0:
-            raise ValueError("Jumlah setor harus positif")
-        self._saldo += jumlah
-
-    def tarik(self, jumlah: float) -> bool:
-        if 0 < jumlah <= self._saldo:
-            self._saldo -= jumlah
-            return True
-        return False
-
-rek = RekeningBank("ACC-001", 500000)
-rek.setor(250000)
-print(f"Saldo setelah setor: Rp{rek.saldo:,.0f}")
-sukses = rek.tarik(100000)
-print(f"Penarikan 100k: {sukses}, Sisa saldo: Rp{rek.saldo:,.0f}")`}
-  expectedOutput={`Saldo setelah setor: Rp750,000\nPenarikan 100k: True, Sisa saldo: Rp650,000`}
+menu = profil | tambahan
+print(f"Item: {menu['nama']} | Harga: Rp{menu['harga']} | Stok: {menu['stok']}")
+print("Kunci dictionary:", sorted(list(menu.keys())))`}
+  expectedOutput={`Item: Kopi Aceh | Harga: Rp18000 | Stok: 50\nKunci dictionary: ['harga', 'kategori', 'nama', 'stok']`}
 />
 
+Untuk menghindari galat `KeyError` saat mengakses kunci yang belum tentu ada, gunakan metode `.get(kunci, nilai_cadangan)`:
+
 <CodePlayground
   client:load
   language="python"
-  title="Latihan Mandiri P3.3: Pewarisan Bersih & Komputasi Bertingkat dengan super()"
-  initialCode={`class Pegawai:
-    def __init__(self, nama: str, gaji_pokok: float):
-        self.nama = nama
-        self.gaji_pokok = gaji_pokok
+  title="Latihan 3.4: Akses Kamus Aman dengan .get()"
+  initialCode={`stok_toko = {"apel": 15, "pisang": 30, "mangga": 0}
+pencarian = ["apel", "jeruk", "pisang"]
 
-    def hitung_penghasilan(self) -> float:
-        return self.gaji_pokok
+hasil = {}
+for buah in pencarian:
+    hasil[buah] = stok_toko.get(buah, "Kosong")
 
-class Manajer(Pegawai):
-    def __init__(self, nama: str, gaji_pokok: float, tunjangan: float):
-        super().__init__(nama, gaji_pokok)
-        self.tunjangan = tunjangan
+for b, s in hasil.items():
+    print(f"- {b}: {s}")`}
+  expectedOutput={`- apel: 15\n- jeruk: Kosong\n- pisang: 30`}
+/>
 
-    def hitung_penghasilan(self) -> float:
-        return super().hitung_penghasilan() + self.tunjangan
+</div>
 
-tim = [
-    Pegawai("Dewi", 6000000),
-    Manajer("Bambang", 12000000, 4000000),
+---
+
+<div id="subbab-3-4" className="scroll-mt-24">
+
+## Sub-bab 3.4: Set & Himpunan
+
+Set adalah kumpulan elemen **tanpa urutan** dan **tanpa duplikasi**. Jika kamu memasukkan nilai yang sama berulang kali, set otomatis hanya menyimpan satu salinan unik.
+
+Set mendukung operasi matematika himpunan secara alami:
+- **Union (`|`):** Menggabungkan semua anggota unik dari kedua himpunan.
+- **Intersection (`&`):** Mengambil anggota yang ada di kedua himpunan sekaligus.
+- **Difference (`-`):** Mengambil anggota himpunan pertama yang tidak ada di himpunan kedua.
+
+<CodePlayground
+  client:load
+  language="python"
+  title="Latihan 3.5: Operasi Aljabar Himpunan pada Set"
+  initialCode={`pesanan_pagi = {"Teh", "Kopi", "Roti"}
+pesanan_siang = {"Kopi", "Nasi Goreng", "Es Jeruk"}
+
+gabungan = pesanan_pagi | pesanan_siang
+irisan = pesanan_pagi & pesanan_siang
+selisih = pesanan_pagi - pesanan_siang
+
+print("Menu Unik:", sorted(list(gabungan)))
+print("Menu Muncul di Kedua Sesi:", sorted(list(irisan)))
+print("Hanya di Pagi:", sorted(list(selisih)))`}
+  expectedOutput={`Menu Unik: ['Es Jeruk', 'Kopi', 'Nasi Goreng', 'Roti', 'Teh']\nMenu Muncul di Kedua Sesi: ['Kopi']\nHanya di Pagi: ['Roti', 'Teh']`}
+/>
+
+Sebagai latihan terpadu, mari gabungkan data transaksi belanja menggunakan pemrosesan koleksi:
+
+<CodePlayground
+  client:load
+  language="python"
+  title="Latihan 3.6: Pemrosesan Pipeline Koleksi Terpadu"
+  initialCode={`transaksi = [
+    {"item": "Buku", "kategori": "Alat Tulis", "harga": 25000},
+    {"item": "Pensil", "kategori": "Alat Tulis", "harga": 5000},
+    {"item": "Kopi", "kategori": "Konsumsi", "harga": 18000},
 ]
 
-for p in tim:
-    print(f"{p.nama}: Rp{p.hitung_penghasilan():,.0f}")`}
-  expectedOutput={`Dewi: Rp6,000,000\nBambang: Rp16,000,000`}
+total = sum(t["harga"] for t in transaksi)
+kategori_unik = sorted(list({t["kategori"] for t in transaksi}))
+
+print("Total Nilai Transaksi:", f"Rp{total:,}")
+print("Daftar Kategori Unik:", kategori_unik)`}
+  expectedOutput={`Total Nilai Transaksi: Rp48,000\nDaftar Kategori Unik: ['Alat Tulis', 'Konsumsi']`}
 />
 
-<CodePlayground
+</div>
+
+---
+
+<div id="kuis-python-bab3" className="scroll-mt-24">
+
+## Kuis Evaluasi Bab 3
+
+Kamu telah menuntaskan seluruh materi Struktur Data Koleksi! Saatnya menguji pemahaman di **Kuis Evaluasi Bab 3**.
+
+> **Syarat Lulus Ketat:** Soal diacak secara dinamis dari bank materi Bab 3. Kamu wajib mencapai skor minimal **80% (maksimal salah 1)** untuk dinyatakan kompeten dan membuka Bab 4. Jika gagal, silakan pelajari kembali dan klik ulangi kuis untuk mendapatkan set soal baru!
+
+<ChapterQuiz
   client:load
-  language="python"
-  title="Latihan Mandiri P3.4: Pemodelan Data Immutable dengan @dataclass(frozen=True)"
-  initialCode={`from dataclasses import dataclass, field
-
-@dataclass(frozen=True)
-class ItemProduk:
-    kode: str
-    nama: str
-    harga: int
-    kategori: str = "Umum"
-    tagar: tuple[str, ...] = field(default_factory=tuple)
-
-p1 = ItemProduk("KB-01", "Kopi Robusta Lampung", 45000, "Minuman", ("organik", "lokal"))
-p2 = ItemProduk("TH-02", "Teh Hitam Walini", 25000, "Minuman")
-
-tag_teks = ", ".join(p1.tagar)
-print(f"Produk 1: {p1.nama} ({p1.kategori}) - Rp{p1.harga}")
-print(f"Tagar p1: {tag_teks}")
-print(f"Produk 2: {p2.nama} - Tagar: {len(p2.tagar)}")`}
-  expectedOutput={`Produk 1: Kopi Robusta Lampung (Minuman) - Rp45000\nTagar p1: organik, lokal\nProduk 2: Teh Hitam Walini - Tagar: 0`}
+  chapterId="python-bab3"
+  title="Kuis Evaluasi Bab 3: Struktur Data Koleksi"
+  passingScore={80}
+  questionsPerAttempt={5}
+  nextChapterUrl="/curriculum/python/p4"
+  nextChapterTitle="Bab 4: Fungsi & Modularitas"
 />
 
-<CodePlayground
-  client:load
-  language="python"
-  title="Latihan Mandiri P3.5: Pengelompokan Data & Frekuensi via collections"
-  initialCode={`from collections import Counter, defaultdict
+</div>
 
-transaksi = [
-    ("Makanan", "Nasi Goreng"),
-    ("Minuman", "Es Teh Manis"),
-    ("Makanan", "Ayam Bakar"),
-    ("Makanan", "Nasi Goreng"),
-    ("Minuman", "Es Jeruk"),
-    ("Camilan", "Kerupuk"),
-]
+---
 
-pesanan_counter = Counter([item[1] for item in transaksi])
-print("Item terlaris:", pesanan_counter.most_common(1)[0])
-
-kategori_map = defaultdict(list)
-for kategori, menu in transaksi:
-    kategori_map[kategori].append(menu)
-
-print("Kategori Makanan:", sorted(set(kategori_map["Makanan"])))
-print("Total Kategori Terdata:", len(kategori_map))`}
-  expectedOutput={`Item terlaris: ('Nasi Goreng', 2)\nKategori Makanan: ['Ayam Bakar', 'Nasi Goreng']\nTotal Kategori Terdata: 3`}
-/>
-
-<CodePlayground
-  client:load
-  language="python"
-  title="Latihan Mandiri P3.6: Sistem Manajemen Inventaris Gudang Terstruktur"
-  initialCode={`from dataclasses import dataclass
-
-@dataclass
-class StokBarang:
-    sku: str
-    nama: str
-    jumlah: int
-    harga_satuan: int
-
-    @property
-    def nilai_total(self) -> int:
-        return self.jumlah * self.harga_satuan
-
-class GudangInventaris:
-    def __init__(self):
-        self._stok: dict[str, StokBarang] = {}
-
-    def tambah_barang(self, barang: StokBarang) -> None:
-        self._stok[barang.sku] = barang
-
-    def total_valuasi(self) -> int:
-        return sum(b.nilai_total for b in self._stok.values())
-
-    def ringkasan(self) -> str:
-        return f"Gudang: {len(self._stok)} SKU | Valuasi: Rp{self.total_valuasi():,}"
-
-gudang = GudangInventaris()
-gudang.tambah_barang(StokBarang("BRG-1", "Beras Ramos 5kg", 10, 75000))
-gudang.tambah_barang(StokBarang("BRG-2", "Minyak Goreng 2L", 25, 34000))
-
-print(gudang.ringkasan())`}
-  expectedOutput={`Gudang: 2 SKU | Valuasi: Rp1,600,000`}
-/>
-
-{/* Socratic AI Tutor Assistant */}
 <SocraticTutorPanel
   client:load
-  conceptTitle="OOP, Dataclass & Standard Library (P3)"
-  contextDescription="Diskusikan perancangan hierarki inheritance, enkapsulasi data dengan @property, dan pemanfaatan dunder methods."
+  lessonId="P3"
+  defaultCode={`# Eksperimen koleksi data di sini:
+angka = [1, 2, 3, 2, 1]
+unik = set(angka)
+print("Data unik:", unik)`}
 />
-
----
-
-## 6. KESALAHAN UMUM (COMMON MISCONCEPTIONS)
-
-1. **Jebakan Argumen Bawaan Mutable (*Mutable Default Argument*):** Menulis fungsi `def tambah(item, keranjang=[])`. Di Python, nilai parameter bawaan dievaluasi **hanya sekali** saat definisi fungsi dimuat ke memori (waktu kompilasi modul). Akibatnya, setiap pemanggilan fungsi tanpa argumen kedua akan memanipulasi objek list yang sama persis di memori. Solusinya: gunakan `keranjang=None` dan inisialisasi `if keranjang is None: keranjang = []` di dalam tubuh fungsi.
-2. **Lupa Parameter `self` pada Instance Method:** Menulis `def ambil_nama(): return self.nama`. Saat fungsi dipanggil via objek `m.ambil_nama()`, Python secara implisit meneruskan objek `m` sebagai argumen pertama. Jika method tidak memiliki parameter `self`, interpreter akan melempar `TypeError: takes 0 positional arguments but 1 was given`.
-3. **Mengabaikan `super().__init__()`:** Pada class turunan yang meng-override `__init__`, melupakan pemanggilan `super().__init__(...)` akan menyebabkan inisialisasi class induk terlewati. Hal ini menyebabkan error atribut tidak ditemukan (*AttributeError*) saat method turunan dijalankan.
-4. **Ilusi Immutability Struktur Bersarang pada `@dataclass(frozen=True)`:** Mengira bahwa `frozen=True` melindungi seluruh data secara mendalam (*deep immutable*). Jika salah satu atribut dataclass adalah `list` atau `dict`, item di dalam list tersebut masih dapat diubah via `append()` atau mutasi indeks! Gunakan tipe `tuple` atau `frozenset` untuk data koleksi pada dataclass beku.
-
----
-
-## 7. RANGKUMAN & KUIS MINI (RETRIEVAL PRACTICE)
-
-<MiniQuiz
-  client:load
-  title="Kuis Evaluasi Konseptual: Level P3"
-  questions={[
-    {
-      question: "Mengapa argumen default bertipe mutable (misalnya list atau dict) pada definisi fungsi/method Python sangat berbahaya?",
-      options: [
-        "Karena nilai default tersebut dievaluasi satu kali saat modul dimuat, sehingga state list/dict akan dibagi dan bermutasi bersama di setiap pemanggilan berikutnya.",
-        "Karena CPython akan melempar TypeError seketika saat kode dikompilasi.",
-        "Karena sistem operasi Linux memblokir alokasi memori list pada fungsi.",
-        "Karena nilai mutable akan terhapus otomatis oleh garbage collector sebelum fungsi dipanggil."
-      ],
-      correctAnswerIndex: 0,
-      explanation: "Tepat! Di Python, default parameter dievaluasi saat fungsi didefinisikan (def-time), bukan saat fungsi dieksekusi (call-time). Gunakan nilai None dan lakukan inisialisasi di dalam tubuh fungsi."
-    },
-    {
-      question: "Apa keuntungan utama mendefinisikan dataclass dengan parameter frozen=True?",
-      options: [
-        "Objek menjadi immutable (tidak dapat diubah atributnya setelah inisialisasi) dan otomatis menghasilkan fungsi hash __hash__ sehingga dapat dijadikan kunci dictionary atau anggota set.",
-        "Program berjalan 100 kali lebih cepat karena mematikan interpreter Python.",
-        "File python otomatis dikonversi menjadi biner C/C++.",
-        "Memaksa semua method dalam kelas menjadi method asinkron."
-      ],
-      correctAnswerIndex: 0,
-      explanation: "Tepat! Parameter frozen=True melindungi data dari modifikasi liar tak disengaja dan memungkinkan instance dijadikan elemen himpunan (set) atau kunci hash map (dict)."
-    },
-    {
-      question: "Pada inheritance berjenjang, apa fungsi utama dari pemanggilan super().__init__()?",
-      options: [
-        "Mengeksekusi inisialisasi pada class induk sesuai urutan Method Resolution Order (MRO) tanpa menyebutkan nama class induk secara hardcode.",
-        "Menghapus method yang ada di class anak agar tidak memakan RAM.",
-        "Mengubah hak akses atribut menjadi public secara paksa.",
-        "Menghentikan eksekusi script jika class anak memiliki lebih dari 3 method."
-      ],
-      correctAnswerIndex: 0,
-      explanation: "Tepat! super() mendelegasikan pemanggilan ke class berikutnya dalam rantai pewarisan (MRO), sangat esensial untuk arsitektur berorientasi objek yang fleksibel dan bebas duplikasi kode."
-    }
-  ]}
-/>
-
----
-
-### Mini Proyek P3: Sistem Inventaris Toko & Rekapitulasi Analitik (Warehouse Manager)
-
-**Deskripsi Tugas Mandiri:**
-Bangunlah sistem inventaris toko menggunakan OOP dan Dataclass:
-1. Definisikan `Produk` dengan `@dataclass(frozen=True)` memuat `sku`, `nama`, `harga`, dan `kategori`.
-2. Buat kelas `ManajerInventaris` yang menyimpan stok barang dan memanfaatkan `collections.defaultdict` untuk mengelompokkan produk per kategori.
-3. Tambahkan method untuk menghitung total aset barang, mendeteksi produk dengan harga tertinggi dan terendah, serta menghasilkan laporan berformat string rapi.
-4. Terapkan penanganan validasi agar penambahan kuantitas negatif otomatis ditolak dengan pesan error yang bermakna.
-
-**Gerbang Kelulusan (Mastery Gate Level P3):**
-- [x] Lulus seluruh Latihan Kode Interaktif di atas dengan status 100% hijau.
-- [x] Skor Kuis Evaluasi Konseptual minimal 80%.
-- [x] Nilai probabilitas penguasaan BKT untuk konsep OOP & Dataclass $P(L) \ge 0.85$.
-
----
-
-## 8. SELAMI LEBIH DALAM (DIVE DEEPER)
-
-- **Dokumentasi Resmi Python:** Telusuri panduan komprehensif [docs.python.org: Classes & Inheritance](https://docs.python.org/3/tutorial/classes.html) dan [docs.python.org: Dataclasses (PEP 557)](https://docs.python.org/3/library/dataclasses.html).
-- **W3Schools Python OOP Guide:** Pelajari latihan interaktif [W3Schools Python Classes and Objects](https://www.w3schools.com/python/python_classes.asp).
-- **Video YouTube Rekomendasi:** Saksikan playlist tutorial mendalam Corey Schafer *"Python OOP Tutorials - Working with Classes and Object Oriented Programming"* yang membahas `__repr__`, `@property`, dan class inheritance dengan jelas.
-- **Standar PEP Resmi:** Telusuri standar [PEP 484 – Type Hints](https://peps.python.org/pep-0484/) dan [PEP 557 – Data Classes](https://peps.python.org/pep-0557/).
-- **C3 MRO Linearization:** Cara CPython menyelesaikan Method Resolution Order pada pewarisan multipel tanpa ambiguitas (*Diamond Problem*).

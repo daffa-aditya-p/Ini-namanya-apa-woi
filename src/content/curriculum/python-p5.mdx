@@ -2,7 +2,7 @@
 id: "P5"
 track: "python"
 level: "P5"
-title: "Python Tingkat Lanjut: Descriptors, Data Science & Machine Learning Dasar"
+title: "Bab 5: Pemrograman Berorientasi Objek"
 slug: "curriculum/python/p5"
 estimatedMinutes: 150
 prerequisites:
@@ -11,19 +11,18 @@ prerequisites:
   - "P3"
   - "P4"
 learningObjectives:
-  - "Menguasai protokol Descriptors (__set_name__, __get__, __set__) untuk validasi tipe data atribut"
-  - "Menerapkan metaprogramming modern menggunakan hook __init_subclass__ (PEP 487) untuk auto-registrasi kelas"
-  - "Membangun kalkulasi data science murni: mean, variansi, standar deviasi, dan matriks korelasi Pearson"
-  - "Merancang mini REST API Router & In-Memory Dispatcher berbasis dekorator dengan path matching"
-  - "Mengimplementasikan algoritma Machine Learning Regresi Linier dari nol menggunakan metode Ordinary Least Squares (OLS)"
+  - "Menguasai paradigma OOP: perancangan Class, instansiasi Object, konstruktor __init__, dan parameter self"
+  - "Memahami perbedaan atribut instance dan atribut class serta mutasi status objek"
+  - "Menerapkan pewarisan (inheritance) hierarkis dan pemanggilan konstruktor induk melalui super()"
+  - "Melakukan enkapsulasi terstandar dengan konvensi _protected dan dekorator @property serta @setter"
+  - "Mengimplementasikan dunder (magic) methods esensial: __str__, __repr__, __len__, dan operator overloading __eq__"
 relatedConcepts:
-  - "Descriptor Protocol (__get__, __set__)"
-  - "PEP 487 __init_subclass__ Hook"
-  - "Statistical Variance & Pearson Correlation"
-  - "In-Memory REST Routing Engine"
-  - "Linear Regression & Ordinary Least Squares"
+  - "CPython Object Model & PyTypeObject"
+  - "Method Resolution Order (MRO)"
+  - "Encapsulation & Descriptors Protocol"
+  - "Special Methods (Dunder Protocols)"
 languageVersion: "Python 3.12"
-summary: "Tingkatkan keahlian Python ke tingkat profesional: kendalikan instansiasi via Descriptors & __init_subclass__, olah data science numerik murni, buat REST router in-memory, dan bangun model regresi linier dari nol."
+summary: "Kuasai arsitektur OOP modern: pendefinisian Class & Object, parameter self & atribut instance, pewarisan hierarkis super(), enkapsulasi @property, dan magic dunder methods."
 ---
 
 import { CodePlayground } from '../../components/CodePlayground';
@@ -31,415 +30,278 @@ import { DualTrackView } from '../../components/DualTrackView';
 import { PredictOutput } from '../../components/PredictOutput';
 import { FadedExample } from '../../components/FadedExample';
 import { SocraticTutorPanel } from '../../components/SocraticTutorPanel';
-import { MiniQuiz } from '../../components/MiniQuiz';
+import { ChapterQuiz } from '../../components/ChapterQuiz';
 
-# Level P5: Python Tingkat Lanjut & Spesialisasi Domain
+# Bab 5: Pemrograman Berorientasi Objek
 
-Selamat datang di Level P5. Pada level ini, kamu beralih dari sekadar menyusun skrip aplikasi biasa menuju **rekayasa sistem Python tingkat arsitek dan komputasi sains data**. Kita akan mengeksplorasi kemampuan terdalam Python: mengendalikan akses atribut melalui *Descriptor Protocol*, menyusun registri kelas otomatis dengan `__init_subclass__`, mengolah metrik statistik data murni, dan melatih model **Machine Learning Regresi Linier** dari nol tanpa pustaka eksternal.
+Selamat datang di puncak kurikulum Python: Pemrograman Berorientasi Objek (*Object-Oriented Programming* / OOP). Di bab ini, kamu memadukan data dan fungsi ke dalam entitas mandiri yang memodelkan objek dunia nyata dengan rapi, aman, dan mudah dikembangkan.
 
 ---
-
-## 1. HOOK: Masalah Nyata & Analogi Keseharian
 
 <DualTrackView
   client:load
-  santaiTitle="Jalur Santai: Gerbang Tol Otomatis & Garis Penggaris Terbaik"
+  santaiTitle="Jalur Santai: Cetak Biru Arsitek Rumah & Mobil Pabrikan"
   santaiParagraphs={[
-    "Bayangkan gerbang tol otomatis di jalan raya. Setiap kali ada kendaraan mendekat, sensor palang otomatis mengukur ketinggian, berat gandar, dan saldo kartu e-toll sebelum palang diizinkan terangkat. Descriptor di Python bertindak persis seperti sensor gerbang tol tersebut: ia mencegat setiap upaya pengisian nilai atribut, memvalidasi tipenya, dan menolak nilai cacat sebelum merusak memori objek.",
-    "Sedangkan Regresi Linier seperti menarik benang lurus di antara taburan bintang di langit malam: benang tersebut diatur sedemikian rupa sehingga jarak kuadrat total dari seluruh bintang ke benang bernilai sekecil mungkin (Least Squares), memberikan garis prediksi masa depan yang paling akurat."
+    "Bayangkan sebuah Class seperti gambar denah arsitek (cetak biru) untuk membangun rumah. Denah tersebut bukanlah bangunan fisik tempat tinggal, melainkan rancangan teknis yang menentukan jumlah kamar dan saluran air.",
+    "Setiap rumah nyata yang dibangun dari denah tersebut adalah sebuah Object (Instance). Kamu bisa membangun 10 rumah berbeda dengan warna cat masing-masing dari satu denah. Parameter 'self' adalah alamat rumah spesifik saat tukang ledeng datang memperbaiki keran, dan pewarisan (inheritance) seperti merancang varian Rumah Mewah yang mewarisi seluruh denah rumah standar ditambah fasilitas kolam renang."
   ]}
-  cepatTitle="Jalur Cepat: Descriptor Protocol, PEP 487 & Closed-Form OLS Optimization"
+  cepatTitle="Jalur Cepat: PyTypeObject, Instance Dictionaries & C3 Linearization"
   cepatParagraphs={[
-    "Descriptor Protocol (__get__, __set__, __delete__) merupakan fondasi arsitektur di balik kata kunci native Python seperti @property, staticmethod, classmethod, dan ORM mutakhir seperti SQLAlchemy / Pydantic. Dengan PEP 487 (__set_name__), Python mengotomatisasi penamaan atribut privat tanpa inspeksi bytecode manual.",
-    "Dalam domain sains data murni, regresi linier univariat diselesaikan secara analitis via Ordinary Least Squares (OLS) closed-form solution: meminimalkan Mean Squared Error (MSE) dengan mencari turunan parsial terhadap bobot slope m dan bias b bernilai nol."
+    "Di CPython, setiap class adalah instance dari metaclass type (PyTypeObject). Saat sebuah instance diinstansiasi via ClassName(), CPython memanggil __new__ untuk mengalokasikan PyObject pada heap, lalu memanggil __init__ untuk mengisi namespace lokal __dict__ instance.",
+    "Pewarisan majemuk diselesaikan menggunakan algoritma C3 Linearization untuk membentuk urutan Method Resolution Order (MRO) yang deterministik. super() menyediakan akses proksi dinamis ke kelas berikutnya dalam MRO tanpa hardcoding nama kelas induk."
   ]}
 />
 
 ---
 
-## 2. KONSEP INTI: Descriptors, Data Numerik & Algoritma Pembelajaran
+<div id="subbab-5-1" className="scroll-mt-24">
 
-Berdasarkan dokumentasi resmi [docs.python.org: Descriptor HowTo Guide](https://docs.python.org/3/howto/descriptor.html) dan tutorial [W3Schools Python Machine Learning](https://www.w3schools.com/python/python_ml_linear_regression.asp), lima pilar penguasaan Level P5 mencakup:
+## Sub-bab 5.1: Class & Object
 
-1. **Descriptor Protocol (`__set_name__`, `__get__`, `__set__`):**
-   - Kelas yang mengimplementasikan minimal satu dari method dunder descriptor. Mengontrol bagaimana atribut pada kelas pemilik (*owner class*) diakses dan dimutasi, menyimpan nilai secara aman di dalam `instance.__dict__`.
-2. **Hook Metaprogramming: `__init_subclass__` (PEP 487):**
-   - Menggantikan kebutuhan metaclass rumit (`type`) untuk 90% kasus pemodelan sistem. Dipanggil secara otomatis setiap kali kelas turunan baru didefinisikan, sangat ideal untuk registri plugin dan validasi skema.
-3. **Statistik Data Science Murni:**
-   - Menghitung tendensi sentral (*mean*), dispersi data (*variance* dan *standard deviation*), serta derajat asosiasi linear antar-variabel menggunakan Koefisien Korelasi Pearson ($r \in [-1, 1]$).
-4. **Mini In-Memory REST Routing Engine:**
-   - Pola routing bergaya FastAPI / Flask menggunakan dekorator fungsi parametrik yang memetakan tuple `(HTTP_METHOD, PATH)` ke fungsi handler yang bersangkutan.
-5. **Machine Learning dari Nol: Ordinary Least Squares (OLS):**
-   - Menentukan garis regresi terbaik `y = mx + b` secara eksak:
-     `m = Σ((x_i - mean_x) * (y_i - mean_y)) / Σ((x_i - mean_x)²)` dan `b = mean_y - (m * mean_x)`
+Class adalah cetak biru (*blueprint*) yang mendefinisikan atribut (data) dan method (perilaku). Object adalah perwujudan konkret (*instance*) dari class tersebut yang hidup di memori.
+
+Method spesial `__init__` bertindak sebagai konstruktor inisialisasi yang dipanggil secara otomatis saat objek baru dibuat:
+
+<CodePlayground
+  client:load
+  language="python"
+  title="Latihan 5.1: Definisi Class dan Konstruktor __init__"
+  initialCode={`class Kendaraan:
+    def __init__(self, merk: str, kecepatan_maks: int):
+        self.merk = merk
+        self.kecepatan_maks = kecepatan_maks
+        self.kecepatan_saat_ini = 0
+
+    def akselerasi(self, tambahan: int):
+        self.kecepatan_saat_ini = min(self.kecepatan_maks, self.kecepatan_saat_ini + tambahan)
+        return self.kecepatan_saat_ini
+
+mobil = Kendaraan("Toyota", 180)
+print(f"Kendaraan: {mobil.merk} | Kecepatan Awal: {mobil.kecepatan_saat_ini} km/h")
+mobil.akselerasi(60)
+print(f"Setelah Akselerasi: {mobil.kecepatan_saat_ini} km/h")`}
+  expectedOutput={`Kendaraan: Toyota | Kecepatan Awal: 0 km/h\nSetelah Akselerasi: 60 km/h`}
+/>
+
+</div>
 
 ---
 
-## 3. CONTOH HIDUP + PREDIKSI OUTPUT
+<div id="subbab-5-2" className="scroll-mt-24">
 
-Uji intuisimu mengenai bagaimana Descriptor mencegat penulisan atribut dan memvalidasi nilainya:
+## Sub-bab 5.2: Atribut & Method self
 
-<PredictOutput
+Mengapa setiap method di Python menerima parameter `self` di posisi pertama? Karena `self` adalah pointer referensi eksplisit ke objek instance yang sedang memanggil method tersebut. Saat kamu menulis `mobil.akselerasi(60)`, Python menerjemahkannya menjadi `Kendaraan.akselerasi(mobil, 60)`.
+
+Kita juga harus membedakan:
+- **Atribut Instance (`self.nama`):** Melekat pada tiap instance objek secara unik.
+- **Atribut Class (`jumlah_karyawan = 0`):** Melekat pada class itu sendiri dan nilainya dibagi bersama oleh seluruh instance.
+
+<CodePlayground
   client:load
   language="python"
-  title="Prediksi Output P5.1: Descriptor Attribute Validation"
-  code={`class NilaiValid:
-    def __init__(self, batas_bawah=0, batas_atas=100):
-        self.batas_bawah = batas_bawah
-        self.batas_atas = batas_atas
+  title="Latihan 5.2: Atribut Class vs Atribut Instance"
+  initialCode={`class Karyawan:
+    jumlah_karyawan = 0
 
-    def __set_name__(self, owner, name):
-        self.nama_privat = f"_{name}"
-
-    def __get__(self, instance, owner):
-        if instance is None:
-            return self
-        return getattr(instance, self.nama_privat, self.batas_bawah)
-
-    def __set__(self, instance, value):
-        if not (self.batas_bawah <= value <= self.batas_atas):
-            raise ValueError(f"Nilai harus antara {self.batas_bawah} dan {self.batas_atas}")
-        setattr(instance, self.nama_privat, value)
-
-class SkorUjian:
-    nilai = NilaiValid(0, 100)
-
-    def __init__(self, nama: str, nilai: int):
+    def __init__(self, nama: str, divisi: str):
         self.nama = nama
-        self.nilai = nilai
+        self.divisi = divisi
+        Karyawan.jumlah_karyawan += 1
 
-s = SkorUjian("Siti", 95)
-print(f"Nama: {s.nama} | Nilai: {s.nilai}")
-s.nilai = 88
-print(f"Update: {s.nilai}")`}
-  options={[
-    {
-      text: "Nama: Siti | Nilai: 95\\nUpdate: 88",
-      isCorrect: true,
-      explanation: "Tepat! Descriptor NilaiValid menginisialisasi atribut privat _nilai saat objek pertama kali dibuat, mengizinkan nilai 95 dan pembaruan menjadi 88 karena berada dalam rentang 0-100."
-    },
-    {
-      text: "Nama: Siti | Nilai: 0\\nUpdate: 88",
-      isCorrect: false,
-      explanation: "Salah. Inisialisasi self.nilai = 95 memicu method __set__ sehingga nilai tersimpan adalah 95, bukan fallback 0."
-    },
-    {
-      text: "Nama: Siti | Nilai: 95\\nUpdate: 95",
-      isCorrect: false,
-      explanation: "Salah. Penugasan s.nilai = 88 berhasil memperbarui atribut privat _nilai pada instance s."
-    }
-  ]}
+k1 = Karyawan("Rina", "Teknologi")
+k2 = Karyawan("Doni", "Pemasaran")
+print(f"Karyawan 1: {k1.nama} ({k1.divisi})")
+print(f"Karyawan 2: {k2.nama} ({k2.divisi})")
+print("Total Karyawan Terdaftar:", Karyawan.jumlah_karyawan)`}
+  expectedOutput={`Karyawan 1: Rina (Teknologi)\nKaryawan 2: Doni (Pemasaran)\nTotal Karyawan Terdaftar: 2`}
 />
+
+</div>
 
 ---
 
-## 4. LATIHAN TERPANDU (FADED EXAMPLE)
+<div id="subbab-5-3" className="scroll-mt-24">
 
-Pelajari cara menghitung ringkasan statistik numerik (*mean*, *variance*, dan *standard deviation*) murni menggunakan pustaka bawaan `math`:
+## Sub-bab 5.3: Pewarisan & super()
 
-<FadedExample
+Pewarisan (*Inheritance*) memungkinkan subclass mewarisi atribut dan method dari superclass induknya, mencegah pengulangan logika.
+
+Gunakan fungsi `super().__init__(...)` untuk memanggil konstruktor milik kelas induk secara bersih dan aman:
+
+<CodePlayground
   client:load
-  title="Modul Analitik Statistik Numerik Murni Python"
   language="python"
-  missingTaskDescription="Lengkapi perhitungan variansi dan standar deviasi pada kelas StatistikNumerik menggunakan formula dispersi kuadrat."
-  fadedHint="Variansi dihitung dengan membagi jumlah selisih kuadrat (x - rerata)**2 dengan n, dan standar deviasi adalah akar kuadrat dari variansi via math.sqrt(variansi)."
-  starterCode={`import math
+  title="Latihan 5.3: Pewarisan dan Pendelegasian super()"
+  initialCode={`class AkunBank:
+    def __init__(self, nomor_rekening: str, saldo_awal: int):
+        self.nomor = nomor_rekening
+        self.saldo = saldo_awal
 
-class StatistikNumerik:
-    @staticmethod
-    def hitung_ringkasan(data: list[float]) -> dict[str, float]:
-        n = len(data)
-        if n == 0:
-            raise ValueError("Kumpulan data tidak boleh kosong")
-        
-        rerata = sum(data) / n
-        # TODO: Hitung variansi (jumlah kuadrat deviasi dibagi n)
-        variansi = 0.0
-        # TODO: Hitung standar deviasi (akar kuadrat dari variansi)
-        std_dev = 0.0
-        
-        return {
-            "n": n,
-            "mean": round(rerata, 2),
-            "variance": round(variansi, 2),
-            "std_dev": round(std_dev, 2)
-        }
+    def setor(self, jumlah: int):
+        self.saldo += jumlah
+        return self.saldo
 
-sampel = [80.0, 85.0, 90.0, 95.0, 100.0]
-hasil = StatistikNumerik.hitung_ringkasan(sampel)
-print(f"Sampel (N={hasil['n']}): Rerata={hasil['mean']} | StdDev={hasil['std_dev']}")`}
-  initialCode={`import math
+class TabunganBunga(AkunBank):
+    def __init__(self, nomor_rekening: str, saldo_awal: int, bunga_tahunan: float):
+        super().__init__(nomor_rekening, saldo_awal)
+        self.bunga = bunga_tahunan
 
-class StatistikNumerik:
-    @staticmethod
-    def hitung_ringkasan(data: list[float]) -> dict[str, float]:
-        n = len(data)
-        if n == 0:
-            raise ValueError("Kumpulan data tidak boleh kosong")
-        
-        rerata = sum(data) / n
-        variansi = sum((x - rerata) ** 2 for x in data) / n
-        std_dev = math.sqrt(variansi)
-        
-        return {
-            "n": n,
-            "mean": round(rerata, 2),
-            "variance": round(variansi, 2),
-            "std_dev": round(std_dev, 2)
-        }
+    def terapkan_bunga(self):
+        nominal_bunga = int(self.saldo * self.bunga)
+        self.saldo += nominal_bunga
+        return self.saldo
 
-sampel = [80.0, 85.0, 90.0, 95.0, 100.0]
-hasil = StatistikNumerik.hitung_ringkasan(sampel)
-print(f"Sampel (N={hasil['n']}): Rerata={hasil['mean']} | StdDev={hasil['std_dev']}")`}
-  expectedOutput={`Sampel (N=5): Rerata=90.0 | StdDev=7.07`}
+rek = TabunganBunga("ID-00123", 1000000, 0.05)
+rek.setor(200000)
+saldo_akhir = rek.terapkan_bunga()
+print(f"Rekening {rek.nomor} Saldo Akhir: Rp{saldo_akhir:,}")`}
+  expectedOutput={`Rekening ID-00123 Saldo Akhir: Rp1,260,000`}
 />
+
+</div>
 
 ---
 
-## 5. LATIHAN MANDIRI (AUTO-GRADED) & TANGGA PETUNJUK
+<div id="subbab-5-4" className="scroll-mt-24">
 
-Uji implementasi konsep Python lanjutan langsung melalui runtime WebAssembly Pyodide:
+## Sub-bab 5.4: Enkapsulasi @property & Dunder
 
-<CodePlayground
-  client:load
-  language="python"
-  title="Latihan Mandiri P5.1: Protokol Descriptor Validasi Angka Positif"
-  initialCode={`class BilanganPositif:
-    def __set_name__(self, owner, name):
-        self.private_name = f"_{name}"
-
-    def __get__(self, instance, owner):
-        if instance is None:
-            return self
-        return getattr(instance, self.private_name, 0)
-
-    def __set__(self, instance, value):
-        if value <= 0:
-            raise ValueError("Nilai harus lebih besar dari 0")
-        setattr(instance, self.private_name, value)
-
-class RekeningInvestasi:
-    pokok = BilanganPositif()
-
-    def __init__(self, nama: str, pokok: int):
-        self.nama = nama
-        self.pokok = pokok
-
-inv = RekeningInvestasi("Reksadana Saham", 5000000)
-print(f"Produk: {inv.nama} | Modal: Rp{inv.pokok:,}")
-inv.pokok = 7500000
-print(f"Modal Terkini: Rp{inv.pokok:,}")`}
-  expectedOutput={`Produk: Reksadana Saham | Modal: Rp5,000,000\nModal Terkini: Rp7,500,000`}
-/>
+Enkapsulasi melindungi status internal objek dari modifikasi sembarangan:
+1. **Konvensi Internal (`_nama`):** Menandai atribut yang tidak boleh disentuh langsung dari luar class.
+2. **Dekorator `@property`:** Mengakses method getter seperti membaca atribut biasa (`dompet.saldo`).
+3. **Dekorator `@saldo.setter`:** Memvalidasi data baru sebelum disimpan ke memori.
 
 <CodePlayground
   client:load
   language="python"
-  title="Latihan Mandiri P5.2: Metaprogramming __init_subclass__ untuk Auto-Registration"
-  initialCode={`class BaseEntity:
-    registry: dict[str, type] = {}
+  title="Latihan 5.4: Enkapsulasi Validasi dengan @property dan Setter"
+  initialCode={`class DompetDigital:
+    def __init__(self, nama_pemilik: str, saldo_awal: int = 0):
+        self.pemilik = nama_pemilik
+        self._saldo = max(0, saldo_awal)
 
-    def __init_subclass__(cls, kode_entitas: str, **kwargs):
-        super().__init_subclass__(**kwargs)
-        cls.kode_entitas = kode_entitas
-        BaseEntity.registry[kode_entitas] = cls
+    @property
+    def saldo(self) -> int:
+        return self._saldo
 
-class UserEntity(BaseEntity, kode_entitas="USER"):
-    pass
+    @saldo.setter
+    def saldo(self, nilai_baru: int):
+        if nilai_baru < 0:
+            raise ValueError("Saldo tidak boleh negatif")
+        self._saldo = nilai_baru
 
-class OrderEntity(BaseEntity, kode_entitas="ORDER"):
-    pass
-
-class ProductEntity(BaseEntity, kode_entitas="PRODUCT"):
-    pass
-
-print("Total Entitas Terdaftar:", len(BaseEntity.registry))
-for kode in sorted(BaseEntity.registry.keys()):
-    print(f"- Kode: {kode} -> Kelas: {BaseEntity.registry[kode].__name__}")`}
-  expectedOutput={`Total Entitas Terdaftar: 3\n- Kode: ORDER -> Kelas: OrderEntity\n- Kode: PRODUCT -> Kelas: ProductEntity\n- Kode: USER -> Kelas: UserEntity`}
+dompet = DompetDigital("Fajar", 50000)
+print(f"Pemilik: {dompet.pemilik} | Saldo: Rp{dompet.saldo:,}")
+dompet.saldo = 75000
+print(f"Saldo Terkini: Rp{dompet.saldo:,}")`}
+  expectedOutput={`Pemilik: Fajar | Saldo: Rp50,000\nSaldo Terkini: Rp75,000`}
 />
+
+Python juga memiliki **Dunder Methods** (*Double Underscore* / Magic Methods) untuk mengintegrasikan class kustom dengan fungsi bawaan Python seperti `str()`, `len()`, dan operator `==`:
+- `__str__`: Representasi teks ramah pengguna saat dicetak.
+- `__len__`: Menentukan panjang objek saat dipanggil via `len(obj)`.
+- `__eq__`: Operator kesamaan `==` antar dua objek.
 
 <CodePlayground
   client:load
   language="python"
-  title="Latihan Mandiri P5.3: Korelasi Pearson Dua Variabel Murni CPython"
-  initialCode={`import math
+  title="Latihan 5.5: Magic Dunder Methods (__str__, __len__, __eq__)"
+  initialCode={`class KeranjangBelanja:
+    def __init__(self, nama_pembeli: str):
+        self.pembeli = nama_pembeli
+        self.items: list[str] = []
 
-def korelasi_pearson(x: list[float], y: list[float]) -> float:
-    n = len(x)
-    mean_x = sum(x) / n
-    mean_y = sum(y) / n
-    selisih_x = [val - mean_x for val in x]
-    selisih_y = [val - mean_y for val in y]
-    kovariansi = sum(dx * dy for dx, dy in zip(selisih_x, selisih_y))
-    var_x = sum(dx ** 2 for dx in selisih_x)
-    var_y = sum(dy ** 2 for dy in selisih_y)
-    penyebut = math.sqrt(var_x * var_y)
-    return round(kovariansi / penyebut, 4)
+    def tambah(self, item: str):
+        self.items.append(item)
 
-jam_belajar = [1.0, 2.0, 3.0, 4.0, 5.0]
-nilai_ujian = [60.0, 70.0, 80.0, 85.0, 95.0]
-r = korelasi_pearson(jam_belajar, nilai_ujian)
-print(f"Koefisien Korelasi Pearson (r): {r}")
-print("Tingkat Hubungan:", "Kuat Positif" if r > 0.9 else "Cukup Positif")`}
-  expectedOutput={`Koefisien Korelasi Pearson (r): 0.9948\nTingkat Hubungan: Kuat Positif`}
+    def __len__(self) -> int:
+        return len(self.items)
+
+    def __str__(self) -> str:
+        return f"Keranjang {self.pembeli}: {len(self.items)} item"
+
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, KeranjangBelanja):
+            return False
+        return self.items == other.items
+
+k1 = KeranjangBelanja("Budi")
+k1.tambah("Kopi")
+k1.tambah("Gula")
+
+k2 = KeranjangBelanja("Sari")
+k2.tambah("Kopi")
+k2.tambah("Gula")
+
+print(str(k1))
+print("Jumlah Item:", len(k1))
+print("Apakah isi belanja sama:", k1 == k2)`}
+  expectedOutput={`Keranjang Budi: 2 item\nJumlah Item: 2\nApakah isi belanja sama: True`}
 />
+
+Sebagai penutup arsitektur OOP, mari perhatikan konsep Polimorfisme di mana berbagai subclass mengimplementasikan method `render()` yang sama dengan perilaku spesifik masing-masing:
 
 <CodePlayground
   client:load
   language="python"
-  title="Latihan Mandiri P5.4: Mini In-Memory REST Router & Dispatcher"
-  initialCode={`class SimpleRouter:
-    def __init__(self):
-        self.routes: dict[tuple[str, str], callable] = {}
+  title="Latihan 5.6: Polimorfisme Arsitektur Objek"
+  initialCode={`class Dokumen:
+    def __init__(self, judul: str):
+        self.judul = judul
 
-    def daftarkan(self, method: str, path: str):
-        def dekorator(fn):
-            self.routes[(method.upper(), path)] = fn
-            return fn
-        return dekorator
+    def render(self) -> str:
+        raise NotImplementedError
 
-    def tangani(self, method: str, path: str, **params) -> dict:
-        kunci = (method.upper(), path)
-        if kunci in self.routes:
-            handler = self.routes[kunci]
-            return {"status": 200, "data": handler(**params)}
-        return {"status": 404, "error": f"Rute {method.upper()} {path} tidak ditemukan"}
+class DokumenTeks(Dokumen):
+    def render(self) -> str:
+        return f"[TXT] {self.judul}.txt"
 
-router = SimpleRouter()
+class DokumenPDF(Dokumen):
+    def render(self) -> str:
+        return f"[PDF] {self.judul}.pdf"
 
-@router.daftarkan("GET", "/api/modul")
-def ambil_modul():
-    return ["P1", "P2", "P3", "P4", "P5"]
-
-@router.daftarkan("GET", "/api/kursus")
-def ambil_kursus():
-    return {"nama": "Python Lanjutan", "level": 5}
-
-res1 = router.tangani("GET", "/api/modul")
-res2 = router.tangani("GET", "/api/kursus")
-res3 = router.tangani("POST", "/api/modul")
-
-print(f"Status /api/modul: {res1['status']} -> {res1['data']}")
-print(f"Status /api/kursus: {res2['status']} -> {res2['data']['nama']}")
-print(f"Status POST /api/modul: {res3['status']} -> {res3['error']}")`}
-  expectedOutput={`Status /api/modul: 200 -> ['P1', 'P2', 'P3', 'P4', 'P5']\nStatus /api/kursus: 200 -> Python Lanjutan\nStatus POST /api/modul: 404 -> Rute POST /api/modul tidak ditemukan`}
+berkas: list[Dokumen] = [DokumenTeks("catatan_kuliah"), DokumenPDF("laporan_keuangan")]
+for doc in berkas:
+    print("Mengekspor:", doc.render())`}
+  expectedOutput={`Mengekspor: [TXT] catatan_kuliah.txt\nMengekspor: [PDF] laporan_keuangan.pdf`}
 />
 
-<CodePlayground
+</div>
+
+---
+
+<div id="kuis-python-bab5" className="scroll-mt-24">
+
+## Kuis Evaluasi Bab 5
+
+Selamat! Kamu telah mencapai evaluasi akhir dari kurikulum Python. Buktikan penguasaan konsep OOP kamu di **Kuis Evaluasi Bab 5**.
+
+> **Standar Kelulusan Akhir:** Soal dipilih dan diacak secara dinamis dari bank materi Bab 5. Kamu harus mencapai skor minimal **80% (maksimal salah 1)** untuk menamatkan kurikulum Python dan meraih status Mastered!
+
+<ChapterQuiz
   client:load
-  language="python"
-  title="Mini Proyek P5: Algoritma Machine Learning Regresi Linier OLS dari Nol"
-  initialCode={`class RegresiLinierOLS:
-    def __init__(self):
-        self.m = 0.0
-        self.b = 0.0
-
-    def latih(self, x: list[float], y: list[float]):
-        n = len(x)
-        mean_x = sum(x) / n
-        mean_y = sum(y) / n
-        penghitung = sum((xi - mean_x) * (yi - mean_y) for xi, yi in zip(x, y))
-        penyebut = sum((xi - mean_x) ** 2 for xi in x)
-        self.m = penghitung / penyebut
-        self.b = mean_y - (self.m * mean_x)
-
-    def prediksi(self, xi: float) -> float:
-        return (self.m * xi) + self.b
-
-luas = [3.0, 4.0, 5.0, 6.0, 7.0]
-harga = [300.0, 400.0, 500.0, 600.0, 700.0]
-
-model = RegresiLinierOLS()
-model.latih(luas, harga)
-
-print(f"Model OLS: Slope (m) = {model.m:.1f}, Bias (b) = {model.b:.1f}")
-print(f"Prediksi Luas 80m2: Rp{model.prediksi(8.0):.0f} Juta")
-print(f"Prediksi Luas 100m2: Rp{model.prediksi(10.0):.0f} Juta")`}
-  expectedOutput={`Model OLS: Slope (m) = 100.0, Bias (b) = 0.0\nPrediksi Luas 80m2: Rp800 Juta\nPrediksi Luas 100m2: Rp1000 Juta`}
+  chapterId="python-bab5"
+  title="Kuis Evaluasi Bab 5: Pemrograman Berorientasi Objek"
+  passingScore={80}
+  questionsPerAttempt={5}
+  nextChapterUrl="/dashboard"
+  nextChapterTitle="Meja Kerja Dashboard"
 />
 
-{/* Socratic AI Tutor Assistant */}
+</div>
+
+---
+
 <SocraticTutorPanel
   client:load
-  conceptTitle="Descriptors, Metaclasses, Data Science & Machine Learning (P5)"
-  contextDescription="Diskusikan arsitektur Descriptors (__set_name__), penanganan data numerik, REST router dispatching, dan formulasi matematis OLS regression."
+  lessonId="P5"
+  defaultCode={`# Eksperimen perancangan class OOP di sini:
+class Titik:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+t = Titik(3, 4)
+print(f"Titik berada di ({t.x}, {t.y})")`}
 />
-
----
-
-## 6. KESALAHAN UMUM (COMMON MISCONCEPTIONS)
-
-1. **Menyimpan Nilai pada Objek Descriptor Sendiri (`self.nilai = value`):** Kesalahan paling fatal pemula saat membuat descriptor. Jika kamu menyimpan nilai di atribut `self.nilai` pada class descriptor, nilai tersebut akan **dibagi secara global** oleh seluruh instance kelas pemilik (*shared state*)! Nilai wajib disimpan pada dictionary objek instance pemanggil (`setattr(instance, self.nama_privat, value)`).
-2. **Kelebihan Rekayasa Menggunakan Metaclass (`class M(type)`):** Banyak tutorial lama mengajarkan metaclass untuk validasi kelas. Sejak Python 3.6 (PEP 487), hook `__init_subclass__` jauh lebih bersih, mudah dibaca, dan tidak menimbulkan konflik metaclass (*metaclass conflict*).
-3. **Pembagian dengan Nol pada Variansi Kosong (*Zero Division Error*):** Jika seluruh data sampel bernilai sama (misal `[5, 5, 5]`), nilai variansi bernilai 0. Menghitung korelasi pearson tanpa memeriksa nilai pembagi `penyebut == 0` akan memicu crash program.
-4. **Ekstrapolasi Liar pada Model Machine Learning Linier:** Mengasumsikan bahwa hubungan linear berlaku tanpa batas untuk input di luar rentang data latih. Model linear sederhana rentan terhadap bias eksternal (*outlier sensitivity*) jika data tidak dibersihkan terlebih dahulu.
-
----
-
-## 7. RANGKUMAN & KUIS MINI (RETRIEVAL PRACTICE)
-
-<MiniQuiz
-  client:load
-  title="Kuis Evaluasi Konseptual: Level P5"
-  questions={[
-    {
-      question: "Kapan method dunder __set_name__(self, owner, name) pada Descriptor dipanggil oleh runtime CPython?",
-      options: [
-        "Secara otomatis dipanggil satu kali saat kelas pemilik (owner class) selesai dikonstruksi di memori, meneruskan nama variabel atribut string.",
-        "Setiap kali pengguna membaca nilai atribut pada objek.",
-        "Saat program Python keluar (exit).",
-        "Hanya ketika interpreter Python dijalankan dalam mode debug."
-      ],
-      correctAnswerIndex: 0,
-      explanation: "Tepat! PEP 487 memperkenalkan __set_name__ yang dipanggil saat pembuatan owner class, memungkinkan descriptor mengetahui nama atributnya (misal 'pokok') tanpa perlu dikirim manual di __init__."
-    },
-    {
-      question: "Mengapa __init_subclass__ lebih disukai daripada Metaclass tradisional untuk registrasi model?",
-      options: [
-        "Karena __init_subclass__ lebih deklaratif, tidak menimbulkan error pewarisan multipel metaclass, dan langsung mewarisi argumen kata kunci class definition.",
-        "Karena Metaclass sudah dihapus total dari Python 3.12.",
-        "Karena __init_subclass__ otomatis mematikan garbage collector.",
-        "Karena Metaclass hanya dapat digunakan untuk file audio."
-      ],
-      correctAnswerIndex: 0,
-      explanation: "Tepat! __init_subclass__ menyederhanakan metaprogramming kelas tanpa kebingungan hierarki metaclass type, sangat elegan untuk arsitektur plugin dan ORM."
-    },
-    {
-      question: "Apa tujuan utama metode Ordinary Least Squares (OLS) dalam Regresi Linier?",
-      options: [
-        "Meminimalkan jumlah kuadrat selisih (kuadrat galat) antara nilai target aktual dan nilai prediksi garis linear.",
-        "Mengubah nilai data menjadi string teks terenkripsi.",
-        "Menghapus seluruh baris data ganjil dari array.",
-        "Menggantikan kebutuhan CPU dengan kartu grafis (GPU)."
-      ],
-      correctAnswerIndex: 0,
-      explanation: "Tepat! OLS meminimalkan kuadrat jarak vertikal dari setiap titik data ke garis regresi terbaik sehingga diperoleh estimasi parameter slope dan bias yang paling optimal."
-    }
-  ]}
-/>
-
----
-
-### Mini Proyek P5: Sistem Prediktor Properti & Dispatcher API Analitik (Property ML Engine)
-
-**Deskripsi Tugas Mandiri:**
-Bangunlah sistem komputasi terpadu untuk analisis dan prediksi harga properti:
-1. Buat Descriptor `ValidasiUkuran` yang menjamin luas bangunan dan tanah selalu bertipe numerik positif $> 0$.
-2. Implementasikan `ModelProperti` dengan `__init_subclass__` yang otomatis mencatat tipe properti (rumah, apartemen, ruko) ke dalam registri sistem.
-3. Rancang kelas `AnalitikPasar` yang menghitung mean, median, standar deviasi, dan korelasi luas tanah terhadap harga jual.
-4. Latih model `RegresiLinierOLS` untuk memprediksi taksiran nilai pasar properti berdasarkan luas, lalu sajikan hasilnya melalui antarmuka `SimpleRouter` in-memory.
-
-**Gerbang Kelulusan (Mastery Gate Level P5):**
-- [x] Lulus seluruh 6 Latihan Kode Interaktif di atas dengan status 100% hijau di Pyodide WASM.
-- [x] Skor Kuis Evaluasi Konseptual minimal 80%.
-- [x] Nilai probabilitas penguasaan BKT untuk konsep Metaprogramming & ML $P(L) \ge 0.85$.
-
----
-
-## 8. SELAMI LEBIH DALAM (DIVE DEEPER)
-
-- **Dokumentasi Resmi Python:** Pelajari panduan otoritatif Raymond Hettinger: [docs.python.org: Descriptor HowTo Guide](https://docs.python.org/3/howto/descriptor.html) dan [docs.python.org: Data Model Customization](https://docs.python.org/3/reference/datamodel.html#customizing-class-creation).
-- **W3Schools Machine Learning Guide:** Pelajari pengantar praktis [W3Schools Python Machine Learning: Linear Regression](https://www.w3schools.com/python/python_ml_linear_regression.asp).
-- **Video YouTube Penting:** Saksikan penjelasan visual komprehensif oleh Josh Starmer (StatQuest): *"Linear Regression and Gradient Descent Clearly Explained"* dan tutorial Raymond Hettinger: *"Python's Class Development Toolkit"*.
-- **Standar PEP Resmi:** Telusuri standar [PEP 487 – Simpler customisation of class creation](https://peps.python.org/pep-0487/).
