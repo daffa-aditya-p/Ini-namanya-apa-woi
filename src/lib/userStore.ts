@@ -26,7 +26,7 @@ export interface CheckInResult {
 export interface AwardResult {
   awarded: boolean;
   xpEarned: number;
-  user: UserProfile;
+  user: UserProfile | null;
   alreadyCompleted: boolean;
   message: string;
 }
@@ -126,7 +126,39 @@ export function calculateCheckIn(
 }
 
 const STORAGE_KEY = 'belajar_user_session';
+const USERS_REGISTRY_KEY = 'belajar_users_registry';
+
 let inMemorySession: UserProfile | null = null;
+let inMemoryUsersRegistry: Record<string, UserProfile> = {};
+
+function getUsersRegistry(): Record<string, UserProfile> {
+  if (typeof window === 'undefined') {
+    return inMemoryUsersRegistry;
+  }
+  try {
+    const raw = localStorage.getItem(USERS_REGISTRY_KEY);
+    if (!raw) return inMemoryUsersRegistry;
+    return JSON.parse(raw);
+  } catch {
+    return inMemoryUsersRegistry;
+  }
+}
+
+function saveUserToRegistry(user: UserProfile): void {
+  const registry = getUsersRegistry();
+  const lowerUser = user.username.toLowerCase();
+  const lowerEmail = user.email.toLowerCase();
+  registry[lowerUser] = { ...user };
+  registry[lowerEmail] = { ...user };
+  inMemoryUsersRegistry = registry;
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.setItem(USERS_REGISTRY_KEY, JSON.stringify(registry));
+    } catch {
+      // ignore local storage error
+    }
+  }
+}
 
 /**
  * Loads the active user from localStorage (or in-memory fallback in tests/SSR).
@@ -149,6 +181,9 @@ export function getSavedSession(): UserProfile | null {
  */
 export function saveSession(user: UserProfile | null): void {
   inMemorySession = user ? { ...user } : null;
+  if (user) {
+    saveUserToRegistry(user);
+  }
   if (typeof window === 'undefined') return;
   try {
     if (user) {
@@ -175,28 +210,21 @@ export function isExerciseCompleted(exerciseId: string): boolean {
 /**
  * Awards XP and updates study hours in userStore when assertions pass.
  * Prevents double-awarding XP for the same exercise.
+ * If user is a guest (not logged in), returns awarded: false without creating a session.
  */
 export function awardExerciseCompletion(
   exerciseId: string,
   xpAmount: number = 25,
   hoursAmount: number = 1
 ): AwardResult {
-  let user = getSavedSession();
+  const user = getSavedSession();
   if (!user) {
-    // If guest learner, initialize a guest profile so progress is preserved
-    user = {
-      id: `usr_guest_${Date.now()}`,
-      username: 'pembelajar',
-      name: 'Pembelajar',
-      email: 'pembelajar@belajar.in',
-      streak: 1,
-      longestStreak: 1,
-      lastActiveDate: new Date().toISOString().split('T')[0],
-      hoursSpent: 0,
-      xp: 0,
-      coins: 0,
-      registeredEvents: [],
-      completedExercises: [],
+    return {
+      awarded: false,
+      xpEarned: 0,
+      user: null,
+      alreadyCompleted: false,
+      message: 'Masuk atau daftar untuk menyimpan progres belajarmu dan mengklaim +25 XP!',
     };
   }
 
@@ -231,25 +259,58 @@ export function awardExerciseCompletion(
 }
 
 /**
- * Simple client-side mock registration and login service.
+ * Client-side mock registration and login service with registry persistence.
  */
 export const LocalAuthManager = {
   login(usernameOrEmail: string, _password?: string): UserProfile {
     const cleanHandle = usernameOrEmail.trim().replace(/^@/, '');
     const cleanUsername = cleanHandle.split('@')[0] || 'pembelajar';
+    const lowerKey = cleanUsername.toLowerCase();
+    const lowerEmail = cleanHandle.toLowerCase();
 
-    // Check if user already exists in local list
+    // Check active session first
     const existing = getSavedSession();
     if (
       existing &&
-      (existing.username.toLowerCase() === cleanUsername.toLowerCase() ||
-        existing.email.toLowerCase() === cleanHandle.toLowerCase())
+      (existing.username.toLowerCase() === lowerKey ||
+        existing.email.toLowerCase() === lowerEmail)
     ) {
       if (!existing.completedExercises) {
         existing.completedExercises = [];
       }
       saveSession(existing);
       return existing;
+    }
+
+    // Check registered users registry
+    const registry = getUsersRegistry();
+    const storedUser = registry[lowerKey] || registry[lowerEmail];
+    if (storedUser) {
+      if (!storedUser.completedExercises) {
+        storedUser.completedExercises = [];
+      }
+      saveSession(storedUser);
+      return storedUser;
+    }
+
+    // Special Demo Account: Budi (Master rank • 750 XP)
+    if (lowerKey === 'budi_koding' || lowerKey === 'budi') {
+      const demoProfile: UserProfile = {
+        id: 'usr_budi_demo',
+        username: 'budi_koding',
+        name: 'Budi Prakoso',
+        email: 'budi@belajar.in',
+        streak: 5,
+        longestStreak: 14,
+        lastActiveDate: new Date().toISOString().split('T')[0],
+        hoursSpent: 18,
+        xp: 750, // Master rank (501 - 1000 XP)
+        coins: 140,
+        registeredEvents: ['event-sieve'],
+        completedExercises: ['Latihan J1.1: Mencetak Nilai Pertama', 'Latihan P1.1: Mencetak Output di Python'],
+      };
+      saveSession(demoProfile);
+      return demoProfile;
     }
 
     // Default or newly constructed profile

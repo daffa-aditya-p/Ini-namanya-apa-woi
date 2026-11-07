@@ -87,7 +87,7 @@ export function NavigationHeader() {
 
         {/* Username */}
         <span
-          className="text-xs font-mono text-[var(--text-secondary)] hidden lg:inline truncate max-w-[110px]"
+          className="text-xs font-mono text-[var(--text-secondary)] hidden sm:inline truncate max-w-[120px]"
           title={`Masuk sebagai @${user.username}`}
         >
           @{user.username}

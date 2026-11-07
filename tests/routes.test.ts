@@ -60,4 +60,44 @@ describe('Route Separation & Dedicated Page Architecture', () => {
     // Must have CTAs linking to /dashboard when user is active
     expect(content).toContain('/dashboard');
   });
+
+  it('verifies NavigationHeader displays quick status, streak, rank, and dashboard link when logged in or auth links when logged out', () => {
+    const navPath = path.resolve(process.cwd(), 'src/components/NavigationHeader.tsx');
+    expect(fs.existsSync(navPath)).toBe(true);
+    const content = fs.readFileSync(navPath, 'utf-8');
+
+    // Quick status items for logged in:
+    expect(content).toContain('user.streak');
+    expect(content).toContain('rank.tier');
+    expect(content).toContain('user.username');
+    expect(content).toContain('/dashboard');
+    expect(content).toContain('handleLogout');
+
+    // Auth links for logged out:
+    expect(content).toContain('href="/login"');
+    expect(content).toContain('href="/register"');
+  });
+
+  it('verifies DashboardApp protects /dashboard for guests with graceful prompt', () => {
+    const dashPath = path.resolve(process.cwd(), 'src/components/DashboardApp.tsx');
+    expect(fs.existsSync(dashPath)).toBe(true);
+    const content = fs.readFileSync(dashPath, 'utf-8');
+
+    // Guest prompt messaging and action buttons
+    expect(content).toContain('Meja Kerja Memerlukan Akun');
+    expect(content).toContain('href="/login"');
+    expect(content).toContain('href="/register"');
+    expect(content).toContain('handleDemoLogin');
+  });
+
+  it('verifies AuthFormCard has authentic routing links between auth pages', () => {
+    const authPath = path.resolve(process.cwd(), 'src/components/AuthFormCard.tsx');
+    expect(fs.existsSync(authPath)).toBe(true);
+    const content = fs.readFileSync(authPath, 'utf-8');
+
+    expect(content).toContain('href="/login"');
+    expect(content).toContain('href="/register"');
+    expect(content).toContain('href="/forgot-password"');
+    expect(content).toContain('window.location.href = \'/dashboard\'');
+  });
 });

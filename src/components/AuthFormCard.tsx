@@ -15,7 +15,7 @@ interface AuthFormCardProps {
 export function AuthFormCard({ initialMode }: AuthFormCardProps) {
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
   const [isClient, setIsClient] = useState(false);
-  const [mode, setMode] = useState<AuthFormMode>(initialMode);
+  const mode = initialMode;
 
   // Form fields
   const [username, setUsername] = useState('');
@@ -31,6 +31,23 @@ export function AuthFormCard({ initialMode }: AuthFormCardProps) {
   useEffect(() => {
     setIsClient(true);
     setCurrentUser(getSavedSession());
+
+    const handleUserUpdate = (e: Event) => {
+      const customEvt = e as CustomEvent<UserProfile | null>;
+      if (customEvt.detail !== undefined) {
+        setCurrentUser(customEvt.detail);
+      } else {
+        setCurrentUser(getSavedSession());
+      }
+    };
+
+    window.addEventListener('belajar:user-updated', handleUserUpdate);
+    window.addEventListener('storage', handleUserUpdate);
+
+    return () => {
+      window.removeEventListener('belajar:user-updated', handleUserUpdate);
+      window.removeEventListener('storage', handleUserUpdate);
+    };
   }, []);
 
   const handleLogout = () => {
@@ -61,16 +78,20 @@ export function AuthFormCard({ initialMode }: AuthFormCardProps) {
     e.preventDefault();
     setError(null);
 
-    const cleanUsername = username.trim().toLowerCase();
+    const cleanUsername = username.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
     if (!cleanUsername || cleanUsername.length < 3) {
-      setError('Username minimal 3 karakter.');
+      setError('Username minimal 3 karakter (hanya huruf kecil, angka, dan underscore).');
       return;
     }
     if (!email || !email.includes('@')) {
       setError('Alamat email tidak valid.');
       return;
     }
-    if (password && confirmPassword && password !== confirmPassword) {
+    if (password.length < 6) {
+      setError('Kata sandi minimal 6 karakter.');
+      return;
+    }
+    if (password !== confirmPassword) {
       setError('Konfirmasi password tidak cocok.');
       return;
     }
@@ -216,11 +237,6 @@ export function AuthFormCard({ initialMode }: AuthFormCardProps) {
               </label>
               <a
                 href="/forgot-password"
-                onClick={(e) => {
-                  e.preventDefault();
-                  setError(null);
-                  setMode('forgot');
-                }}
                 className="text-xs text-[var(--accent-terracotta)] hover:underline cursor-pointer"
               >
                 Lupa password?
@@ -261,11 +277,6 @@ export function AuthFormCard({ initialMode }: AuthFormCardProps) {
             Belum punya akun?{' '}
             <a
               href="/register"
-              onClick={(e) => {
-                e.preventDefault();
-                setError(null);
-                setMode('register');
-              }}
               className="text-[var(--accent-terracotta)] font-semibold hover:underline cursor-pointer"
             >
               Daftar akun baru
@@ -367,11 +378,6 @@ export function AuthFormCard({ initialMode }: AuthFormCardProps) {
             Sudah memiliki akun?{' '}
             <a
               href="/login"
-              onClick={(e) => {
-                e.preventDefault();
-                setError(null);
-                setMode('login');
-              }}
               className="text-[var(--accent-terracotta)] font-semibold hover:underline cursor-pointer"
             >
               Masuk di sini
@@ -414,11 +420,6 @@ export function AuthFormCard({ initialMode }: AuthFormCardProps) {
             Ingat kata sandi?{' '}
             <a
               href="/login"
-              onClick={(e) => {
-                e.preventDefault();
-                setError(null);
-                setMode('login');
-              }}
               className="text-[var(--accent-terracotta)] font-semibold hover:underline cursor-pointer"
             >
               Kembali ke Masuk

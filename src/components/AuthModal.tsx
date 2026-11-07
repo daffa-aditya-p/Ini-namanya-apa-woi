@@ -67,16 +67,20 @@ export function AuthModal({
     e.preventDefault();
     setError(null);
 
-    const cleanUsername = username.trim().toLowerCase();
+    const cleanUsername = username.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
     if (!cleanUsername || cleanUsername.length < 3) {
-      setError('Username minimal 3 karakter.');
+      setError('Username minimal 3 karakter (hanya huruf kecil, angka, dan underscore).');
       return;
     }
     if (!email || !email.includes('@')) {
       setError('Alamat email tidak valid.');
       return;
     }
-    if (password && confirmPassword && password !== confirmPassword) {
+    if (password.length < 6) {
+      setError('Kata sandi minimal 6 karakter.');
+      return;
+    }
+    if (password !== confirmPassword) {
       setError('Konfirmasi password tidak cocok.');
       return;
     }

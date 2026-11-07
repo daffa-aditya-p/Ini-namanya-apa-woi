@@ -197,6 +197,7 @@ export function HomeApp() {
             key="preview-js"
             language="javascript"
             title="Preview Eksekusi: JavaScript Modern"
+            awardXp={false}
             initialCode={`// Sambutan di bengkel kerja belajar.in
 const salam = "Halo dari JavaScript ES2024!";
 const nilaiPrimitif = 42;
@@ -212,6 +213,7 @@ console.log("Fitur utama:", daftarFitur.join(" • "));`}
             key="preview-py"
             language="python"
             title="Preview Eksekusi: Pyodide WASM"
+            awardXp={false}
             initialCode={`# Eksekusi riil CPython 3.12 di WebAssembly
 pesan = "Halo dari Python 3.12 WebAssembly!"
 pangkat = [2 ** i for i in range(1, 5)]

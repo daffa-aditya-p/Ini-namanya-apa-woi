@@ -7,6 +7,7 @@ import {
   LocalAuthManager,
   awardExerciseCompletion,
   isExerciseCompleted,
+  getSavedSession,
 } from '../src/lib/userStore';
 
 describe('Comprehensive User Journey & Feature Integration', () => {
@@ -198,6 +199,57 @@ describe('Comprehensive User Journey & Feature Integration', () => {
     expect(updatedRank.tier).toBe('Bronze II');
 
     // Clean up
+    LocalAuthManager.logout();
+  });
+
+  it('prevents guest users from having synthetic sessions created upon exercise runs', () => {
+    // Ensure clean logged-out state
+    LocalAuthManager.logout();
+    expect(getSavedSession()).toBeNull();
+
+    const guestAward = awardExerciseCompletion('Latihan J1.1: Mencetak Nilai Pertama', 25, 1);
+    expect(guestAward.awarded).toBe(false);
+    expect(guestAward.xpEarned).toBe(0);
+    expect(guestAward.user).toBeNull();
+    expect(guestAward.message).toContain('Masuk atau daftar');
+
+    // Crucial: guest session must still be null! Must never auto-create fake user
+    expect(getSavedSession()).toBeNull();
+  });
+
+  it('preserves exercise completions and XP across logout and re-login', () => {
+    // Register persistent user
+    const user = LocalAuthManager.register('satria_kode', 'satria@belajar.in', 'pass123');
+    expect(user.xp).toBe(25);
+
+    // Complete an exercise
+    const res = awardExerciseCompletion('Latihan J1.1: Mencetak Nilai Pertama', 25, 1);
+    expect(res.awarded).toBe(true);
+    expect(res.user?.xp).toBe(50);
+    expect(res.user?.completedExercises).toContain('Latihan J1.1: Mencetak Nilai Pertama');
+
+    // Log out
+    LocalAuthManager.logout();
+    expect(getSavedSession()).toBeNull();
+
+    // Log back in
+    const restored = LocalAuthManager.login('satria_kode', 'pass123');
+    expect(restored.username).toBe('satria_kode');
+    expect(restored.xp).toBe(50); // XP was preserved!
+    expect(restored.completedExercises).toContain('Latihan J1.1: Mencetak Nilai Pertama');
+    expect(isExerciseCompleted('Latihan J1.1: Mencetak Nilai Pertama')).toBe(true);
+
+    LocalAuthManager.logout();
+  });
+
+  it('awards demo account budi_koding Master rank with 750 XP matching UI promise', () => {
+    LocalAuthManager.logout();
+    const demo = LocalAuthManager.login('budi_koding', 'password123');
+    expect(demo.username).toBe('budi_koding');
+    expect(demo.xp).toBe(750);
+    const rank = getRankInfo(demo.xp);
+    expect(rank.tier).toBe('Master');
+
     LocalAuthManager.logout();
   });
 });

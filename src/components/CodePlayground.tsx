@@ -13,6 +13,7 @@ interface CodePlaygroundProps {
   language: 'javascript' | 'python';
   title?: string;
   expectedOutput?: string;
+  awardXp?: boolean;
 }
 
 export const CodePlayground: React.FC<CodePlaygroundProps> = ({
@@ -20,6 +21,7 @@ export const CodePlayground: React.FC<CodePlaygroundProps> = ({
   language,
   title,
   expectedOutput,
+  awardXp = true,
 }) => {
   const [code, setCode] = useState(initialCode.trim());
   const [isRunning, setIsRunning] = useState(false);
@@ -33,9 +35,18 @@ export const CodePlayground: React.FC<CodePlaygroundProps> = ({
   const exerciseKey = title || `exercise_${language}_${initialCode.slice(0, 30)}`;
 
   useEffect(() => {
-    if (isExerciseCompleted(exerciseKey)) {
-      setIsCompletedInitially(true);
-    }
+    const updateCompletionStatus = () => {
+      setIsCompletedInitially(isExerciseCompleted(exerciseKey));
+    };
+    updateCompletionStatus();
+
+    window.addEventListener('belajar:user-updated', updateCompletionStatus);
+    window.addEventListener('storage', updateCompletionStatus);
+
+    return () => {
+      window.removeEventListener('belajar:user-updated', updateCompletionStatus);
+      window.removeEventListener('storage', updateCompletionStatus);
+    };
   }, [exerciseKey]);
 
   const handleRun = useCallback(async () => {
@@ -52,12 +63,28 @@ export const CodePlayground: React.FC<CodePlaygroundProps> = ({
       setOutput(res);
 
       if (res.success && expectedOutput) {
-        const normActual = res.stdout.join('\n').replace(/\r\n/g, '\n').trim();
-        const normExpected = expectedOutput.replace(/\\n/g, '\n').replace(/\r\n/g, '\n').trim();
-        if (normActual === normExpected || normActual === expectedOutput.trim()) {
-          const award = awardExerciseCompletion(exerciseKey, 25, 1);
-          setAwardResult(award);
-          setIsCompletedInitially(true);
+        const normalize = (str: string) =>
+          str
+            .replace(/\\n/g, '\n')
+            .replace(/\r\n/g, '\n')
+            .split('\n')
+            .map((line) => line.trimEnd())
+            .join('\n')
+            .trim();
+
+        const normActual = normalize(res.stdout.join('\n'));
+        const normExpected = normalize(expectedOutput);
+
+        if (normActual === normExpected) {
+          if (awardXp) {
+            const award = awardExerciseCompletion(exerciseKey, 25, 1);
+            setAwardResult(award);
+            if (award.awarded) {
+              setIsCompletedInitially(true);
+            }
+          } else {
+            setAwardResult(null);
+          }
         } else {
           setAwardResult(null);
         }
@@ -76,7 +103,7 @@ export const CodePlayground: React.FC<CodePlaygroundProps> = ({
     } finally {
       setIsRunning(false);
     }
-  }, [code, language, expectedOutput, exerciseKey]);
+  }, [code, language, expectedOutput, exerciseKey, awardXp]);
 
   // Keyboard shortcut Ctrl/Cmd + Enter
   useEffect(() => {
@@ -293,10 +320,22 @@ export const CodePlayground: React.FC<CodePlaygroundProps> = ({
               </div>
               <p className="text-[var(--text-secondary)] mt-1 font-sans">
                 {awardResult.message}{' '}
-                {awardResult.awarded && (
+                {awardResult.awarded && awardResult.user && (
                   <>
                     Total XP: <strong className="font-mono text-[var(--text-primary)]">{awardResult.user.xp} XP</strong> • Waktu Belajar: <strong className="font-mono text-[var(--text-primary)]">{awardResult.user.hoursSpent} jam</strong>
                   </>
+                )}
+                {!awardResult.awarded && !awardResult.alreadyCompleted && (
+                  <span className="block mt-1 font-mono text-[11px]">
+                    <a href="/login" className="font-semibold text-[var(--accent-terracotta)] hover:underline">
+                      Masuk
+                    </a>{' '}
+                    atau{' '}
+                    <a href="/register" className="font-semibold text-[var(--accent-terracotta)] hover:underline">
+                      Daftar Akun
+                    </a>{' '}
+                    untuk menyimpan progres dan mengklaim XP.
+                  </span>
                 )}
               </p>
             </div>
