@@ -11,6 +11,7 @@ export interface UserProfile {
   xp: number;
   coins: number;
   registeredEvents: string[];
+  completedExercises?: string[];
 }
 
 export interface CheckInResult {
@@ -20,6 +21,14 @@ export interface CheckInResult {
   newStreak: number;
   newCoins: number;
   alreadyCheckedIn: boolean;
+}
+
+export interface AwardResult {
+  awarded: boolean;
+  xpEarned: number;
+  user: UserProfile;
+  alreadyCompleted: boolean;
+  message: string;
 }
 
 export const DEFAULT_USER: UserProfile = {
@@ -34,6 +43,7 @@ export const DEFAULT_USER: UserProfile = {
   xp: 750, // Master rank
   coins: 135,
   registeredEvents: ['event-sieve'],
+  completedExercises: [],
 };
 
 /**
@@ -116,25 +126,29 @@ export function calculateCheckIn(
 }
 
 const STORAGE_KEY = 'belajar_user_session';
+let inMemorySession: UserProfile | null = null;
 
 /**
- * Loads the active user from localStorage (or null if not logged in).
+ * Loads the active user from localStorage (or in-memory fallback in tests/SSR).
  */
 export function getSavedSession(): UserProfile | null {
-  if (typeof window === 'undefined') return null;
+  if (typeof window === 'undefined') {
+    return inMemorySession;
+  }
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
+    if (!raw) return inMemorySession;
     return JSON.parse(raw);
   } catch {
-    return null;
+    return inMemorySession;
   }
 }
 
 /**
- * Saves active user session to localStorage.
+ * Saves active user session to localStorage and dispatches change notification.
  */
 export function saveSession(user: UserProfile | null): void {
+  inMemorySession = user ? { ...user } : null;
   if (typeof window === 'undefined') return;
   try {
     if (user) {
@@ -142,9 +156,78 @@ export function saveSession(user: UserProfile | null): void {
     } else {
       localStorage.removeItem(STORAGE_KEY);
     }
+    window.dispatchEvent(new CustomEvent('belajar:user-updated', { detail: user }));
+    window.dispatchEvent(new Event('storage'));
   } catch {
     // ignore local storage error
   }
+}
+
+/**
+ * Checks whether an exercise has already been completed by the current session.
+ */
+export function isExerciseCompleted(exerciseId: string): boolean {
+  const user = getSavedSession();
+  if (!user || !user.completedExercises) return false;
+  return user.completedExercises.includes(exerciseId);
+}
+
+/**
+ * Awards XP and updates study hours in userStore when assertions pass.
+ * Prevents double-awarding XP for the same exercise.
+ */
+export function awardExerciseCompletion(
+  exerciseId: string,
+  xpAmount: number = 25,
+  hoursAmount: number = 1
+): AwardResult {
+  let user = getSavedSession();
+  if (!user) {
+    // If guest learner, initialize a guest profile so progress is preserved
+    user = {
+      id: `usr_guest_${Date.now()}`,
+      username: 'pembelajar',
+      name: 'Pembelajar',
+      email: 'pembelajar@belajar.in',
+      streak: 1,
+      longestStreak: 1,
+      lastActiveDate: new Date().toISOString().split('T')[0],
+      hoursSpent: 0,
+      xp: 0,
+      coins: 0,
+      registeredEvents: [],
+      completedExercises: [],
+    };
+  }
+
+  const completed = user.completedExercises || [];
+  if (completed.includes(exerciseId)) {
+    return {
+      awarded: false,
+      xpEarned: 0,
+      user,
+      alreadyCompleted: true,
+      message: 'Latihan ini sudah diselesaikan sebelumnya. XP telah diklaim.',
+    };
+  }
+
+  const updatedUser: UserProfile = {
+    ...user,
+    xp: user.xp + xpAmount,
+    hoursSpent: (user.hoursSpent || 0) + hoursAmount,
+    lastActiveDate: new Date().toISOString().split('T')[0],
+    completedExercises: [...completed, exerciseId],
+  };
+
+  saveSession(updatedUser);
+
+  return {
+    awarded: true,
+    xpEarned: xpAmount,
+    user: updatedUser,
+    alreadyCompleted: false,
+    message: `Luar biasa! +${xpAmount} XP berhasil didapatkan dan waktu belajarmu bertambah (+${hoursAmount} jam)!`,
+  };
 }
 
 /**
@@ -157,7 +240,14 @@ export const LocalAuthManager = {
 
     // Check if user already exists in local list
     const existing = getSavedSession();
-    if (existing && (existing.username.toLowerCase() === cleanUsername.toLowerCase() || existing.email.toLowerCase() === cleanHandle.toLowerCase())) {
+    if (
+      existing &&
+      (existing.username.toLowerCase() === cleanUsername.toLowerCase() ||
+        existing.email.toLowerCase() === cleanHandle.toLowerCase())
+    ) {
+      if (!existing.completedExercises) {
+        existing.completedExercises = [];
+      }
       saveSession(existing);
       return existing;
     }
@@ -175,6 +265,7 @@ export const LocalAuthManager = {
       xp: 245, // Gold II rank default
       coins: 80,
       registeredEvents: [],
+      completedExercises: [],
     };
 
     saveSession(profile);
@@ -195,6 +286,7 @@ export const LocalAuthManager = {
       xp: 25, // Bronze I
       coins: 20,
       registeredEvents: [],
+      completedExercises: [],
     };
 
     saveSession(profile);

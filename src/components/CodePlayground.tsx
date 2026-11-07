@@ -2,6 +2,11 @@ import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { JavaScriptRunner } from '../lib/runner/javascript';
 import { PythonRunner } from '../lib/runner/python';
 import type { ExecutionResult } from '../lib/runner/types';
+import {
+  awardExerciseCompletion,
+  isExerciseCompleted,
+  type AwardResult,
+} from '../lib/userStore';
 
 interface CodePlaygroundProps {
   initialCode: string;
@@ -19,21 +24,45 @@ export const CodePlayground: React.FC<CodePlaygroundProps> = ({
   const [code, setCode] = useState(initialCode.trim());
   const [isRunning, setIsRunning] = useState(false);
   const [output, setOutput] = useState<ExecutionResult | null>(null);
+  const [awardResult, setAwardResult] = useState<AwardResult | null>(null);
+  const [isCompletedInitially, setIsCompletedInitially] = useState(false);
   const editorContainerRef = useRef<HTMLDivElement>(null);
   const editorViewRef = useRef<unknown>(null);
   const [cmReady, setCmReady] = useState(false);
 
+  const exerciseKey = title || `exercise_${language}_${initialCode.slice(0, 30)}`;
+
+  useEffect(() => {
+    if (isExerciseCompleted(exerciseKey)) {
+      setIsCompletedInitially(true);
+    }
+  }, [exerciseKey]);
+
   const handleRun = useCallback(async () => {
     setIsRunning(true);
     try {
+      let res: ExecutionResult;
       if (language === 'javascript') {
         const runner = new JavaScriptRunner();
-        const res = await runner.run(code);
-        setOutput(res);
+        res = await runner.run(code);
       } else {
         const runner = new PythonRunner();
-        const res = await runner.run(code);
-        setOutput(res);
+        res = await runner.run(code);
+      }
+      setOutput(res);
+
+      if (res.success && expectedOutput) {
+        const normActual = res.stdout.join('\n').replace(/\r\n/g, '\n').trim();
+        const normExpected = expectedOutput.replace(/\\n/g, '\n').replace(/\r\n/g, '\n').trim();
+        if (normActual === normExpected || normActual === expectedOutput.trim()) {
+          const award = awardExerciseCompletion(exerciseKey, 25, 1);
+          setAwardResult(award);
+          setIsCompletedInitially(true);
+        } else {
+          setAwardResult(null);
+        }
+      } else {
+        setAwardResult(null);
       }
     } catch (err) {
       setOutput({
@@ -43,10 +72,11 @@ export const CodePlayground: React.FC<CodePlaygroundProps> = ({
         error: String(err),
         executionTimeMs: 0,
       });
+      setAwardResult(null);
     } finally {
       setIsRunning(false);
     }
-  }, [code, language]);
+  }, [code, language, expectedOutput, exerciseKey]);
 
   // Keyboard shortcut Ctrl/Cmd + Enter
   useEffect(() => {
@@ -166,6 +196,11 @@ export const CodePlayground: React.FC<CodePlaygroundProps> = ({
           </span>
         </div>
         <div className="flex items-center gap-2">
+          {isCompletedInitially && (
+            <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-mono bg-[var(--state-success)]/15 text-[var(--state-success)] border border-[var(--state-success)]/30">
+              ✓ Latihan Selesai
+            </span>
+          )}
           <button
             type="button"
             onClick={handleReset}
@@ -245,10 +280,31 @@ export const CodePlayground: React.FC<CodePlaygroundProps> = ({
             </div>
           )}
 
-          {expectedOutput && output.stdout.join('\n').trim() === expectedOutput.trim() && (
-            <div className="mt-2 pt-2 border-t border-[var(--border-default)] text-[var(--state-success)] font-semibold flex items-center gap-1.5">
-              <span>✓</span>
-              <span>Output cocok dengan ekspektasi modul latihan!</span>
+          {/* Gamification & assertion feedback */}
+          {expectedOutput && awardResult && (
+            <div className="mt-3 p-3 rounded-lg border border-[var(--state-success)]/40 bg-[var(--state-success)]/10 text-xs">
+              <div className="flex items-center gap-2 font-bold text-[var(--state-success)] font-mono">
+                <span>✓ Output Valid & Sesuai Ekspektasi!</span>
+                {awardResult.awarded && (
+                  <span className="px-2 py-0.5 rounded-full bg-[var(--state-success)] text-white text-[10px] font-bold">
+                    +{awardResult.xpEarned} XP
+                  </span>
+                )}
+              </div>
+              <p className="text-[var(--text-secondary)] mt-1 font-sans">
+                {awardResult.message}{' '}
+                {awardResult.awarded && (
+                  <>
+                    Total XP: <strong className="font-mono text-[var(--text-primary)]">{awardResult.user.xp} XP</strong> • Waktu Belajar: <strong className="font-mono text-[var(--text-primary)]">{awardResult.user.hoursSpent} jam</strong>
+                  </>
+                )}
+              </p>
+            </div>
+          )}
+
+          {expectedOutput && !awardResult && output.success && (
+            <div className="mt-2 pt-2 border-t border-[var(--border-default)] text-[var(--text-muted)] text-[11px] font-mono">
+              Output belum sesuai dengan target ekspektasi latihan. Silakan tinjau kembali instruksi.
             </div>
           )}
         </div>

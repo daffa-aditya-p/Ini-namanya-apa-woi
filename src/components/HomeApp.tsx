@@ -2,23 +2,41 @@ import React, { useState, useEffect } from 'react';
 import {
   type UserProfile,
   getSavedSession,
-  saveSession,
   LocalAuthManager,
 } from '../lib/userStore';
-import { Dashboard } from './Dashboard';
+import { getRankInfo } from '../lib/ranks';
 import { AuthModal, type AuthMode } from './AuthModal';
-import { ArrowRightIcon, SparklesIcon } from './Icons';
+import { CodePlayground } from './CodePlayground';
+import { ArrowRightIcon, SparklesIcon, FlameIcon, TrophyIcon } from './Icons';
 
 export function HomeApp() {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState<AuthMode>('login');
+  const [previewTab, setPreviewTab] = useState<'javascript' | 'python'>('javascript');
 
   useEffect(() => {
     const existing = getSavedSession();
     if (existing) {
       setUser(existing);
     }
+
+    const handleUserUpdate = (e: Event) => {
+      const customEvt = e as CustomEvent<UserProfile | null>;
+      if (customEvt.detail !== undefined) {
+        setUser(customEvt.detail);
+      } else {
+        setUser(getSavedSession());
+      }
+    };
+
+    window.addEventListener('belajar:user-updated', handleUserUpdate);
+    window.addEventListener('storage', handleUserUpdate);
+
+    return () => {
+      window.removeEventListener('belajar:user-updated', handleUserUpdate);
+      window.removeEventListener('storage', handleUserUpdate);
+    };
   }, []);
 
   const handleOpenAuth = (mode: AuthMode) => {
@@ -26,46 +44,22 @@ export function HomeApp() {
     setIsAuthOpen(true);
   };
 
-  const handleAuthSuccess = (authenticatedUser: UserProfile) => {
-    setUser(authenticatedUser);
-    saveSession(authenticatedUser);
+  const handleAuthSuccess = (_authenticatedUser: UserProfile) => {
     setIsAuthOpen(false);
-  };
-
-  const handleLogout = () => {
-    LocalAuthManager.logout();
-    setUser(null);
-  };
-
-  const handleUpdateUser = (updated: UserProfile) => {
-    setUser(updated);
+    // Redirect to /dashboard upon successful login/register
+    if (typeof window !== 'undefined') {
+      window.location.href = '/dashboard';
+    }
   };
 
   const handleQuickDemo = () => {
-    const demo = LocalAuthManager.login('budi_koding', 'password123');
-    handleAuthSuccess(demo);
+    LocalAuthManager.login('budi_koding', 'password123');
+    if (typeof window !== 'undefined') {
+      window.location.href = '/dashboard';
+    }
   };
 
-  // If user is logged in, show Dashboard directly
-  if (user) {
-    return (
-      <div>
-        <Dashboard
-          user={user}
-          onLogout={handleLogout}
-          onUpdateUser={handleUpdateUser}
-        />
-        <AuthModal
-          isOpen={isAuthOpen}
-          initialMode={authMode}
-          onClose={() => setIsAuthOpen(false)}
-          onSuccess={handleAuthSuccess}
-        />
-      </div>
-    );
-  }
-
-  // Guest / Visitor Landing Page
+  // Pure Landing Page - Never replaced by Dashboard!
   return (
     <div className="space-y-12 py-4">
       {/* Hero Section */}
@@ -80,37 +74,154 @@ export function HomeApp() {
         </h1>
 
         <p className="text-lg sm:text-xl leading-relaxed text-[var(--text-secondary)] mb-8 font-serif">
-          Mari kita mulai dari hal paling mendasar: bagaimana komputer mengingat data dan mengeksekusi instruksi. Setiap contoh kode di halaman ini dapat kamu jalankan dan telusuri secara nyata langsung di browsermu tanpa instalasi rumit.
+          Mari kita mulai dari hal paling mendasar: bagaimana komputer mengingat data dan mengeksekusi instruksi. Setiap contoh kode di platform ini dapat kamu jalankan dan telusuri secara nyata langsung di browsermu tanpa instalasi rumit.
         </p>
 
-        {/* Auth CTA Buttons */}
-        <div className="flex flex-wrap items-center gap-3 justify-center sm:justify-start">
-          <button
-            type="button"
-            onClick={() => handleOpenAuth('login')}
-            className="px-5 py-2.5 rounded-lg bg-[var(--accent-terracotta)] text-white font-display font-medium text-sm hover:opacity-95 active:scale-98 transition-all cursor-pointer shadow-xs"
-          >
-            Masuk ke Meja Kerja
-          </button>
+        {/* Clear CTAs */}
+        {user ? (
+          <div className="space-y-4">
+            <div className="inline-flex flex-wrap items-center gap-2 px-3.5 py-1.5 rounded-lg bg-[var(--bg-subtle)] border border-[var(--border-default)] text-xs font-mono">
+              <span className="text-[var(--text-secondary)]">Sesi aktif:</span>
+              <strong className="text-[var(--text-primary)]">@{user.username}</strong>
+              <span className="text-[var(--text-muted)]">•</span>
+              <span className="inline-flex items-center gap-1 text-orange-600 dark:text-orange-400 font-semibold">
+                <FlameIcon className="w-3.5 h-3.5" /> {user.streak} hari
+              </span>
+              <span className="text-[var(--text-muted)]">•</span>
+              <span className="inline-flex items-center gap-1 text-indigo-600 dark:text-indigo-400 font-semibold">
+                <TrophyIcon className="w-3.5 h-3.5" /> {getRankInfo(user.xp).tier} ({user.xp} XP)
+              </span>
+            </div>
 
-          <button
-            type="button"
-            onClick={() => handleOpenAuth('register')}
-            className="px-5 py-2.5 rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface)] text-[var(--text-primary)] font-display font-medium text-sm hover:border-[var(--border-focused)] active:scale-98 transition-all cursor-pointer shadow-xs"
-          >
-            Daftar Akun Baru
-          </button>
+            <div className="flex flex-wrap items-center gap-3 justify-center sm:justify-start">
+              <a
+                href="/dashboard"
+                className="px-5 py-2.5 rounded-lg bg-[var(--accent-terracotta)] text-white font-display font-medium text-sm hover:opacity-95 active:scale-98 transition-all flex items-center gap-2 shadow-xs text-decoration-none"
+              >
+                <span>Buka Meja Kerja (Dashboard)</span>
+                <ArrowRightIcon className="w-4 h-4" />
+              </a>
 
-          <button
-            type="button"
-            onClick={handleQuickDemo}
-            className="px-4 py-2.5 rounded-lg border border-dashed border-[var(--border-default)] bg-[var(--bg-subtle)] text-[var(--accent-teal)] font-mono text-xs hover:border-[var(--border-focused)] transition-all cursor-pointer flex items-center gap-1.5"
-            title="Masuk seketika sebagai pengguna demo untuk mencoba dashboard"
-          >
-            <SparklesIcon className="w-3.5 h-3.5" />
-            Coba Demo Cepat (Budi • Master)
-          </button>
+              <a
+                href="/curriculum/javascript/j1"
+                className="px-4 py-2.5 rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface)] text-[var(--text-primary)] font-display font-medium text-sm hover:border-[var(--border-focused)] transition-all text-decoration-none"
+              >
+                Modul JS (J1)
+              </a>
+
+              <a
+                href="/curriculum/python/p1"
+                className="px-4 py-2.5 rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface)] text-[var(--text-primary)] font-display font-medium text-sm hover:border-[var(--border-focused)] transition-all text-decoration-none"
+              >
+                Modul Python (P1)
+              </a>
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-wrap items-center gap-3 justify-center sm:justify-start">
+            <button
+              type="button"
+              onClick={() => handleOpenAuth('login')}
+              className="px-5 py-2.5 rounded-lg bg-[var(--accent-terracotta)] text-white font-display font-medium text-sm hover:opacity-95 active:scale-98 transition-all cursor-pointer shadow-xs"
+            >
+              Masuk ke Meja Kerja
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleOpenAuth('register')}
+              className="px-5 py-2.5 rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface)] text-[var(--text-primary)] font-display font-medium text-sm hover:border-[var(--border-focused)] active:scale-98 transition-all cursor-pointer shadow-xs"
+            >
+              Daftar Akun Baru
+            </button>
+
+            <button
+              type="button"
+              onClick={handleQuickDemo}
+              className="px-4 py-2.5 rounded-lg border border-dashed border-[var(--border-default)] bg-[var(--bg-subtle)] text-[var(--accent-teal)] font-mono text-xs hover:border-[var(--border-focused)] transition-all cursor-pointer flex items-center gap-1.5"
+              title="Masuk seketika sebagai pengguna demo untuk mencoba dashboard"
+            >
+              <SparklesIcon className="w-3.5 h-3.5" />
+              Coba Demo Cepat (Budi • Master)
+            </button>
+          </div>
+        )}
+      </section>
+
+      {/* Interactive Code Preview Section */}
+      <section
+        aria-labelledby="preview-heading"
+        className="p-6 sm:p-8 rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] shadow-xs space-y-4"
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[var(--border-default)] pb-4">
+          <div>
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-[var(--accent-teal)]/10 text-[var(--accent-teal)] mb-1">
+              Interactive Preview
+            </div>
+            <h2 id="preview-heading" className="text-xl sm:text-2xl font-bold font-display text-[var(--text-primary)]">
+              Coba Eksekusi Riil di Browser
+            </h2>
+            <p className="text-xs sm:text-sm text-[var(--text-secondary)] mt-0.5">
+              Jalankan langsung di JavaScript sandbox worker atau Pyodide WebAssembly tanpa instalasi lokal.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-1.5 bg-[var(--bg-subtle)] p-1 rounded-lg border border-[var(--border-default)] shrink-0 self-start sm:self-auto">
+            <button
+              type="button"
+              onClick={() => setPreviewTab('javascript')}
+              className={`px-3 py-1 text-xs font-mono font-medium rounded-md transition-all cursor-pointer ${
+                previewTab === 'javascript'
+                  ? 'bg-[var(--bg-surface)] text-[var(--accent-terracotta)] shadow-xs font-bold'
+                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+              }`}
+            >
+              JavaScript (ES2024)
+            </button>
+            <button
+              type="button"
+              onClick={() => setPreviewTab('python')}
+              className={`px-3 py-1 text-xs font-mono font-medium rounded-md transition-all cursor-pointer ${
+                previewTab === 'python'
+                  ? 'bg-[var(--bg-surface)] text-[#20527B] dark:text-[#68B0EB] shadow-xs font-bold'
+                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+              }`}
+            >
+              Python 3.12 (Pyodide)
+            </button>
+          </div>
         </div>
+
+        {previewTab === 'javascript' ? (
+          <CodePlayground
+            key="preview-js"
+            language="javascript"
+            title="Preview Eksekusi: JavaScript Modern"
+            initialCode={`// Sambutan di bengkel kerja belajar.in
+const salam = "Halo dari JavaScript ES2024!";
+const nilaiPrimitif = 42;
+const daftarFitur = ["Worker Sandbox", "Zero Slop", "Eksekusi Nyata"];
+
+console.log(salam);
+console.log("Nilai:", nilaiPrimitif);
+console.log("Fitur utama:", daftarFitur.join(" • "));`}
+            expectedOutput={`Halo dari JavaScript ES2024!\nNilai: 42\nFitur utama: Worker Sandbox • Zero Slop • Eksekusi Nyata`}
+          />
+        ) : (
+          <CodePlayground
+            key="preview-py"
+            language="python"
+            title="Preview Eksekusi: Pyodide WASM"
+            initialCode={`# Eksekusi riil CPython 3.12 di WebAssembly
+pesan = "Halo dari Python 3.12 WebAssembly!"
+pangkat = [2 ** i for i in range(1, 5)]
+
+print(pesan)
+print("Deret pangkat dua:", pangkat)
+print(f"Total elemen: {len(pangkat)}")`}
+            expectedOutput={`Halo dari Python 3.12 WebAssembly!\nDeret pangkat dua: [2, 4, 8, 16]\nTotal elemen: 4`}
+          />
+        )}
       </section>
 
       {/* Curriculum Tracks Preview */}

@@ -1,0 +1,10 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { DashboardApp } from '../components/DashboardApp';
+
+// Dedicated route for /dashboard
+---
+
+<Layout title="Meja Kerja & Dashboard - belajar.in" description="Meja kerja pembelajar, progres materi kurikulum, streak harian, dan rank gamifikasi.">
+  <DashboardApp client:load />
+</Layout>

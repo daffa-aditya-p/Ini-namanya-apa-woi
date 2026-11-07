@@ -1,7 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { getRankInfo } from '../src/lib/ranks';
 import { buildLeaderboard } from '../src/lib/leaderboard';
-import { calculateCheckIn, type UserProfile, LocalAuthManager } from '../src/lib/userStore';
+import {
+  calculateCheckIn,
+  type UserProfile,
+  LocalAuthManager,
+  awardExerciseCompletion,
+  isExerciseCompleted,
+} from '../src/lib/userStore';
 
 describe('Comprehensive User Journey & Feature Integration', () => {
   it('manages complete user authentication flow (login, register, forgot-password, logout)', () => {
@@ -156,5 +162,42 @@ describe('Comprehensive User Journey & Feature Integration', () => {
       hoursSpent: 372,
     };
     expect(`${longStudyUser.hoursSpent} jam`).toBe('372 jam');
+  });
+
+  it('awards +25 XP and increments study hours on exercise completion, preventing duplicates', () => {
+    // Reset/setup clean user session in memory/mock
+    const learner = LocalAuthManager.register('koding_hero', 'hero@belajar.in', 'hero123');
+    expect(learner.xp).toBe(25);
+    expect(learner.hoursSpent).toBe(1);
+    expect(learner.completedExercises).toEqual([]);
+
+    // Award exercise #1
+    const res1 = awardExerciseCompletion('Latihan J1.1: Mencetak Nilai Pertama', 25, 1);
+    expect(res1.awarded).toBe(true);
+    expect(res1.xpEarned).toBe(25);
+    expect(res1.alreadyCompleted).toBe(false);
+    expect(res1.user.xp).toBe(50); // 25 + 25
+    expect(res1.user.hoursSpent).toBe(2); // 1 + 1
+    expect(res1.user.completedExercises).toContain('Latihan J1.1: Mencetak Nilai Pertama');
+    expect(isExerciseCompleted('Latihan J1.1: Mencetak Nilai Pertama')).toBe(true);
+
+    // Running the same exercise again must NOT award duplicate XP
+    const resDuplicate = awardExerciseCompletion('Latihan J1.1: Mencetak Nilai Pertama', 25, 1);
+    expect(resDuplicate.awarded).toBe(false);
+    expect(resDuplicate.alreadyCompleted).toBe(true);
+    expect(resDuplicate.xpEarned).toBe(0);
+    expect(resDuplicate.user.xp).toBe(50); // XP unchanged!
+    expect(resDuplicate.user.hoursSpent).toBe(2);
+
+    // Award exercise #2 -> crosses rank boundary to Bronze II (>50 XP)
+    const res2 = awardExerciseCompletion('Latihan P1.1: Mencetak Output di Python', 25, 1);
+    expect(res2.awarded).toBe(true);
+    expect(res2.user.xp).toBe(75); // 50 + 25
+    expect(res2.user.hoursSpent).toBe(3);
+    const updatedRank = getRankInfo(res2.user.xp);
+    expect(updatedRank.tier).toBe('Bronze II');
+
+    // Clean up
+    LocalAuthManager.logout();
   });
 });
