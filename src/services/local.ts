@@ -2,6 +2,7 @@ import Dexie, { type Table } from 'dexie';
 import type {
   ProgressService,
   LessonProgress,
+  ConceptMasteryRecord,
   StreakInfo,
   AuthService,
   User,
@@ -16,12 +17,18 @@ import type {
 export class BelajarDatabase extends Dexie {
   progress!: Table<LessonProgress, string>;
   metadata!: Table<{ key: string; value: unknown }, string>;
+  bktMastery!: Table<ConceptMasteryRecord, string>;
 
   constructor() {
     super('belajar_in_db');
     this.version(1).stores({
       progress: 'lessonId, completed, score, lastAttemptAt',
       metadata: 'key',
+    });
+    this.version(2).stores({
+      progress: 'lessonId, completed, score, lastAttemptAt',
+      metadata: 'key',
+      bktMastery: 'conceptId, pL, isMastered, lastUpdated',
     });
   }
 }
@@ -69,6 +76,10 @@ export class LocalProgressService implements ProgressService {
     const map: Record<string, number> = {};
     if (this.db) {
       try {
+        const bktRecords = await this.db.bktMastery.toArray();
+        for (const item of bktRecords) {
+          map[item.conceptId] = item.pL;
+        }
         const all = await this.db.progress.toArray();
         for (const item of all) {
           map[item.lessonId] = item.masteryLevel;

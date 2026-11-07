@@ -120,6 +120,15 @@ Lengkapi bagian pemetaan Dictionary dan penggabungan operator union `|` (Python 
   language="python"
   missingTaskDescription="Gabungkan profil produk dengan data tambahan stok menggunakan operator | lalu cetak ringkasannya."
   fadedHint="Gunakan operator profil | tambahan untuk menghasilkan dictionary baru."
+  starterCode={`titik = (100, 250)
+x, y = titik
+profil = {"nama": "Kopi Aceh", "harga": 18000}
+tambahan = {"stok": 50, "kategori": "Minuman"}
+
+# Lengkapi penggabungan dictionary di bawah ini:
+menu = profil # TODO: Gabungkan dengan tambahan menggunakan operator |
+
+print(f"Item: {menu['nama']} | Harga: Rp{menu['harga']} | Stok: {menu.get('stok', 0)}")`}
   initialCode={`titik = (100, 250)
 x, y = titik
 profil = {"nama": "Kopi Aceh", "harga": 18000}

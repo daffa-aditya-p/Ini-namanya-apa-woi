@@ -8,12 +8,19 @@ import {
   type TutorResponse,
   type ReviewResponse,
 } from '../services/types';
-import { SparklesIcon } from './Icons';
+import { SparklesIcon, CheckIcon } from './Icons';
 
 interface SocraticTutorPanelProps {
   lessonId: string;
   language: 'javascript' | 'python';
   defaultCodeSnippet?: string;
+}
+
+interface QAItem {
+  question: string;
+  errorMessage?: string;
+  response: TutorResponse;
+  timestamp: string;
 }
 
 export const SocraticTutorPanel: React.FC<SocraticTutorPanelProps> = ({
@@ -23,32 +30,37 @@ export const SocraticTutorPanel: React.FC<SocraticTutorPanelProps> = ({
 }) => {
   const [gateway] = useState(() => new LocalAIGateway());
   const [isOpen, setIsOpen] = useState(false);
-  const [currentStage, setCurrentStage] = useState<number>(1);
-  const [hintsHistory, setHintsHistory] = useState<TutorResponse[]>([]);
+  const [userCode, setUserCode] = useState(defaultCodeSnippet);
+  const [showCodeEditor, setShowCodeEditor] = useState(false);
+
+  // Ladder Progression: exactly stages 1 through 4
+  const [unlockedLadderStages, setUnlockedLadderStages] = useState<number>(0);
+  const [ladderHints, setLadderHints] = useState<Record<number, TutorResponse>>({});
+
+  // Separate Open-ended Q&A History
+  const [qaHistory, setQaHistory] = useState<QAItem[]>([]);
   const [customPrompt, setCustomPrompt] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [reviewResult, setReviewResult] = useState<ReviewResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const requestNextHint = async () => {
+    if (unlockedLadderStages >= 4) return;
+    const nextStage = unlockedLadderStages + 1;
     setIsLoading(true);
     try {
-      const nextStage = Math.min(currentStage, 4);
       const req = TutorRequestSchema.parse({
         lessonId,
-        userCode: defaultCodeSnippet,
+        userCode: userCode || defaultCodeSnippet,
         prompt: `Minta petunjuk bertingkat tahap ${nextStage}`,
         hintStage: nextStage,
-        errorMessage: errorMessage.trim() || undefined,
       });
 
       const res = await gateway.generateSocraticHint(req);
       const validated = TutorResponseSchema.parse(res);
 
-      setHintsHistory((prev) => [...prev, validated]);
-      if (currentStage < 4) {
-        setCurrentStage((prev) => prev + 1);
-      }
+      setLadderHints((prev) => ({ ...prev, [nextStage]: validated }));
+      setUnlockedLadderStages(nextStage);
     } catch (err) {
       console.error('Validation error on Socratic Tutor:', err);
     } finally {
@@ -64,16 +76,24 @@ export const SocraticTutorPanel: React.FC<SocraticTutorPanelProps> = ({
     try {
       const req = TutorRequestSchema.parse({
         lessonId,
-        userCode: defaultCodeSnippet,
-        prompt: customPrompt,
-        hintStage: Math.min(currentStage, 4),
+        userCode: userCode || defaultCodeSnippet,
+        prompt: customPrompt.trim(),
+        hintStage: unlockedLadderStages > 0 ? unlockedLadderStages : 1,
         errorMessage: errorMessage.trim() || undefined,
       });
 
       const res = await gateway.generateSocraticHint(req);
       const validated = TutorResponseSchema.parse(res);
 
-      setHintsHistory((prev) => [...prev, validated]);
+      setQaHistory((prev) => [
+        ...prev,
+        {
+          question: customPrompt.trim(),
+          errorMessage: errorMessage.trim() || undefined,
+          response: validated,
+          timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+        },
+      ]);
       setCustomPrompt('');
     } catch (err) {
       console.error('Validation error on Socratic Tutor Question:', err);
@@ -87,7 +107,7 @@ export const SocraticTutorPanel: React.FC<SocraticTutorPanelProps> = ({
     try {
       const req = ReviewRequestSchema.parse({
         lessonId,
-        code: defaultCodeSnippet || '// Kode latihan',
+        code: userCode.trim() || defaultCodeSnippet.trim() || '// Kode latihan',
       });
       const res = await gateway.reviewCode(req);
       const validated = ReviewResponseSchema.parse(res);
@@ -134,6 +154,31 @@ export const SocraticTutorPanel: React.FC<SocraticTutorPanelProps> = ({
             Tutor AI tidak akan langsung memberikan jawaban jadi (*no spoonfeeding*), melainkan membimbingmu melalui tangga petunjuk logis (1-4) dan pertanyaan reflektif yang grounded pada silabus kurikulum resmi.
           </div>
 
+          {/* User Code Inspector Toggle */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-mono font-bold text-[var(--text-secondary)]">
+                Kode yang Dianalisis Tutor:
+              </span>
+              <button
+                type="button"
+                onClick={() => setShowCodeEditor(!showCodeEditor)}
+                className="text-[11px] font-mono text-[var(--accent-teal)] hover:underline cursor-pointer"
+              >
+                {showCodeEditor ? 'Tutup Editor Kode ▲' : 'Sesuaikan / Paste Kodemu ▼'}
+              </button>
+            </div>
+            {showCodeEditor && (
+              <textarea
+                value={userCode}
+                onChange={(e) => setUserCode(e.target.value)}
+                rows={4}
+                placeholder="Paste kodemu di sini agar tutor dapat menganalisisnya secara kontekstual..."
+                className="w-full p-2.5 text-xs font-mono rounded-lg border border-[var(--border-default)] bg-[var(--bg-canvas)] text-[var(--text-primary)] outline-none focus:border-[var(--border-focused)]"
+              />
+            )}
+          </div>
+
           {/* Hint Ladder (Tangga Petunjuk 1 -> 4) */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
@@ -141,14 +186,14 @@ export const SocraticTutorPanel: React.FC<SocraticTutorPanelProps> = ({
                 Tangga Petunjuk 4-Tahap (Hint Ladder)
               </span>
               <span className="text-xs font-mono text-[var(--accent-terracotta)] font-semibold">
-                Tahap {Math.min(currentStage - 1, 4)} dari 4 Terbuka
+                {unlockedLadderStages === 0 ? '0 dari 4 Terbuka' : `Tahap ${unlockedLadderStages} dari 4 Terbuka`}
               </span>
             </div>
 
             {/* Ladder Visualizer */}
             <div className="grid grid-cols-4 gap-2">
               {[1, 2, 3, 4].map((step) => {
-                const isUnlocked = step < currentStage || hintsHistory.length >= step;
+                const isUnlocked = step <= unlockedLadderStages;
                 return (
                   <div
                     key={step}
@@ -170,44 +215,51 @@ export const SocraticTutorPanel: React.FC<SocraticTutorPanelProps> = ({
               })}
             </div>
 
-            {/* Hint History Display */}
-            {hintsHistory.length > 0 && (
+            {/* Hint Ladder Display */}
+            {unlockedLadderStages > 0 && (
               <div className="space-y-3 pt-2">
-                {hintsHistory.map((hintItem, idx) => (
-                  <div
-                    key={idx}
-                    className="p-3.5 rounded-lg border border-[var(--border-default)] bg-[var(--bg-canvas)] text-xs sm:text-sm font-sans space-y-2"
-                  >
-                    <div className="flex items-center justify-between text-xs font-mono text-[var(--accent-terracotta)] font-bold">
-                      <span>{hintItem.stageTitle || `Petunjuk #${idx + 1}`}</span>
-                      <span>Tahap {hintItem.hintStage || idx + 1}</span>
-                    </div>
-                    <p className="text-[var(--text-primary)] leading-relaxed">{hintItem.hint}</p>
-                    {hintItem.suggestedAction && (
-                      <div className="text-xs font-mono text-[var(--accent-teal)]">
-                        👉 Tindakan yang Disarankan: {hintItem.suggestedAction}
+                {[1, 2, 3, 4]
+                  .filter((step) => ladderHints[step] !== undefined)
+                  .map((step) => {
+                    const hintItem = ladderHints[step];
+                    return (
+                      <div
+                        key={step}
+                        className="p-3.5 rounded-lg border border-[var(--border-default)] bg-[var(--bg-canvas)] text-xs sm:text-sm font-sans space-y-2 animate-in fade-in duration-150"
+                      >
+                        <div className="flex items-center justify-between text-xs font-mono text-[var(--accent-terracotta)] font-bold">
+                          <span>{hintItem.stageTitle || `Petunjuk Tahap ${step}`}</span>
+                          <span className="px-1.5 py-0.5 rounded bg-[var(--accent-terracotta)]/15 text-[var(--accent-terracotta)]">
+                            Tahap {step}
+                          </span>
+                        </div>
+                        <p className="text-[var(--text-primary)] leading-relaxed">{hintItem.hint}</p>
+                        {hintItem.suggestedAction && (
+                          <div className="text-xs font-mono text-[var(--accent-teal)]">
+                            👉 Tindakan yang Disarankan: {hintItem.suggestedAction}
+                          </div>
+                        )}
+                        {/* Citations */}
+                        <div className="pt-2 border-t border-[var(--border-default)] text-[11px] font-mono text-[var(--text-muted)] flex flex-wrap items-center gap-1.5">
+                          <span>Rujukan Resmi (Citations):</span>
+                          {hintItem.citations.map((cite, cIdx) => (
+                            <span
+                              key={cIdx}
+                              className="px-1.5 py-0.5 rounded bg-[var(--bg-subtle)] border border-[var(--border-default)] text-[var(--text-secondary)]"
+                            >
+                              {cite}
+                            </span>
+                          ))}
+                        </div>
                       </div>
-                    )}
-                    {/* Citations */}
-                    <div className="pt-2 border-t border-[var(--border-default)] text-[11px] font-mono text-[var(--text-muted)] flex flex-wrap items-center gap-1.5">
-                      <span>Rujukan Resmi (Citations):</span>
-                      {hintItem.citations.map((cite, cIdx) => (
-                        <span
-                          key={cIdx}
-                          className="px-1.5 py-0.5 rounded bg-[var(--bg-subtle)] border border-[var(--border-default)] text-[var(--text-secondary)]"
-                        >
-                          {cite}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                ))}
+                    );
+                  })}
               </div>
             )}
 
             {/* Ladder Trigger Button */}
             <div className="flex flex-wrap items-center gap-2">
-              {currentStage <= 4 && (
+              {unlockedLadderStages < 4 ? (
                 <button
                   type="button"
                   onClick={requestNextHint}
@@ -215,8 +267,13 @@ export const SocraticTutorPanel: React.FC<SocraticTutorPanelProps> = ({
                   className="px-3.5 py-2 text-xs font-mono font-semibold rounded-lg bg-[var(--accent-terracotta)] text-white hover:opacity-90 active:scale-98 transition-all cursor-pointer flex items-center gap-1.5"
                 >
                   <SparklesIcon className="w-3.5 h-3.5" />
-                  Buka Petunjuk Tahap {currentStage}
+                  Buka Petunjuk Tahap {unlockedLadderStages + 1}
                 </button>
+              ) : (
+                <span className="px-3 py-1.5 rounded-lg text-xs font-mono font-semibold bg-[var(--state-success)]/15 text-[var(--state-success)] border border-[var(--state-success)]/30 inline-flex items-center gap-1.5">
+                  <CheckIcon className="w-3.5 h-3.5" />
+                  Seluruh 4 Tahap Petunjuk Telah Terbuka
+                </span>
               )}
 
               <button
@@ -232,7 +289,7 @@ export const SocraticTutorPanel: React.FC<SocraticTutorPanelProps> = ({
 
           {/* Review Result Display */}
           {reviewResult && (
-            <div className="p-3.5 rounded-lg border border-[var(--state-success)]/30 bg-[var(--state-success)]/10 text-xs font-sans space-y-1.5">
+            <div className="p-3.5 rounded-lg border border-[var(--state-success)]/30 bg-[var(--state-success)]/10 text-xs font-sans space-y-1.5 animate-in fade-in duration-150">
               <div className="font-bold font-mono text-[var(--state-success)] flex items-center gap-1.5">
                 <span>✓ Hasil Review Tutor ({language.toUpperCase()})</span>
               </div>
@@ -241,6 +298,37 @@ export const SocraticTutorPanel: React.FC<SocraticTutorPanelProps> = ({
                 <span>Sitasi:</span>
                 {reviewResult.citations.join(' • ')}
               </div>
+            </div>
+          )}
+
+          {/* Dedicated Q&A History Display */}
+          {qaHistory.length > 0 && (
+            <div className="space-y-3 pt-2 border-t border-[var(--border-default)]">
+              <span className="text-xs font-mono font-bold uppercase tracking-wider text-[var(--text-muted)] block">
+                Riwayat Diskusi Reflektif ({qaHistory.length})
+              </span>
+              {qaHistory.map((qa, qIdx) => (
+                <div
+                  key={qIdx}
+                  className="p-3.5 rounded-lg border border-[var(--border-default)] bg-[var(--bg-canvas)] text-xs sm:text-sm font-sans space-y-2"
+                >
+                  <div className="flex items-center justify-between text-xs font-mono text-[var(--text-muted)]">
+                    <span className="font-semibold text-[var(--text-primary)]">Q: {qa.question}</span>
+                    <span>{qa.timestamp}</span>
+                  </div>
+                  {qa.errorMessage && (
+                    <div className="p-1.5 rounded bg-[var(--state-danger)]/10 border border-[var(--state-danger)]/20 font-mono text-[11px] text-[var(--state-danger)]">
+                      Galat: {qa.errorMessage}
+                    </div>
+                  )}
+                  <p className="text-[var(--text-primary)] leading-relaxed pl-2 border-l-2 border-[var(--accent-teal)]">
+                    {qa.response.hint}
+                  </p>
+                  <div className="pt-1 text-[11px] font-mono text-[var(--text-muted)]">
+                    Sitasi Rujukan: {qa.response.citations.join(', ')}
+                  </div>
+                </div>
+              ))}
             </div>
           )}
 

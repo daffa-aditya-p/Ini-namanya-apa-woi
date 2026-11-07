@@ -54,10 +54,11 @@ Selamat datang di Level J2. Pada level ini, kita melangkah dari sekadar menulis 
 
 ## 2. KONSEP INTI: Transformasi Data FP & Model Memori
 
-Pemrograman fungsional modern di JavaScript bersandar pada tiga pilar utama:
-1. **Purity & Immutability:** Jangan mengubah array/objek asli; hasilkan struktur data baru.
+Pemrograman fungsional & modular modern di JavaScript bersandar pada pilar utama:
+1. **Purity & Immutability:** Jangan mengubah array/objek asli; hasilkan struktur data baru (via `structuredClone` atau immutable methods seperti `toSorted`).
 2. **First-Class Functions:** Fungsi dapat dikirimkan sebagai argumen (`map`, `filter`, `reduce`) dan dikembalikan dari fungsi lain.
 3. **Closure & Heap Persistence:** Ketika fungsi luar selesai dieksekusi, variabel di dalam lingkup leksikalnya tidak langsung dihancurkan oleh Garbage Collector jika masih direferensikan oleh fungsi dalam (*inner function*).
+4. **ES Modules (ESM) & Batas Modular:** Standar resmi ECMAScript (`import` / `export`) yang menggantikan CommonJS, dievaluasi secara statis pada fase parsing untuk mengisolasi scope modul dan mendukung tree-shaking efisien.
 
 ---
 
@@ -137,6 +138,19 @@ Lengkapi bagian logika akumulasi menggunakan `reduce` untuk menghitung rekapitul
   language="javascript"
   missingTaskDescription="Gunakan method reduce() untuk menjumlahkan total stok dari semua produk dalam katalog."
   fadedHint="Inisialisasi akumulator dengan 0, lalu tambahkan item.stok pada setiap iterasi."
+  starterCode={`const katalog = [
+  { nama: "Laptop", stok: 12 },
+  { nama: "Mouse", stok: 45 },
+  { nama: "Keyboard", stok: 28 }
+];
+
+// Lengkapi fungsi akumulator reduce di bawah:
+const totalStok = katalog.reduce((total, item) => {
+  // TODO: Tambahkan item.stok ke akumulator total
+  return total;
+}, 0);
+
+console.log("Total Stok Gudang:", totalStok);`}
   initialCode={`const katalog = [
   { nama: "Laptop", stok: 12 },
   { nama: "Mouse", stok: 45 },
@@ -276,6 +290,38 @@ console.log("Status Engine:", engine.rekap());`}
   expectedOutput={`Status Engine: Total: 2 | Selesai: 1`}
 />
 
+<CodePlayground
+  client:load
+  language="javascript"
+  title="Latihan Mandiri J2.5: ES Modules & Modular Data Registry"
+  initialCode={`// Simulasi Pola Ekspor Modul ESM (ES Modules Scope Isolation)
+const ModuleRegistry = (() => {
+  const modulTersimpan = new Map();
+
+  // Pola named export
+  const eksporFungsi = (nama, fn) => {
+    modulTersimpan.set(nama, fn);
+  };
+
+  const imporFungsi = (nama) => {
+    return modulTersimpan.get(nama);
+  };
+
+  return Object.freeze({
+    eksporFungsi,
+    imporFungsi,
+    hitung: () => modulTersimpan.size,
+  });
+})();
+
+ModuleRegistry.eksporFungsi("hitungPajak", (nom) => nom * 0.11);
+const fnPajak = ModuleRegistry.imporFungsi("hitungPajak");
+
+console.log("Pajak Rp100.000:", fnPajak(100000));
+console.log("Total Modul ESM:", ModuleRegistry.hitung());`}
+  expectedOutput={`Pajak Rp100.000: 11000\nTotal Modul ESM: 1`}
+/>
+
 {/* Socratic AI Tutor Assistant */}
 <SocraticTutorPanel
   client:load
@@ -291,6 +337,7 @@ console.log("Status Engine:", engine.rekap());`}
 1. **Miskonsepsi Shallow Copy:** Menggunakan spread syntax `const copy = { ...asli }` mengira menyalin seluruh objek bersarang (*nested objects*). Kenyataannya, properti objek bersarang tetap berupa referensi pointer yang sama! Perubahan pada `copy.alamat.kota` akan memutasi `asli.alamat.kota`. Gunakan `structuredClone(asli)`.
 2. **Miskonsepsi Callback Loop:** Menggunakan `forEach` saat membutuhkan array hasil transformasi. `forEach` tidak mengembalikan array (return `undefined`). Gunakan `map()`.
 3. **Miskonsepsi Konteks `this`:** Memanggil method objek yang menggunakan arrow function dan mengharapkan `this` merujuk ke instance objek. Arrow function tidak memiliki binding `this` sendiri melainkan mewarisi leksikal dari scope luarnya.
+4. **Miskonsepsi Evaluasi Dinamis ES Modules:** Mengira pernyataan `import ... from ...` dapat ditaruh di dalam blok percabangan `if (...)`. Deklarasi `import` bersifat statis dan selalu di-hoist saat fase parsing sebelum kode berjalan. Untuk pemuatan modul dinamis kondisional saat runtime, gunakan fungsi `import("modul.js")` yang mengembalikan Promise.
 
 ---
 

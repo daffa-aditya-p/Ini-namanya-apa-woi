@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { CodePlayground } from './CodePlayground';
 
 interface FadedExampleProps {
   title: string;
   language: 'javascript' | 'python';
-  initialCode: string;
+  initialCode: string; // Full reference solution
+  starterCode?: string; // 80% Scaffolded starter code
   expectedOutput: string;
   missingTaskDescription: string;
   fadedHint: string;
@@ -14,22 +15,61 @@ export const FadedExample: React.FC<FadedExampleProps> = ({
   title,
   language,
   initialCode,
+  starterCode,
   expectedOutput,
   missingTaskDescription,
   fadedHint,
 }) => {
+  const [activeCodeMode, setActiveCodeMode] = useState<'starter' | 'solution'>(
+    starterCode ? 'starter' : 'solution'
+  );
+  const [versionKey, setVersionKey] = useState(0);
+
+  const handleShowSolution = () => {
+    setActiveCodeMode('solution');
+    setVersionKey((prev) => prev + 1);
+  };
+
+  const handleResetToStarter = () => {
+    setActiveCodeMode('starter');
+    setVersionKey((prev) => prev + 1);
+  };
+
+  const codeToDisplay = activeCodeMode === 'starter' && starterCode ? starterCode : initialCode;
+
   return (
     <div className="my-6 rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] overflow-hidden shadow-xs">
-      <div className="px-4 py-3 bg-[var(--bg-subtle)] border-b border-[var(--border-default)] flex items-center justify-between">
+      <div className="px-4 py-3 bg-[var(--bg-subtle)] border-b border-[var(--border-default)] flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
           <span className="font-mono text-xs font-semibold tracking-wider uppercase text-[var(--text-secondary)]">
             Latihan Terpandu (Faded Example): {title}
           </span>
         </div>
-        <span className="text-xs font-mono text-amber-700 dark:text-amber-300 font-semibold">
-          80% Kode Siap • Lengkapi Bagian Kosong
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-mono text-amber-700 dark:text-amber-300 font-semibold">
+            {activeCodeMode === 'starter' ? '80% Kode Siap • Lengkapi Bagian Kosong' : '✓ Solusi Terbuka'}
+          </span>
+          {starterCode && (
+            activeCodeMode === 'starter' ? (
+              <button
+                type="button"
+                onClick={handleShowSolution}
+                className="px-2 py-0.5 text-[11px] font-mono rounded border border-[var(--border-default)] bg-[var(--bg-canvas)] text-[var(--accent-teal)] hover:border-[var(--border-focused)] cursor-pointer"
+              >
+                Lihat Solusi
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleResetToStarter}
+                className="px-2 py-0.5 text-[11px] font-mono rounded border border-[var(--border-default)] bg-[var(--bg-canvas)] text-[var(--text-muted)] hover:text-[var(--text-primary)] cursor-pointer"
+              >
+                ↺ Reset ke Latihan (80%)
+              </button>
+            )
+          )}
+        </div>
       </div>
 
       <div className="p-4 sm:p-5">
@@ -42,9 +82,10 @@ export const FadedExample: React.FC<FadedExampleProps> = ({
         </div>
 
         <CodePlayground
+          key={`${title}_${activeCodeMode}_${versionKey}`}
           language={language}
           title={title}
-          initialCode={initialCode}
+          initialCode={codeToDisplay}
           expectedOutput={expectedOutput}
           awardXp={true}
         />

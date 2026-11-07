@@ -36,17 +36,31 @@ export const PredictOutput: React.FC<PredictOutputProps> = ({
     setRevealed(true);
   };
 
+  const handleReset = () => {
+    setSelectedIdx(null);
+    setRevealed(false);
+    setActualStdout(null);
+  };
+
   const handleRunLivingCode = async () => {
     setIsRunning(true);
     try {
+      let res;
       if (language === 'javascript') {
         const runner = new JavaScriptRunner();
-        const res = await runner.run(code);
-        setActualStdout(res.stdout.join('\n'));
+        res = await runner.run(code);
       } else {
         const runner = new PythonRunner();
-        const res = await runner.run(code);
+        res = await runner.run(code);
+      }
+      if (res.stdout.length > 0) {
         setActualStdout(res.stdout.join('\n'));
+      } else if (res.stderr.length > 0) {
+        setActualStdout(res.stderr.join('\n'));
+      } else if (res.error) {
+        setActualStdout(`Error: ${res.error}`);
+      } else {
+        setActualStdout('(Eksekusi selesai tanpa keluaran stdout)');
       }
     } catch (err) {
       setActualStdout(`Error: ${String(err)}`);
@@ -134,14 +148,23 @@ export const PredictOutput: React.FC<PredictOutputProps> = ({
               Kunci & Periksa Tebakan
             </button>
           ) : (
-            <button
-              type="button"
-              onClick={handleRunLivingCode}
-              disabled={isRunning}
-              className="px-4 py-2 rounded-lg text-xs font-mono font-semibold bg-[var(--accent-teal)] text-white hover:opacity-90 disabled:opacity-40 transition-all cursor-pointer flex items-center gap-1.5"
-            >
-              {isRunning ? 'Mengeksekusi...' : '▶ Jalankan Kode Sesungguhnya di Runner'}
-            </button>
+            <>
+              <button
+                type="button"
+                onClick={handleRunLivingCode}
+                disabled={isRunning}
+                className="px-4 py-2 rounded-lg text-xs font-mono font-semibold bg-[var(--accent-teal)] text-white hover:opacity-90 disabled:opacity-40 transition-all cursor-pointer flex items-center gap-1.5"
+              >
+                {isRunning ? 'Mengeksekusi...' : '▶ Jalankan Kode Sesungguhnya di Runner'}
+              </button>
+              <button
+                type="button"
+                onClick={handleReset}
+                className="px-3 py-2 rounded-lg text-xs font-mono border border-[var(--border-default)] bg-[var(--bg-canvas)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors cursor-pointer"
+              >
+                ↺ Uji Ulang
+              </button>
+            </>
           )}
 
           {actualStdout !== null && (

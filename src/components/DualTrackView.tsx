@@ -60,7 +60,7 @@ export const DualTrackView: React.FC<DualTrackViewProps> = ({
                 : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
             }`}
           >
-            🍃 {santaiTitle}
+            🍃 Jalur Santai
           </button>
           <button
             type="button"
@@ -71,7 +71,7 @@ export const DualTrackView: React.FC<DualTrackViewProps> = ({
                 : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
             }`}
           >
-            ⚡ {cepatTitle}
+            ⚡ Jalur Cepat
           </button>
         </div>
       </div>
@@ -80,9 +80,16 @@ export const DualTrackView: React.FC<DualTrackViewProps> = ({
       <div className="p-5 sm:p-6 text-sm sm:text-base leading-relaxed text-[var(--text-primary)]">
         {mode === 'santai' ? (
           <div className="space-y-4 animate-in fade-in duration-200">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20">
-              Jalur Santai: Ramah Non-IT & Visual Mental Model
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20">
+                Jalur Santai: Ramah Non-IT & Visual Mental Model
+              </span>
             </div>
+            {santaiTitle && (
+              <h3 className="text-base sm:text-lg font-bold font-display text-[var(--text-primary)]">
+                {santaiTitle}
+              </h3>
+            )}
             {santaiParagraphs &&
               santaiParagraphs.map((p, idx) => (
                 <p key={idx} className="leading-relaxed">
@@ -93,9 +100,16 @@ export const DualTrackView: React.FC<DualTrackViewProps> = ({
           </div>
         ) : (
           <div className="space-y-4 animate-in fade-in duration-200">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-[var(--accent-teal)]/10 text-[var(--accent-teal)] border border-[var(--accent-teal)]/20">
-              Jalur Cepat: High-Density & ECMA/PEP Specification
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-[var(--accent-teal)]/10 text-[var(--accent-teal)] border border-[var(--accent-teal)]/20">
+                Jalur Cepat: High-Density & ECMA/PEP Specification
+              </span>
             </div>
+            {cepatTitle && (
+              <h3 className="text-base sm:text-lg font-bold font-display text-[var(--text-primary)]">
+                {cepatTitle}
+              </h3>
+            )}
             {cepatParagraphs &&
               cepatParagraphs.map((p, idx) => (
                 <p key={idx} className="leading-relaxed">

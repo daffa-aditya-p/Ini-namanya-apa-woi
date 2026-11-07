@@ -68,4 +68,34 @@ describe('Bayesian Knowledge Tracing (BKT) Engine', () => {
     const unmastered = ['Advanced-Metaprogramming-J5'];
     expect(arePrerequisitesMastered(unmastered)).toBe(false);
   });
+
+  it('handles boundary and malformed inputs gracefully (NaN, out-of-range priors)', () => {
+    const fromNaN = updateBKTMastery(NaN, true);
+    expect(Number.isFinite(fromNaN)).toBe(true);
+    expect(fromNaN).toBeGreaterThan(0);
+
+    const fromNegative = updateBKTMastery(-5, true);
+    expect(fromNegative).toBeGreaterThan(0);
+    expect(fromNegative).toBeLessThanOrEqual(1);
+
+    const fromOverOne = updateBKTMastery(2.5, false);
+    expect(fromOverOne).toBeLessThan(1);
+    expect(fromOverOne).toBeGreaterThan(0);
+  });
+
+  it('accurately handles rapid answer toggling around the 0.8499 mastery boundary', () => {
+    // Start at boundary just below 0.85
+    let pL = 0.8499;
+    expect(isConceptMastered(pL)).toBe(false);
+
+    // One correct answer crosses mastery threshold
+    pL = updateBKTMastery(pL, true);
+    expect(pL).toBeGreaterThanOrEqual(MASTERY_THRESHOLD);
+    expect(isConceptMastered(pL)).toBe(true);
+
+    // One slip or wrong answer drops below mastery threshold
+    pL = updateBKTMastery(pL, false);
+    expect(pL).toBeLessThan(MASTERY_THRESHOLD);
+    expect(isConceptMastered(pL)).toBe(false);
+  });
 });

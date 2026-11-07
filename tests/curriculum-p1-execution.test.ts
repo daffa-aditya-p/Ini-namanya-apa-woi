@@ -1,9 +1,13 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeAll } from 'vitest';
 import fs from 'fs';
 import path from 'path';
-import { PythonRunner } from '../src/lib/runner/python';
+import { PythonRunner, getPyodideInstance } from '../src/lib/runner/python';
 
 describe('Curriculum P1: Real Pyodide WASM Execution Verification', () => {
+  beforeAll(async () => {
+    await getPyodideInstance();
+  }, 60000);
+
   const runner = new PythonRunner();
   const filePath = path.resolve(process.cwd(), 'src/content/curriculum/python-p1.mdx');
   const content = fs.readFileSync(filePath, 'utf-8');

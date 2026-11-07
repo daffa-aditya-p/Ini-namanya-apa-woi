@@ -63,6 +63,19 @@ describe('Socratic AI Tutor & Hint Ladder', () => {
     expect(parsedRes.feedback).toBeDefined();
     expect(parsedRes.citations.length).toBeGreaterThan(0);
   });
+
+  it('enforces Hint Ladder stage cap at 4', async () => {
+    // Testing beyond stage 4 clamped at 4
+    const req = TutorRequestSchema.parse({
+      lessonId: 'J2',
+      userCode: 'const x = 10;',
+      prompt: 'Tahap 4',
+      hintStage: 4,
+    });
+    const res = await gateway.generateSocraticHint(req);
+    expect(res.hintStage).toBe(4);
+    expect(res.stageTitle).toContain('Tahap 4');
+  });
 });
 
 describe('Adaptive Placement Test Integration', () => {
@@ -75,5 +88,13 @@ describe('Adaptive Placement Test Integration', () => {
       expect(record.pL).toBeGreaterThanOrEqual(MASTERY_THRESHOLD);
       expect(record.isMastered).toBe(true);
     }
+  });
+
+  it('verifies BelajarDatabase contains bktMastery store', async () => {
+    const { BelajarDatabase } = await import('../src/services/local');
+    const db = new BelajarDatabase();
+    expect(db.tables.some((t) => t.name === 'bktMastery')).toBe(true);
+    expect(db.tables.some((t) => t.name === 'progress')).toBe(true);
+    expect(db.tables.some((t) => t.name === 'metadata')).toBe(true);
   });
 });

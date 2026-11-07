@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   applyTestOutMastery,
   recordConceptObservation,
+  loadBKTMasteryFromIndexedDB,
 } from '../lib/bkt';
 import { awardExerciseCompletion } from '../lib/userStore';
 import { SparklesIcon, TrophyIcon, ArrowRightIcon } from './Icons';
@@ -189,6 +190,10 @@ export function PlacementTestApp() {
     feedback: string;
   } | null>(null);
 
+  useEffect(() => {
+    loadBKTMasteryFromIndexedDB().catch(() => {});
+  }, []);
+
   const activeQuestions = PLACEMENT_QUESTIONS.filter((q) => q.track === selectedTrack);
   const currentQuestion = activeQuestions[currentQIndex];
 
@@ -309,32 +314,30 @@ export function PlacementTestApp() {
       </div>
 
       {/* Track Selector */}
-      {!isFinished && (
-        <div className="flex items-center justify-center sm:justify-start gap-3 p-1.5 rounded-xl bg-[var(--bg-subtle)] border border-[var(--border-default)] w-fit">
-          <button
-            type="button"
-            onClick={() => handleSwitchTrack('javascript')}
-            className={`px-4 py-2 rounded-lg text-xs font-mono font-medium transition-all cursor-pointer ${
-              selectedTrack === 'javascript'
-                ? 'bg-[var(--accent-terracotta)] text-white font-bold shadow-xs'
-                : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
-            }`}
-          >
-            Jalur JavaScript (J1 / J2)
-          </button>
-          <button
-            type="button"
-            onClick={() => handleSwitchTrack('python')}
-            className={`px-4 py-2 rounded-lg text-xs font-mono font-medium transition-all cursor-pointer ${
-              selectedTrack === 'python'
-                ? 'bg-[#3776AB] text-white font-bold shadow-xs'
-                : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
-            }`}
-          >
-            Jalur Python (P1 / P2)
-          </button>
-        </div>
-      )}
+      <div className="flex items-center justify-center sm:justify-start gap-3 p-1.5 rounded-xl bg-[var(--bg-subtle)] border border-[var(--border-default)] w-fit">
+        <button
+          type="button"
+          onClick={() => handleSwitchTrack('javascript')}
+          className={`px-4 py-2 rounded-lg text-xs font-mono font-medium transition-all cursor-pointer ${
+            selectedTrack === 'javascript'
+              ? 'bg-[var(--accent-terracotta)] text-white font-bold shadow-xs'
+              : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+          }`}
+        >
+          Jalur JavaScript (J1 / J2)
+        </button>
+        <button
+          type="button"
+          onClick={() => handleSwitchTrack('python')}
+          className={`px-4 py-2 rounded-lg text-xs font-mono font-medium transition-all cursor-pointer ${
+            selectedTrack === 'python'
+              ? 'bg-[#3776AB] text-white font-bold shadow-xs'
+              : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+          }`}
+        >
+          Jalur Python (P1 / P2)
+        </button>
+      </div>
 
       {/* Question Card */}
       {!isFinished && currentQuestion && (
@@ -458,9 +461,17 @@ export function PlacementTestApp() {
             <button
               type="button"
               onClick={() => handleSwitchTrack(selectedTrack)}
-              className="px-3 py-2 text-xs font-mono text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors cursor-pointer"
+              className="px-3 py-2 text-xs font-mono text-[var(--text-secondary)] border border-[var(--border-default)] rounded-lg hover:text-[var(--text-primary)] transition-colors cursor-pointer"
             >
-              Uji Ulang Jalur Ini
+              ↺ Uji Ulang Jalur Ini
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleSwitchTrack(selectedTrack === 'javascript' ? 'python' : 'javascript')}
+              className="px-3 py-2 text-xs font-mono text-[var(--accent-teal)] border border-[var(--accent-teal)]/30 rounded-lg hover:bg-[var(--accent-teal)]/10 transition-colors cursor-pointer"
+            >
+              → Uji Jalur {selectedTrack === 'javascript' ? 'Python (P1/P2)' : 'JavaScript (J1/J2)'}
             </button>
           </div>
         </div>

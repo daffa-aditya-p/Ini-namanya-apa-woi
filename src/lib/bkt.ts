@@ -1,3 +1,8 @@
+import { BelajarDatabase } from '../services/local';
+import type { ConceptMasteryRecord } from '../services/types';
+
+export { type ConceptMasteryRecord };
+
 export interface BKTParameters {
   pL0: number; // Initial knowledge prior (default 0.10)
   pT: number;  // Transition probability (default 0.15)
@@ -15,15 +20,6 @@ export const DEFAULT_BKT_PARAMS: BKTParameters = {
 export const MASTERY_THRESHOLD = 0.85;
 export const TEST_OUT_MASTERY = 0.90;
 
-export interface ConceptMasteryRecord {
-  conceptId: string;
-  pL: number;
-  attempts: number;
-  correctCount: number;
-  isMastered: boolean;
-  lastUpdated: string;
-}
-
 /**
  * Calculates updated Bayesian Knowledge Tracing (BKT) probability after an observation.
  * @param currentPL Current prior probability P(L_t) (between 0 and 1)
@@ -36,19 +32,22 @@ export function updateBKTMastery(
   correct: boolean,
   params: BKTParameters = DEFAULT_BKT_PARAMS
 ): number {
+  const initialPrior = Number.isFinite(currentPL) ? currentPL : params.pL0;
   // Clamp input prior to safe numerical range
-  const pL = Math.min(Math.max(currentPL, 0.001), 0.999);
-  const { pT, pG, pS } = params;
+  const pL = Math.min(Math.max(initialPrior, 0.001), 0.999);
+  const pT = Math.min(Math.max(params.pT, 0.001), 0.999);
+  const pG = Math.min(Math.max(params.pG, 0.001), 0.999);
+  const pS = Math.min(Math.max(params.pS, 0.001), 0.999);
 
   let pLGivenObs: number;
   if (correct) {
     const numerator = pL * (1 - pS);
     const denominator = numerator + (1 - pL) * pG;
-    pLGivenObs = numerator / denominator;
+    pLGivenObs = denominator > 0 ? numerator / denominator : pL;
   } else {
     const numerator = pL * pS;
     const denominator = numerator + (1 - pL) * (1 - pG);
-    pLGivenObs = numerator / denominator;
+    pLGivenObs = denominator > 0 ? numerator / denominator : pL;
   }
 
   // Learning transition step
@@ -69,8 +68,19 @@ const BKT_STORAGE_KEY = 'belajar_bkt_mastery';
 
 let inMemoryMastery: Record<string, ConceptMasteryRecord> = {};
 
+function getDexieDatabase(): BelajarDatabase | null {
+  if (typeof window !== 'undefined' && 'indexedDB' in window) {
+    try {
+      return new BelajarDatabase();
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
 /**
- * Retrieves mastery records from localStorage or in-memory fallback.
+ * Retrieves mastery records from localStorage or in-memory fallback synchronously.
  */
 export function getAllMasteryRecords(): Record<string, ConceptMasteryRecord> {
   if (typeof window === 'undefined') {
@@ -83,6 +93,36 @@ export function getAllMasteryRecords(): Record<string, ConceptMasteryRecord> {
   } catch {
     return { ...inMemoryMastery };
   }
+}
+
+/**
+ * Asynchronously loads mastery records from Dexie IndexedDB into memory and localStorage.
+ */
+export async function loadBKTMasteryFromIndexedDB(): Promise<Record<string, ConceptMasteryRecord>> {
+  const db = getDexieDatabase();
+  if (!db) return getAllMasteryRecords();
+
+  try {
+    const list = await db.bktMastery.toArray();
+    if (list.length > 0) {
+      const records = getAllMasteryRecords();
+      for (const item of list) {
+        records[item.conceptId] = item;
+      }
+      inMemoryMastery = records;
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem(BKT_STORAGE_KEY, JSON.stringify(records));
+        } catch {
+          // ignore
+        }
+      }
+      return records;
+    }
+  } catch {
+    // Fallback
+  }
+  return getAllMasteryRecords();
 }
 
 /**
@@ -104,7 +144,7 @@ export function getConceptMastery(conceptId: string): ConceptMasteryRecord {
 }
 
 /**
- * Records an observation (quiz, test, or exercise) and updates BKT state.
+ * Records an observation (quiz, test, or exercise) and updates BKT state in Dexie/localStorage.
  */
 export function recordConceptObservation(
   conceptId: string,
@@ -127,7 +167,7 @@ export function recordConceptObservation(
 }
 
 /**
- * Applies fast-track test out to a list of concepts, setting mastery to 0.90.
+ * Applies fast-track test out to a list of concepts, setting mastery to 0.90 in Dexie/localStorage.
  */
 export function applyTestOutMastery(conceptIds: string[]): Record<string, ConceptMasteryRecord> {
   const records = getAllMasteryRecords();
@@ -166,6 +206,11 @@ function saveConceptMastery(record: ConceptMasteryRecord): void {
   const records = getAllMasteryRecords();
   records[record.conceptId] = record;
   saveAllMasteryRecords(records);
+
+  const db = getDexieDatabase();
+  if (db) {
+    db.bktMastery.put(record).catch(() => {});
+  }
 }
 
 function saveAllMasteryRecords(records: Record<string, ConceptMasteryRecord>): void {
@@ -176,6 +221,25 @@ function saveAllMasteryRecords(records: Record<string, ConceptMasteryRecord>): v
       window.dispatchEvent(new CustomEvent('belajar:bkt-updated', { detail: records }));
     } catch {
       // storage unavailable
+    }
+  }
+
+  const db = getDexieDatabase();
+  if (db) {
+    db.bktMastery.bulkPut(Object.values(records)).catch(() => {});
+  }
+}
+
+/**
+ * Helper to reset in-memory state during tests
+ */
+export function resetInMemoryMasteryForTesting(): void {
+  inMemoryMastery = {};
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.removeItem(BKT_STORAGE_KEY);
+    } catch {
+      // ignore
     }
   }
 }

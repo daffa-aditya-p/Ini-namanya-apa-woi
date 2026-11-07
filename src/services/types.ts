@@ -11,6 +11,17 @@ export const LessonProgressSchema = z.object({
 
 export type LessonProgress = z.infer<typeof LessonProgressSchema>;
 
+export const ConceptMasteryRecordSchema = z.object({
+  conceptId: z.string(),
+  pL: z.number().min(0).max(1),
+  attempts: z.number().int().nonnegative(),
+  correctCount: z.number().int().nonnegative(),
+  isMastered: z.boolean(),
+  lastUpdated: z.string(),
+});
+
+export type ConceptMasteryRecord = z.infer<typeof ConceptMasteryRecordSchema>;
+
 export const StreakInfoSchema = z.object({
   currentStreak: z.number().int().nonnegative(),
   longestStreak: z.number().int().nonnegative(),
