@@ -1753,6 +1753,35 @@ print([p[0] for p in produk_urut])`,
           },
         ],
       },
+      {
+        id: 'p5-q14',
+        conceptId: 'python.oop.super_inheritance',
+        subBab: '5.3',
+        question: 'Pada analogi cetak biru MobilBalap yang mewarisi Kendaraan, mengapa kita memanggil super().__init__(merk, kecepatan_maks)?',
+        codeSnippet: `class MobilBalap(Kendaraan):\n    def __init__(self, merk, kecepatan_maks, nos):\n        super().__init__(merk, kecepatan_maks)\n        self.nos = nos`,
+        options: [
+          {
+            text: 'Agar inisialisasi atribut merk dan kecepatan_maks diserahkan ke class induk Kendaraan sehingga kita tidak menulis ulang kode dasar yang sama (mencegah duplikasi).',
+            isCorrect: true,
+            explanation: 'super().__init__() mendelegasikan perakitan atribut dasar ke class induk. Class anak cukup menambahkan atribut khusus miliknya sendiri (nos).',
+          },
+          {
+            text: 'Untuk menghapus merk mobil dari sistem registrasi memori.',
+            isCorrect: false,
+            explanation: 'super() tidak menghapus data, melainkan mendaftarkan data ke class induk.',
+          },
+          {
+            text: 'Karena kata kunci super wajib ditulis tepat 5 kali di setiap class anak.',
+            isCorrect: false,
+            explanation: 'super() dipanggil sesuai kebutuhan delegasi method, tidak ada kuota jumlah pemanggilan.',
+          },
+          {
+            text: 'Agar kecepatan mobil balap otomatis menjadi 0 km/jam selamanya.',
+            isCorrect: false,
+            explanation: 'Konstruktor induk menginisialisasi nilai sesuai argumen yang diteruskan, bukan mematikan kecepatan.',
+          },
+        ],
+      },
     ],
   },
 ];

@@ -84,6 +84,23 @@ Enkapsulasi membungkus data internal dan menyediakan "pintu gerbang resmi" yang 
 - **Private / Name Mangling (`self.__pin`):** Awalan **dua garis bawah** `__`. Python otomatis menyamarkan namanya di memori menjadi `_NamaClass__pin` sehingga terhindar dari konflik tabrakan nama dan tidak bisa diakses sembarangan.
 - **Modern Getter & Setter (`@property`):** Cara paling elegan di Python. Kita membaca data seperti atribut biasa (`print(akun.saldo)`), tapi ada fungsi "satpam" di belakangnya (`@saldo.setter`) yang memvalidasi bahwa uang yang disetor tidak boleh bernilai negatif!
 
+```python
+# Analogi Satpam ATM:
+class AkunBank:
+    def __init__(self, saldo_awal):
+        self._saldo = saldo_awal  # Protected: jangan diakses langsung!
+
+    @property
+    def saldo(self):
+        return self._saldo  # Gerbang baca resmi (Getter)
+
+    @saldo.setter
+    def saldo(self, nominal):
+        if nominal < 0:
+            raise ValueError("Saldo tidak boleh negatif!")  # Satpam validasi!
+        self._saldo = nominal
+```
+
 ---
 
 ### Pilar 2: Pewarisan / Inheritance (Turunkan Sifat Tanpa Duplikasi)
@@ -93,6 +110,20 @@ Pewarisan memungkinkan class anak (*Child / Subclass*) mewarisi semua atribut da
 - Class anak: `MobilBalap(Kendaraan)` (otomatis punya semua kelebihan `Kendaraan`, ditambah fitur baru seperti tangki `nos` dan method `aktifkan_nos()`).
 - **Fungsi `super().__init__()`:** Jembatan resmi untuk meminta class induk merakit bagian dasarnya terlebih dahulu sebelum class anak memasang komponen tambahannya.
 
+```python
+# Analogi Cetak Biru Kendaraan -> Mobil Balap:
+class Kendaraan:
+    def __init__(self, merk, kecepatan_maks):
+        self.merk = merk
+        self.kecepatan_maks = kecepatan_maks
+
+class MobilBalap(Kendaraan):
+    def __init__(self, merk, kecepatan_maks, nos):
+        # Minta class induk rakit komponen dasarnya:
+        super().__init__(merk, kecepatan_maks)
+        self.nos = nos  # Pasang komponen khusus balap
+```
+
 ---
 
 ### Pilar 3: Polimorfisme (Satu Perintah, Beragam Bentuk)
@@ -100,10 +131,19 @@ Kata *Polymorphism* berasal dari bahasa Yunani: **Poly** (banyak) + **Morph** (b
 Intinya sangat sederhana: **Satu nama method yang sama, perilakunya otomatis berbeda sesuai objek yang menjalankannya.**
 
 Contohnya:
-- Kita punya daftar karakter: `[Ksatria(), Penyihir(), RobotPemanah()]`.
+- Kita punya daftar karakter game: `[Ksatria(), Penyihir(), RobotPemanah()]`.
 - Kita tidak perlu mengecek satu per satu dengan puluhan baris `if-else`. Cukup jalankan satu perulangan: `for k in party: k.serang()`.
 - Objek masing-masing yang tahu cara terbaik mengeksekusinya! Ini disebut **Method Overriding** (anak menimpa cara kerja bawaan induk).
 - **Duck Typing Khas Python:** Filosofi terkenal Python berbunyi: *"If it walks like a duck and quacks like a duck, it's a duck."* (Jika ia berjalan seperti bebek dan bersuara seperti bebek, maka anggap saja itu bebek). Python tidak peduli silsilah keturunan class-mu apa; selama objek tersebut punya method `serang()`, Python akan langsung menjalankannya dengan gembira tanpa banyak drama!
+
+```python
+# Analogi Satu Perintah Tombol [Serang] atau [Bersuara]:
+for karakter in [Ksatria(), Penyihir(), RobotPemanah()]:
+    print(karakter.serang())
+# Ksatria      -> "Menebas pedang! (-50 HP)"
+# Penyihir     -> "Melempar bola api! (-80 HP)"
+# RobotPemanah -> "Menembak laser otomatis! (-65 HP)"
+```
 
 ---
 
@@ -178,13 +218,12 @@ Pelajari perpaduan ketiga pilar OOP dalam merancang sistem karakter game petuala
 
 class MonsterNaga(KarakterGame):
     def __init__(self, nama: str, hp_awal: int, elemen: str):
-        # TODO: Panggil konstruktor class induk
-        super().__init__(nama, hp_awal)
+        # TODO: Panggil konstruktor class induk KarakterGame via super()
         self.elemen = elemen
 
-    # TODO: Lakukan overriding method bersuara()
+    # TODO: Lakukan overriding method bersuara() agar mengaum sesuai elemen naga
     def bersuara(self) -> str:
-        return f"ROOOAAAR! Naga {self.elemen} menyemburkan nafas panas!"
+        return "..."
 
 smaug = MonsterNaga("Smaug", 500, "Api")
 print(f"Monster: {smaug.nama} | HP: {smaug.hp} | Elemen: {smaug.elemen}")

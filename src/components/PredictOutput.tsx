@@ -123,7 +123,7 @@ export const PredictOutput: React.FC<PredictOutputProps> = ({
                     {String.fromCharCode(65 + idx)}
                   </span>
                   <div className="flex-1">
-                    <span className="whitespace-pre-wrap">{opt.text}</span>
+                    <span className="whitespace-pre-wrap">{opt.text.replace(/\\n/g, '\n')}</span>
                     {revealed && (
                       <p className="mt-1 text-xs font-sans text-[var(--text-secondary)]">
                         {opt.explanation}

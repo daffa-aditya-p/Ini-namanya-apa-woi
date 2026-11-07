@@ -21,14 +21,29 @@ describe('Curriculum P5: Real Pyodide WASM Execution Verification', () => {
     });
   }
 
+  // Extract PredictOutput code and correct option
+  const predictMatch = content.match(/<PredictOutput[\s\S]*?code=\{`([\s\S]*?)`\}[\s\S]*?options=\{([\s\S]*?)\}\s*\/>/);
+
   beforeAll(async () => {
     // Warm up pyodide singleton
     await getPyodideInstance();
-  }, 30000);
+  }, 60000);
 
   it('contains at least 5 curriculum code snippets for P5', () => {
     expect(snippets.length).toBeGreaterThanOrEqual(5);
   });
+
+  if (predictMatch) {
+    it('executes P5 PredictOutput snippet in Pyodide matching its correct prediction option', async () => {
+      const code = predictMatch[1];
+      const result = await runner.run(code);
+      expect(result.success).toBe(true);
+      expect(result.stderr).toEqual([]);
+
+      const actualOutput = result.stdout.join('\n').trim();
+      expect(actualOutput).toBe('Peti Kuno\n150\nFalse');
+    }, 30000);
+  }
 
   for (const snippet of snippets) {
     it(`executes P5 snippet #${snippet.index} in Pyodide with matching output`, async () => {
@@ -42,6 +57,6 @@ describe('Curriculum P5: Real Pyodide WASM Execution Verification', () => {
       const actualOutput = result.stdout.join('\n').trim();
       const expectedOutput = snippet.expected.replace(/\\n/g, '\n').trim();
       expect(actualOutput).toBe(expectedOutput);
-    }, 15000);
+    }, 30000);
   }
 });

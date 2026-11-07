@@ -28,6 +28,7 @@ import { DualTrackView } from '../../components/DualTrackView';
 import { PredictOutput } from '../../components/PredictOutput';
 import { FadedExample } from '../../components/FadedExample';
 import { SocraticTutorPanel } from '../../components/SocraticTutorPanel';
+import { MiniQuiz } from '../../components/MiniQuiz';
 import { ChapterQuiz } from '../../components/ChapterQuiz';
 
 # Bab 3: Struktur Data Koleksi
@@ -227,6 +228,169 @@ print("Daftar Kategori Unik:", kategori_unik)`}
 
 ---
 
+## 4. LATIHAN TERPANDU (FADED EXAMPLE)
+
+Pelajari teknik rekapitulasi data menggunakan pemetaan Dictionary frekuensi:
+
+<FadedExample
+  client:load
+  title="Rekapitulasi Kategori Koleksi Berbasis Dictionary"
+  language="python"
+  missingTaskDescription="Lengkapi fungsi rekap_kategori di bawah ini agar menghitung frekuensi kemunculan setiap kategori menggunakan method .get()."
+  fadedHint="Gunakan ekspresi: hasil[kat] = hasil.get(kat, 0) + 1 di dalam perulangan untuk mengakumulasi jumlah kemunculan kategori."
+  starterCode={`def rekap_kategori(daftar_barang):
+    hasil = {}
+    for item in daftar_barang:
+        kat = item["kategori"]
+        # TODO: Hitung jumlah kemunculan kategori ke dalam kamus hasil menggunakan .get()
+        hasil[kat] = 0
+    return hasil
+
+inventaris = [
+    {"nama": "Buku Tulis", "kategori": "Alat Tulis"},
+    {"nama": "Pulpen Gel", "kategori": "Alat Tulis"},
+    {"nama": "Kopi Hitam", "kategori": "Konsumsi"},
+    {"nama": "Penggaris", "kategori": "Alat Tulis"},
+]
+rekap = rekap_kategori(inventaris)
+for k in sorted(rekap.keys()):
+    print(f"- {k}: {rekap[k]} item")`}
+  initialCode={`def rekap_kategori(daftar_barang):
+    hasil = {}
+    for item in daftar_barang:
+        kat = item["kategori"]
+        hasil[kat] = hasil.get(kat, 0) + 1
+    return hasil
+
+inventaris = [
+    {"nama": "Buku Tulis", "kategori": "Alat Tulis"},
+    {"nama": "Pulpen Gel", "kategori": "Alat Tulis"},
+    {"nama": "Kopi Hitam", "kategori": "Konsumsi"},
+    {"nama": "Penggaris", "kategori": "Alat Tulis"},
+]
+rekap = rekap_kategori(inventaris)
+for k in sorted(rekap.keys()):
+    print(f"- {k}: {rekap[k]} item")`}
+  expectedOutput={`- Alat Tulis: 3 item\n- Konsumsi: 1 item`}
+/>
+
+---
+
+<SocraticTutorPanel
+  client:load
+  lessonId="P3"
+  language="python"
+  defaultCodeSnippet={`# Eksperimen koleksi data di sini:
+angka = [1, 2, 3, 2, 1]
+unik = set(angka)
+print("Data unik:", unik)`}
+/>
+
+---
+
+## 6. KESALAHAN UMUM (COMMON MISCONCEPTIONS / JEBAKAN UMUM)
+
+1. **Mutasi In-Place vs Mengembalikan Koleksi Baru:**
+   Pemula sering menulis `hasil = data.sort()`. Method `.sort()` memodifikasi list secara langsung di memori (*in-place*) dan mengembalikan nilai `None`. Jika kamu membutuhkan salinan list baru yang terurut tanpa merusak data aslinya, gunakan fungsi bawaan `hasil = sorted(data)`.
+2. **Menggunakan Objek Mutable Sebagai Kunci Dictionary atau Anggota Set:**
+   Kunci pada Dictionary dan elemen pada Set wajib bersifat *hashable* (nilai hash-nya tidak pernah berubah sepanjang program berjalan). Mencoba menggunakan `list` sebagai kunci kamus akan langsung memicu `TypeError: unhashable type: 'list'`. Gunakan `tuple` jika kamu memerlukan koleksi sebagai kunci!
+3. **Memodifikasi List Saat Sedang Diiterasi:**
+   Melakukan `data.remove(x)` atau `data.pop()` di dalam perulangan `for x in data:` akan menggeser indeks elemen internal sehingga Python melewatkan beberapa item. Jika ingin menyaring elemen, gunakan *list comprehension* atau iterasi salinannya `for x in list(data):`.
+4. **Membaca Kunci Kamus yang Belum Pasti Ada:**
+   Menulis `data["kunci"]` langsung akan melempar `KeyError` jika kunci tersebut tidak ditemukan. Selalu biasakan menggunakan `.get(kunci, nilai_cadangan)` agar program tetap berjalan aman dan andal.
+
+---
+
+## 7. RANGKUMAN & KUIS EVALUASI (RETRIEVAL PRACTICE)
+
+<MiniQuiz
+  client:load
+  lessonId="P3"
+  title="Kuis Mini: Uji Pemahaman Struktur Data Koleksi Python"
+  questions={[
+    {
+      question: "Apa perbedaan paling mendasar antara struktur data List dan Tuple di Python?",
+      conceptId: "python.collections.list_vs_tuple",
+      options: [
+        {
+          text: "List bersifat mutable (bisa diubah, ditambah, dihapus), sedangkan Tuple bersifat immutable (tidak bisa diubah setelah dibuat).",
+          isCorrect: true,
+          explanation: "Tepat! Immutability Tuple menjadikannya lebih hemat alokasi memori dan aman dijadikan kunci kamus."
+        },
+        {
+          text: "List hanya bisa menyimpan angka, sedangkan Tuple hanya bisa menyimpan teks.",
+          isCorrect: false,
+          explanation: "Keduanya bebas menyimpan elemen bertipe data apa pun secara heterogen."
+        },
+        {
+          text: "Tuple otomatis menghapus elemen yang bernilai ganda.",
+          isCorrect: false,
+          explanation: "Struktur data yang otomatis menghapus nilai duplikat adalah Set, bukan Tuple."
+        },
+        {
+          text: "List ditulis dengan kurung kurawal {}, sedangkan Tuple dengan kurung siku [].",
+          isCorrect: false,
+          explanation: "List menggunakan [], Tuple menggunakan (), dan Dict/Set menggunakan {}."
+        }
+      ]
+    },
+    {
+      question: "Mengapa Dictionary memiliki kecepatan pencarian kunci yang sangat tinggi (O(1) amortized)?",
+      conceptId: "python.collections.hash_map",
+      options: [
+        {
+          text: "Karena CPython mengimplementasikan Dictionary sebagai compact hash table yang langsung melompat ke alamat memori nilai berdasarkan fungsi hash kunci.",
+          isCorrect: true,
+          explanation: "Tepat! Mekanisme open-addressing hash table memungkinkan pencarian nilai tanpa perlu menelusuri seluruh data satu per satu."
+        },
+        {
+          text: "Karena Dictionary membatasi jumlah data maksimal hanya 100 elemen.",
+          isCorrect: false,
+          explanation: "Dictionary di Python dinamis dan dapat menampung jutaan data sesuai kapasitas RAM."
+        },
+        {
+          text: "Karena interpreter Python menghentikan program lain di latar belakang.",
+          isCorrect: false,
+          explanation: "Efisiensi Dictionary murni berasal dari algoritma struktur data hashing."
+        },
+        {
+          text: "Karena Dictionary otomatis mengurutkan data berdasarkan abjad.",
+          isCorrect: false,
+          explanation: "Sejak Python 3.7 Dictionary mempertahankan urutan penyisipan (insertion order), bukan urutan abjad."
+        }
+      ]
+    },
+    {
+      question: "Operasi aljabar himpunan manakah pada Set yang menghasilkan elemen yang HANYA ada di himpunan A namun TIDAK ADA di himpunan B?",
+      conceptId: "python.collections.set_operations",
+      options: [
+        {
+          text: "Difference (selisih) menggunakan operator minus: A - B",
+          isCorrect: true,
+          explanation: "Tepat! A - B mengambil elemen unik milik himpunan A yang tidak muncul di himpunan B."
+        },
+        {
+          text: "Union (penggabungan) menggunakan operator pipa: A | B",
+          isCorrect: false,
+          explanation: "A | B menggabungkan seluruh elemen unik dari kedua himpunan."
+        },
+        {
+          text: "Intersection (irisan) menggunakan operator ampersand: A & B",
+          isCorrect: false,
+          explanation: "A & B hanya mengambil elemen yang ada di kedua himpunan sekaligus."
+        },
+        {
+          text: "Symmetric Difference menggunakan operator tanda panah: A -> B",
+          isCorrect: false,
+          explanation: "Python menggunakan operator topi ^ untuk symmetric difference, bukan tanda panah."
+        }
+      ]
+    }
+  ]}
+/>
+
+---
+
 <div id="kuis-python-bab3" className="scroll-mt-24">
 
 ## Kuis Evaluasi Bab 3
@@ -249,11 +413,9 @@ Kamu telah menuntaskan seluruh materi Struktur Data Koleksi! Saatnya menguji pem
 
 ---
 
-<SocraticTutorPanel
-  client:load
-  lessonId="P3"
-  defaultCode={`# Eksperimen koleksi data di sini:
-angka = [1, 2, 3, 2, 1]
-unik = set(angka)
-print("Data unik:", unik)`}
-/>
+## 8. SELAMI LEBIH DALAM (DIVE DEEPER)
+
+- **Dokumentasi Resmi Python Data Structures:** Pelajari panduan komprehensif di [Python 3.12: Data Structures](https://docs.python.org/3/tutorial/datastructures.html).
+- **CPython Internal Hash Table Architecture:** Telusuri arsitektur [Raymond Hettinger's Compact Dict Proposal](https://mail.python.org/pipermail/python-dev/2012-December/123028.html) yang menghemat memori dictionary CPython hingga 25%.
+- **Modul Standar `collections`:** Eksplorasi tipe data tingkat lanjut seperti `Counter`, `defaultdict`, dan `deque` di [Python Collections Module](https://docs.python.org/3/library/collections.html).
+- **Time Complexity Wikipedia & Python Wiki:** Lihat tabel kompleksitas waktu Big-O seluruh operasi koleksi di [Python Wiki: TimeComplexity](https://wiki.python.org/moin/TimeComplexity).

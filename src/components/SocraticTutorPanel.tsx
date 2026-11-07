@@ -14,6 +14,7 @@ interface SocraticTutorPanelProps {
   lessonId: string;
   language: 'javascript' | 'python';
   defaultCodeSnippet?: string;
+  defaultCode?: string;
 }
 
 interface QAItem {
@@ -26,11 +27,13 @@ interface QAItem {
 export const SocraticTutorPanel: React.FC<SocraticTutorPanelProps> = ({
   lessonId,
   language,
-  defaultCodeSnippet = '',
+  defaultCodeSnippet,
+  defaultCode,
 }) => {
+  const initialSnippet = defaultCodeSnippet || defaultCode || '';
   const [gateway] = useState(() => new LocalAIGateway());
   const [isOpen, setIsOpen] = useState(false);
-  const [userCode, setUserCode] = useState(defaultCodeSnippet);
+  const [userCode, setUserCode] = useState(initialSnippet);
   const [showCodeEditor, setShowCodeEditor] = useState(false);
 
   // Ladder Progression: exactly stages 1 through 4
@@ -51,7 +54,7 @@ export const SocraticTutorPanel: React.FC<SocraticTutorPanelProps> = ({
     try {
       const req = TutorRequestSchema.parse({
         lessonId,
-        userCode: userCode || defaultCodeSnippet,
+        userCode: userCode || initialSnippet,
         prompt: `Minta petunjuk bertingkat tahap ${nextStage}`,
         hintStage: nextStage,
       });
