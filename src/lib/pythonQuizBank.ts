@@ -1350,64 +1350,64 @@ print([p[0] for p in produk_urut])`,
     level: 'P5',
     slug: 'curriculum/python/p5',
     title: 'Pemrograman Berorientasi Objek',
-    summary: 'Kuasai arsitektur OOP modern: pendefinisian Class & Object, parameter self & atribut instance, pewarisan hierarkis super(), enkapsulasi @property, dan magic dunder methods.',
+    summary: 'Kuasai 3 pilar utama OOP modern: Enkapsulasi data dengan @property, Pewarisan hierarkis super(), serta Polimorfisme dinamis & magic dunder methods.',
     subBabs: [
       {
         id: 'subbab-5-1',
         number: '5.1',
-        title: 'Class & Object',
+        title: 'Class, Object & Parameter self',
         hash: '#subbab-5-1',
-        description: 'Mendefinisikan cetak biru (class), konstruktor __init__, dan instansiasi objek di memori heap.',
+        description: 'Mengenal cetak biru (class), pembuatan objek nyata (instance), konstruktor __init__, dan peran parameter self.',
       },
       {
         id: 'subbab-5-2',
         number: '5.2',
-        title: 'Atribut & Method self',
+        title: 'Pilar 1: Enkapsulasi & Proteksi Data (@property)',
         hash: '#subbab-5-2',
-        description: 'Peran eksplisit argumen self sebagai pointer ke instance aktif, atribut instance vs atribut class.',
+        description: 'Melindungi data objek dari modifikasi sembarangan lewat konvensi _protected, name mangling __private, serta @property getter & setter.',
       },
       {
         id: 'subbab-5-3',
         number: '5.3',
-        title: 'Pewarisan & super()',
+        title: 'Pilar 2: Pewarisan (Inheritance) & super()',
         hash: '#subbab-5-3',
-        description: 'Pewarisan sifat (inheritance), overriding method, pemanggilan konstruktor induk via super(), dan MRO.',
+        description: 'Menurunkan sifat dan method dari class induk ke anak tanpa duplikasi kode dengan bantuan super().__init__().',
       },
       {
         id: 'subbab-5-4',
         number: '5.4',
-        title: 'Enkapsulasi @property & Dunder',
+        title: 'Pilar 3: Polimorfisme & Magic Dunder Methods',
         hash: '#subbab-5-4',
-        description: 'Enkapsulasi terkendali dekorator @property/@setter, konvensi _protected, dan dunder methods (__str__, __repr__, __len__, __eq__).',
+        description: 'Satu instruksi banyak aksi via method overriding, duck typing khas Python, serta magic methods (__str__, __len__, __eq__).',
       },
     ],
     questions: [
       {
         id: 'p5-q1',
         conceptId: 'python.oop.self_parameter',
-        subBab: '5.2',
-        question: 'Mengapa method di dalam class Python wajib menyertakan parameter self sebagai parameter pertamanya?',
+        subBab: '5.1',
+        question: 'Kenapa setiap method di dalam class Python wajib menyertakan parameter self sebagai parameter pertamanya?',
         codeSnippet: `class Akun:\n    def setor(self, nominal):\n        self.saldo += nominal`,
         options: [
           {
             text: 'Karena self adalah referensi eksplisit ke objek instance spesifik yang sedang memanggil method tersebut di memori.',
             isCorrect: true,
-            explanation: 'Saat kita memanggil akun_a.setor(500), Python otomatis menerjemahkannya di belakang layar menjadi Akun.setor(akun_a, 500).',
+            explanation: 'Saat kita memanggil akun_budi.setor(500), Python otomatis menerjemahkannya di belakang layar menjadi Akun.setor(akun_budi, 500).',
           },
           {
-            text: 'self adalah kata kunci wajib yang telah dipatenkan oleh compiler CPython.',
+            text: 'self adalah kata kunci paten yang dikunci mati oleh compiler CPython.',
             isCorrect: false,
-            explanation: 'self sebenarnya hanyalah konvensi penamaan parameter (PEP 8), secara teknis namanya bisa apapun namun self adalah standar mutlak.',
+            explanation: 'self sebenarnya adalah konvensi resmi komunitas (PEP 8), posisinya wajib di parameter pertama objek instance.',
           },
           {
-            text: 'Agar method tersebut dapat diakses tanpa perlu membuat instance class.',
+            text: 'Agar method tersebut dapat diakses langsung tanpa perlu membuat instance class.',
             isCorrect: false,
             explanation: 'Method yang dapat dipanggil tanpa instance adalah staticmethod atau classmethod.',
           },
           {
-            text: 'Untuk menghapus objek dari memori secara otomatis.',
+            text: 'Untuk menghapus objek dari memori secara otomatis setelah selesai.',
             isCorrect: false,
-            explanation: 'Penghapusan objek ditangani oleh Garbage Collector.',
+            explanation: 'Penghapusan objek dari memori ditangani oleh Garbage Collector Python, bukan oleh self.',
           },
         ],
       },
@@ -1420,7 +1420,7 @@ print([p[0] for p in produk_urut])`,
           {
             text: 'Menginisialisasi atribut-atribut awal instance begitu objek baru selesai dialokasikan di memori.',
             isCorrect: true,
-            explanation: '__init__ berfungsi sebagai konstruktor inisialisasi status awal objek ketika nama kelas dipanggil.',
+            explanation: '__init__ bertindak sebagai konstruktor inisialisasi status awal objek ketika nama kelas dipanggil.',
           },
           {
             text: 'Menghancurkan objek ketika program selesai.',
@@ -1428,14 +1428,14 @@ print([p[0] for p in produk_urut])`,
             explanation: 'Penghancuran objek ditangani oleh __del__.',
           },
           {
-            text: 'Mengonversi class menjadi format JSON.',
+            text: 'Mengonversi class menjadi format teks JSON.',
             isCorrect: false,
-            explanation: '__init__ tidak bertugas melakukan serialisasi data.',
+            explanation: '__init__ tidak bertugas melakukan serialisasi format data.',
           },
           {
-            text: 'Mencegah pewarisan oleh subclass lain.',
+            text: 'Mencegah class diwariskan oleh subclass anak.',
             isCorrect: false,
-            explanation: 'Di Python seluruh kelas dapat diwariskan secara alami.',
+            explanation: 'Di Python seluruh class dapat diwariskan secara alami.',
           },
         ],
       },
@@ -1443,7 +1443,7 @@ print([p[0] for p in produk_urut])`,
         id: 'p5-q3',
         conceptId: 'python.oop.super_inheritance',
         subBab: '5.3',
-        question: 'Bagaimana cara memanggil konstruktor class induk di dalam subclass anak?',
+        question: 'Bagaimana cara terbaik bagi class anak untuk memanggil konstruktor milik class induk pada Pewarisan (Inheritance)?',
         codeSnippet: `class PegawaiTetap(Pegawai):\n    def __init__(self, nama, gaji, bonus):\n        super().__init__(nama, gaji)\n        self.bonus = bonus`,
         options: [
           {
@@ -1454,7 +1454,7 @@ print([p[0] for p in produk_urut])`,
           {
             text: 'Menggunakan kata kunci parent.__init__(self, nama, gaji)',
             isCorrect: false,
-            explanation: 'Python tidak memiliki kata kunci parent.',
+            explanation: 'Python tidak memiliki kata kunci bawaan bernama parent.',
           },
           {
             text: 'Konstruktor induk otomatis terpanggil tanpa perlu kode apapun.',
@@ -1462,34 +1462,28 @@ print([p[0] for p in produk_urut])`,
             explanation: 'Jika subclass mendefinisikan __init__ sendiri, konstruktor induk tidak akan dieksekusi kecuali dipanggil via super().',
           },
           {
-            text: 'this.__super__(nama, gaji)',
+            text: 'Menulis this.__super__(nama, gaji)',
             isCorrect: false,
-            explanation: 'this bukan sintaks Python.',
+            explanation: 'this bukan sintaks resmi Python (itu sintaksis bahasa pemrograman lain).',
           },
         ],
       },
       {
         id: 'p5-q4',
         conceptId: 'python.oop.property_decorator',
-        subBab: '5.4',
-        question: 'Apa manfaat utama dari penggunaan dekorator @property pada getter method di Python?',
-        codeSnippet: `class Lingkaran:
-    def __init__(self, radius):
-        self._radius = radius
-
-    @property
-    def radius(self):
-        return self._radius`,
+        subBab: '5.2',
+        question: 'Apa manfaat utama dari penggunaan dekorator @property pada konsep Enkapsulasi?',
+        codeSnippet: `class Lingkaran:\n    def __init__(self, radius):\n        self._radius = radius\n\n    @property\n    def radius(self):\n        return self._radius`,
         options: [
           {
-            text: 'Memungkinkan method dipanggil layaknya mengakses atribut biasa (lingkaran.radius) sambil menjaga kendali enkapsulasi dan validasi.',
+            text: 'Memungkinkan method dipanggil layaknya mengakses atribut biasa (lingkaran.radius) sambil menjaga kendali enkapsulasi dan proteksi data.',
             isCorrect: true,
-            explanation: '@property menyediakan antarmuka atribut yang elegan tanpa sintaks method lingkaran.get_radius() gaya Java.',
+            explanation: '@property menyediakan antarmuka atribut yang elegan tanpa sintaks method lingkaran.get_radius() yang kaku.',
           },
           {
-            text: 'Mengunci atribut agar tidak bisa dibaca oleh siapapun.',
+            text: 'Mengunci atribut agar tidak bisa dibaca oleh siapapun selamanya.',
             isCorrect: false,
-            explanation: '@property justru membuka akses baca yang bersih untuk atribut internal.',
+            explanation: '@property justru membuka akses baca yang bersih dan aman untuk atribut internal.',
           },
           {
             text: 'Menggandakan performa komputasi sebesar 50%.',
@@ -1510,9 +1504,9 @@ print([p[0] for p in produk_urut])`,
         question: 'Apa perbedaan mendasar antara magic method __str__ dan __repr__ pada objek Python?',
         options: [
           {
-            text: '__str__ ditujukan untuk representasi ramah pengguna (human-readable via print()), sedangkan __repr__ untuk informasi debugging teknis yang unambiguous.',
+            text: '__str__ ditujukan untuk representasi ramah pengguna (human-readable via print()), sedangkan __repr__ untuk informasi debugging teknis yang presisi.',
             isCorrect: true,
-            explanation: 'Slogan resmi Python: __str__ adalah untuk pembaca akhir manusia, sedangkan __repr__ untuk developer debugging dan sedapat mungkin menyerupai kode inisialisasi.',
+            explanation: 'Konvensi resmi Python: __str__ adalah untuk pembaca akhir manusia, sedangkan __repr__ untuk developer debugging.',
           },
           {
             text: '__str__ hanya untuk angka, sedangkan __repr__ hanya untuk teks.',
@@ -1525,7 +1519,7 @@ print([p[0] for p in produk_urut])`,
             explanation: '__repr__ dipanggil oleh fungsi bawaan repr(obj) atau ketika objek dievaluasi di konsol REPL.',
           },
           {
-            text: 'Tidak ada perbedaan sama sekali.',
+            text: 'Tidak ada perbedaan sama sekali, keduanya identik.',
             isCorrect: false,
             explanation: 'Keduanya memiliki tujuan semantik yang berbeda dalam CPython data model.',
           },
@@ -1534,14 +1528,9 @@ print([p[0] for p in produk_urut])`,
       {
         id: 'p5-q6',
         conceptId: 'python.oop.class_vs_instance_attr',
-        subBab: '5.2',
+        subBab: '5.1',
         question: 'Apa perbedaan antara atribut class dan atribut instance pada kode berikut?',
-        codeSnippet: `class Robot:
-    populasi = 0 # atribut class
-
-    def __init__(self, nama):
-        self.nama = nama # atribut instance
-        Robot.populasi += 1`,
+        codeSnippet: `class Robot:\n    populasi = 0 # atribut class\n\n    def __init__(self, nama):\n        self.nama = nama # atribut instance\n        Robot.populasi += 1`,
         options: [
           {
             text: 'populasi dibagi bersama oleh seluruh instance Robot, sedangkan nama bersifat unik untuk masing-masing instance objek.',
@@ -1568,28 +1557,28 @@ print([p[0] for p in produk_urut])`,
       {
         id: 'p5-q7',
         conceptId: 'python.oop.encapsulation_convention',
-        subBab: '5.4',
-        question: 'Bagaimana konvensi resmi Python (PEP 8) untuk menandai bahwa suatu atribut bersifat internal / non-public?',
+        subBab: '5.2',
+        question: 'Dalam Enkapsulasi Python, apa maksud dari tanda satu garis bawah (_saldo) dan dua garis bawah (__pin) di depan nama variabel?',
         options: [
           {
-            text: 'Memberi awalan satu garis bawah, misal: _saldo',
+            text: 'Satu garis bawah (_saldo) adalah konvensi protected untuk pemakaian internal, sedangkan dua garis bawah (__pin) memicu Name Mangling agar nama variabel disamarkan di memori.',
             isCorrect: true,
-            explanation: 'Di Python tidak ada kata kunci private kaku; konvensi prefiks _ menandai atribut internal yang sebaiknya tidak disentuh langsung dari luar class.',
+            explanation: '_saldo adalah kode etik agar tidak diakses langsung dari luar. __pin membuat Python mengubah namanya menjadi _NamaClass__pin untuk mencegah tabrakan nama.',
           },
           {
-            text: 'Menggunakan kata kunci private _saldo',
+            text: 'Keduanya otomatis menghapus variabel jika dibaca dari luar file.',
             isCorrect: false,
-            explanation: 'Python tidak memiliki kata kunci private.',
+            explanation: 'Python tidak menghapus variabel, hanya menyamarkan namanya pada prefiks garis ganda.',
           },
           {
-            text: 'Menulis seluruh nama atribut dengan huruf kapital, misal: SALDO',
+            text: 'Satu garis bawah untuk tipe int, dua garis bawah untuk tipe str.',
             isCorrect: false,
-            explanation: 'HURUF_KAPITAL digunakan untuk konvensi konstanta.',
+            explanation: 'Garis bawah adalah penanda visibilitas enkapsulasi, bukan penentu tipe data variabel.',
           },
           {
-            text: 'Menambahkan tanda pagar (#) di depan nama variabel',
+            text: 'Dua garis bawah membuat variabel tersebut otomatis tersimpan di cloud database.',
             isCorrect: false,
-            explanation: 'Tanda pagar di Python adalah komentar, bukan private field seperti di JavaScript ES2022.',
+            explanation: 'Prefiks garis bawah adalah mekanisme lokal Python di memori runtime.',
           },
         ],
       },
@@ -1653,11 +1642,11 @@ print([p[0] for p in produk_urut])`,
       {
         id: 'p5-q10',
         conceptId: 'python.oop.setter_validation',
-        subBab: '5.4',
+        subBab: '5.2',
         question: 'Bagaimana cara menambahkan validasi nilai saat atribut yang didekorasi @property diisi nilai baru?',
         options: [
           {
-            text: 'Membuat method dengan dekorator @nama_atribut.setter dan melempar ValueError jika nilai tidak valid.',
+            text: 'Membuat method dengan dekorator @nama_atribut.setter dan memasang logika pengecekan sebelum menyimpan nilai.',
             isCorrect: true,
             explanation: 'Pasangan @property dan @nama_atribut.setter memungkinkan validasi data secara otomatis setiap kali sintaks penugasan obj.atribut = nilai dieksekusi.',
           },
@@ -1675,6 +1664,92 @@ print([p[0] for p in produk_urut])`,
             text: 'Menggunakan dekorator @immutable.',
             isCorrect: false,
             explanation: '@immutable bukan dekorator bawaan untuk setter class.',
+          },
+        ],
+      },
+      {
+        id: 'p5-q11',
+        conceptId: 'python.oop.polymorphism_overriding',
+        subBab: '5.4',
+        question: 'Apa inti dari konsep Polimorfisme (Polymorphism) dalam pemrograman berorientasi objek?',
+        codeSnippet: `daftar_hewan = [Kucing(), Anjing(), Bebek()]\nfor h in daftar_hewan:\n    print(h.bersuara())`,
+        options: [
+          {
+            text: 'Satu nama method yang sama (misal bersuara()), namun menghasilkan aksi berbeda sesuai objek spesifik yang menjalankannya.',
+            isCorrect: true,
+            explanation: 'Polimorfisme berarti "banyak bentuk". Pemanggil cukup memanggil method bersuara(), dan masing-masing objek (Kucing meong, Anjing guk-guk) merespon dengan perilakunya sendiri.',
+          },
+          {
+            text: 'Mengubah struktur class menjadi file gambar.',
+            isCorrect: false,
+            explanation: 'Polimorfisme adalah prinsip perilaku objek di OOP, bukan manipulasi media.',
+          },
+          {
+            text: 'Memaksa seluruh class di program agar memiliki nama yang sama persis.',
+            isCorrect: false,
+            explanation: 'Nama class harus unik di namespace agar tidak saling bertabrakan.',
+          },
+          {
+            text: 'Menghapus method induk agar class anak tidak memiliki perilaku.',
+            isCorrect: false,
+            explanation: 'Class anak menimpa (override) method induk untuk memberikan perilaku spesifik, bukan menghapusnya.',
+          },
+        ],
+      },
+      {
+        id: 'p5-q12',
+        conceptId: 'python.oop.duck_typing',
+        subBab: '5.4',
+        question: 'Apa maksud prinsip Duck Typing di Python: "Jika ia berjalan seperti bebek dan bersuara seperti bebek, maka itu bebek"?',
+        options: [
+          {
+            text: 'Python tidak memusingkan silsilah class objek; selama objek tersebut memiliki method yang dipanggil, Python akan langsung mengeksekusinya.',
+            isCorrect: true,
+            explanation: 'Duck typing mengutamakan kapabilitas dan antarmuka objek dibandingkan tipe hierarkis kaku. Objek Robot dan Hewan bisa diproses bersama selama keduanya punya method yang diminta.',
+          },
+          {
+            text: 'Semua class di Python harus merupakan turunan dari class Bebek.',
+            isCorrect: false,
+            explanation: 'Duck typing adalah prinsip filosofis dinamis Python, bukan aturan pewarisan jenis unggas.',
+          },
+          {
+            text: 'Python otomatis mengubah nama method menjadi kwek-kwek jika terjadi galat.',
+            isCorrect: false,
+            explanation: 'Galat di Python melempar pesan Exception baku, bukan suara bebek.',
+          },
+          {
+            text: 'Hanya objek bertipe string yang dapat diproses oleh fungsi cetak.',
+            isCorrect: false,
+            explanation: 'Fungsi print() dapat memproses objek apa pun melalui protokol __str__.',
+          },
+        ],
+      },
+      {
+        id: 'p5-q13',
+        conceptId: 'python.oop.name_mangling',
+        subBab: '5.2',
+        question: 'Pada kode berikut, mengapa pemanggilan buku.__kode_rahasia langsung dari luar class memicu AttributeError?',
+        codeSnippet: `class Buku:\n    def __init__(self):\n        self.__kode_rahasia = "RAHASIA-123"\n\nbuku = Buku()\nprint(buku.__kode_rahasia)`,
+        options: [
+          {
+            text: 'Karena awalan dua garis bawah memicu Name Mangling, sehingga nama atribut internal diubah menjadi _Buku__kode_rahasia.',
+            isCorrect: true,
+            explanation: 'Name mangling menyematkan _NamaClass di depan atribut bergaris bawah ganda untuk melindungi data dari konflik penamaan dan akses langsung yang tidak disengaja.',
+          },
+          {
+            text: 'Karena Python langsung menghapus nilai atribut dari memori begitu konstruktor selesai.',
+            isCorrect: false,
+            explanation: 'Datanya tetap aman tersimpan di memori heap objek, hanya nama kuncinya yang diubah secara internal.',
+          },
+          {
+            text: 'Karena variabel tersebut otomatis terkunci dengan enkripsi RSA 2048-bit.',
+            isCorrect: false,
+            explanation: 'Name mangling adalah mekanisme penyuntingan nama atribut CPython sederhana, bukan modul enkripsi kriptografis.',
+          },
+          {
+            text: 'Karena nilai string tidak boleh mengandung tanda strip (-).',
+            isCorrect: false,
+            explanation: 'String di Python bebas berisi karakter apa pun.',
           },
         ],
       },

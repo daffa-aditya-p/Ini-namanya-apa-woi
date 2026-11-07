@@ -11,18 +11,19 @@ prerequisites:
   - "P3"
   - "P4"
 learningObjectives:
-  - "Menguasai paradigma OOP: perancangan Class, instansiasi Object, konstruktor __init__, dan parameter self"
-  - "Memahami perbedaan atribut instance dan atribut class serta mutasi status objek"
-  - "Menerapkan pewarisan (inheritance) hierarkis dan pemanggilan konstruktor induk melalui super()"
-  - "Melakukan enkapsulasi terstandar dengan konvensi _protected dan dekorator @property serta @setter"
-  - "Mengimplementasikan dunder (magic) methods esensial: __str__, __repr__, __len__, dan operator overloading __eq__"
+  - "Menguasai paradigma OOP: perancangan Class, instansiasi Object, konstruktor __init__, dan peran parameter self"
+  - "Memahami Enkapsulasi: proteksi data sensitif dengan konvensi _protected, name mangling __private, serta dekorator @property dan @setter"
+  - "Menerapkan Pewarisan (Inheritance) hierarkis dan delegasi pemanggilan konstruktor induk melalui super()"
+  - "Menguasai Polimorfisme: konsep satu nama perintah dengan banyak aksi berbeda, method overriding, dan filosofi Duck Typing dinamis khas Python"
+  - "Mengimplementasikan magic dunder methods esensial: __str__, __repr__, __len__, dan operator kesamaan __eq__"
 relatedConcepts:
   - "CPython Object Model & PyTypeObject"
-  - "Method Resolution Order (MRO)"
   - "Encapsulation & Descriptors Protocol"
-  - "Special Methods (Dunder Protocols)"
+  - "Inheritance & C3 Method Resolution Order (MRO)"
+  - "Polymorphism & Duck Typing"
+  - "Special Magic Dunder Protocols"
 languageVersion: "Python 3.12"
-summary: "Kuasai arsitektur OOP modern: pendefinisian Class & Object, parameter self & atribut instance, pewarisan hierarkis super(), enkapsulasi @property, dan magic dunder methods."
+summary: "Kuasai 3 pilar utama OOP modern: Enkapsulasi data dengan @property, Pewarisan hierarkis super(), serta Polimorfisme dinamis & magic dunder methods."
 ---
 
 import { CodePlayground } from '../../components/CodePlayground';
@@ -30,57 +31,227 @@ import { DualTrackView } from '../../components/DualTrackView';
 import { PredictOutput } from '../../components/PredictOutput';
 import { FadedExample } from '../../components/FadedExample';
 import { SocraticTutorPanel } from '../../components/SocraticTutorPanel';
+import { MiniQuiz } from '../../components/MiniQuiz';
 import { ChapterQuiz } from '../../components/ChapterQuiz';
 
 # Bab 5: Pemrograman Berorientasi Objek
 
-Selamat datang di puncak kurikulum Python: Pemrograman Berorientasi Objek (*Object-Oriented Programming* / OOP). Di bab ini, kamu memadukan data dan fungsi ke dalam entitas mandiri yang memodelkan objek dunia nyata dengan rapi, aman, dan mudah dikembangkan.
+Selamat datang di puncak kurikulum Python: **Pemrograman Berorientasi Objek** (*Object-Oriented Programming* / OOP)!
+
+Pernahkah kamu membayangkan bagaimana game RPG raksasa atau aplikasi perbankan modern dirancang? Mereka tidak ditulis sebagai tumpukan variabel dan fungsi yang berserakan. Mereka memodelkan dunia nyata menjadi **Objek-objek mandiri** yang punya data (sifat/atribut) dan kemampuan (aksi/method).
+
+Di bab ini, kita akan membongkar tuntas **3 Pilar Utama OOP** (Enkapsulasi, Pewarisan, dan Polimorfisme) dengan bahasa santai, manusiawi, dan analogi yang dekat dengan kehidupan sehari-hari!
 
 ---
 
+## 1. HOOK: Masalah Nyata & Analogi Keseharian
+
 <DualTrackView
   client:load
-  santaiTitle="Jalur Santai: Cetak Biru Arsitek Rumah & Mobil Pabrikan"
+  santaiTitle="Jalur Santai: Remote TV, Mesin ATM, Mobil Balap & Karakter Game"
   santaiParagraphs={[
-    "Bayangkan sebuah Class seperti gambar denah arsitek (cetak biru) untuk membangun rumah. Denah tersebut bukanlah bangunan fisik tempat tinggal, melainkan rancangan teknis yang menentukan jumlah kamar dan saluran air.",
-    "Setiap rumah nyata yang dibangun dari denah tersebut adalah sebuah Object (Instance). Kamu bisa membangun 10 rumah berbeda dengan warna cat masing-masing dari satu denah. Parameter 'self' adalah alamat rumah spesifik saat tukang ledeng datang memperbaiki keran, dan pewarisan (inheritance) seperti merancang varian Rumah Mewah yang mewarisi seluruh denah rumah standar ditambah fasilitas kolam renang."
+    "Bayangkan Remote TV di mejamu: kamu cukup menekan tombol [Volume +] untuk membesarkan suara. Kamu TIDAK PERLU (dan tidak boleh!) membongkar casing plastik remote lalu menyolder kawat sirkuit di dalamnya. Casing pelindung yang menyembunyikan kerumitan kabel itu adalah Enkapsulasi. Begitu pula mesin ATM: kamu menarik uang lewat tombol layar yang aman, bukan membobol brankas di balik tembok sesuka hati.",
+    "Saat pabrik mobil merancang Mobil Balap, mereka tidak merancang roda, setir, dan pedal rem dari nol lagi. Mereka cukup mewarisi (Inheritance) seluruh cetak biru Mobil Biasa, lalu menambahkan tangki NOS super cepat. Dan saat bermain game RPG, kamu cukup menekan satu tombol [Serang] (Polimorfisme): jika karaktermu Ksatria dia menebas pedang, jika Penyihir dia melempar bola api, dan jika Robot dia menembakkan laser. Satu perintah yang sama, aksi otomatis menyesuaikan siapa pelakunya!"
   ]}
-  cepatTitle="Jalur Cepat: PyTypeObject, Instance Dictionaries & C3 Linearization"
+  cepatTitle="Jalur Cepat: PyTypeObject, Descriptor Protocol, C3 MRO & Dynamic Dispatch"
   cepatParagraphs={[
-    "Di CPython, setiap class adalah instance dari metaclass type (PyTypeObject). Saat sebuah instance diinstansiasi via ClassName(), CPython memanggil __new__ untuk mengalokasikan PyObject pada heap, lalu memanggil __init__ untuk mengisi namespace lokal __dict__ instance.",
-    "Pewarisan majemuk diselesaikan menggunakan algoritma C3 Linearization untuk membentuk urutan Method Resolution Order (MRO) yang deterministik. super() menyediakan akses proksi dinamis ke kelas berikutnya dalam MRO tanpa hardcoding nama kelas induk."
+    "Di CPython, setiap class adalah turunan dari metaclass type (PyTypeObject). Saat ClassName() dipanggil, interpreter mengeksekusi __new__ untuk mengalokasikan PyObject pada heap, lalu mengeksekusi __init__ untuk mempopulasi frame namespace lokal __dict__ instance.",
+    "Enkapsulasi Python memanfaatkan Descriptors Protocol (__get__, __set__) melalui dekorator @property bawaan. Pewarisan diselesaikan dengan algoritma C3 Linearization untuk membentuk urutan Method Resolution Order (MRO) yang deterministik via super(). Dan polimorfisme beroperasi secara alami melalui dynamic method resolution dan duck typing tanpa memerlukan interface formal yang kaku."
   ]}
 />
 
 ---
 
+## 2. KONSEP INTI: Fondasi & 3 Pilar Utama OOP
+
+Berdasarkan arsitektur resmi Python Data Model, mari kita bedah fondasi utama dan 3 pilar yang wajib dikuasai setiap developer handal:
+
+### Fondasi Awal: Class, Object, dan Parameter `self`
+1. **Class (Cetak Biru / Blueprint):** Sketsa rancangan konseptual. Misal cetak biru `Kucing` mendefinisikan bahwa setiap kucing punya nama, warna bulu, dan bisa mengeong.
+2. **Object / Instance (Wujud Nyata di Dunia):** Realisasi konkret dari cetak biru di memori komputer. Misal `oyen = Kucing("Oyen", "Oranye")` dan `blacky = Kucing("Blacky", "Hitam")`.
+3. **Konstruktor `__init__`:** Pabrik perakit otomatis yang dijalankan saat objek baru pertama kali diciptakan untuk mengisi data awalnya.
+4. **Parameter `self`:** Alamat KTP atau tanda pengenal objek itu sendiri di memori. Saat kamu menulis `oyen.makan()`, Python di belakang layar menjalankannya sebagai `Kucing.makan(oyen)`. Parameter `self` memastikan si Oyen yang kenyang, bukan si Blacky!
+
+---
+
+### Pilar 1: Enkapsulasi (Bungkus & Amankan Data)
+**Kenapa data tidak boleh diubah sembarangan dari luar?**
+Bayangkan jika siapa saja bisa langsung menulis `akun.saldo = -99999999` atau `akun.saldo = "gratis"`. Aplikasi perbankanmu langsung bangkrut dan rusak total!
+
+Enkapsulasi membungkus data internal dan menyediakan "pintu gerbang resmi" yang aman:
+- **Atribut Publik (`self.nama`):** Data umum yang aman dibaca dan diubah bebas.
+- **Konvensi Protected (`self._saldo`):** Awalan **satu garis bawah** `_`. Ini kode etik programmer Python: *"Tolong ya, variabel ini urusan internal class, jangan diobrak-abrik langsung dari luar!"*
+- **Private / Name Mangling (`self.__pin`):** Awalan **dua garis bawah** `__`. Python otomatis menyamarkan namanya di memori menjadi `_NamaClass__pin` sehingga terhindar dari konflik tabrakan nama dan tidak bisa diakses sembarangan.
+- **Modern Getter & Setter (`@property`):** Cara paling elegan di Python. Kita membaca data seperti atribut biasa (`print(akun.saldo)`), tapi ada fungsi "satpam" di belakangnya (`@saldo.setter`) yang memvalidasi bahwa uang yang disetor tidak boleh bernilai negatif!
+
+---
+
+### Pilar 2: Pewarisan / Inheritance (Turunkan Sifat Tanpa Duplikasi)
+Kenapa harus menulis ulang kode yang sama berkali-kali jika kita bisa mewarisinya?
+Pewarisan memungkinkan class anak (*Child / Subclass*) mewarisi semua atribut dan method dari class induk (*Parent / Superclass*):
+- Class induk: `Kendaraan` (punya `merk`, `kecepatan_maks`, dan method `gas()`).
+- Class anak: `MobilBalap(Kendaraan)` (otomatis punya semua kelebihan `Kendaraan`, ditambah fitur baru seperti tangki `nos` dan method `aktifkan_nos()`).
+- **Fungsi `super().__init__()`:** Jembatan resmi untuk meminta class induk merakit bagian dasarnya terlebih dahulu sebelum class anak memasang komponen tambahannya.
+
+---
+
+### Pilar 3: Polimorfisme (Satu Perintah, Beragam Bentuk)
+Kata *Polymorphism* berasal dari bahasa Yunani: **Poly** (banyak) + **Morph** (bentuk).
+Intinya sangat sederhana: **Satu nama method yang sama, perilakunya otomatis berbeda sesuai objek yang menjalankannya.**
+
+Contohnya:
+- Kita punya daftar karakter: `[Ksatria(), Penyihir(), RobotPemanah()]`.
+- Kita tidak perlu mengecek satu per satu dengan puluhan baris `if-else`. Cukup jalankan satu perulangan: `for k in party: k.serang()`.
+- Objek masing-masing yang tahu cara terbaik mengeksekusinya! Ini disebut **Method Overriding** (anak menimpa cara kerja bawaan induk).
+- **Duck Typing Khas Python:** Filosofi terkenal Python berbunyi: *"If it walks like a duck and quacks like a duck, it's a duck."* (Jika ia berjalan seperti bebek dan bersuara seperti bebek, maka anggap saja itu bebek). Python tidak peduli silsilah keturunan class-mu apa; selama objek tersebut punya method `serang()`, Python akan langsung menjalankannya dengan gembira tanpa banyak drama!
+
+---
+
+## 3. CONTOH HIDUP + PREDIKSI OUTPUT
+
+Uji intuisimu mengenai bagaimana Enkapsulasi, Name Mangling (`__kode`), dan `@property` melindungi data objek:
+
+<PredictOutput
+  client:load
+  language="python"
+  title="Prediksi Output 5.1: Proteksi Data & Name Mangling"
+  code={`class KotakHarta:
+    def __init__(self, nama, emas):
+        self.nama = nama
+        self._emas = emas
+        self.__kode = 999
+
+    @property
+    def emas(self):
+        return self._emas
+
+k = KotakHarta("Peti Kuno", 150)
+print(k.nama)
+print(k.emas)
+print(hasattr(k, "__kode"))`}
+  options={[
+    {
+      text: "Peti Kuno\\n150\\nFalse",
+      isCorrect: true,
+      explanation: "Tepat sekali! 'nama' adalah atribut publik, 'emas' diakses mulus lewat dekorator @property. Sedangkan '__kode' bernilai False pada hasattr karena terkena Name Mangling otomatis menjadi '_KotakHarta__kode'."
+    },
+    {
+      text: "Peti Kuno\\n150\\nTrue",
+      isCorrect: false,
+      explanation: "Kurang tepat. Di Python, dua garis bawah memicu name mangling sehingga atribut tidak lagi bernama '__kode' secara langsung."
+    },
+    {
+      text: "Peti Kuno\\n[Protected]\\n999",
+      isCorrect: false,
+      explanation: "Salah. Dekorator @property emas mengembalikan nilai asli self._emas (150)."
+    }
+  ]}
+/>
+
+---
+
+## 4. LATIHAN TERPANDU (FADED EXAMPLE)
+
+Pelajari perpaduan ketiga pilar OOP dalam merancang sistem karakter game petualangan:
+
+<FadedExample
+  client:load
+  title="Perancangan Karakter Game: Enkapsulasi, Pewarisan, dan Polimorfisme"
+  language="python"
+  missingTaskDescription="Lengkapi class MonsterNaga agar mewarisi KarakterGame dengan memanggil super().__init__() dan menimpa (override) method bersuara()."
+  fadedHint="Gunakan super().__init__(nama, hp_awal) di dalam konstruktor, lalu buat def bersuara(self) yang mengembalikan auman naga panas."
+  starterCode={`class KarakterGame:
+    def __init__(self, nama: str, hp_awal: int):
+        self.nama = nama
+        self._hp = max(0, hp_awal)
+
+    @property
+    def hp(self) -> int:
+        return self._hp
+
+    def kena_serang(self, damage: int):
+        self._hp = max(0, self._hp - damage)
+        return self._hp
+
+    def bersuara(self) -> str:
+        return "..."
+
+class MonsterNaga(KarakterGame):
+    def __init__(self, nama: str, hp_awal: int, elemen: str):
+        # TODO: Panggil konstruktor class induk
+        super().__init__(nama, hp_awal)
+        self.elemen = elemen
+
+    # TODO: Lakukan overriding method bersuara()
+    def bersuara(self) -> str:
+        return f"ROOOAAAR! Naga {self.elemen} menyemburkan nafas panas!"
+
+smaug = MonsterNaga("Smaug", 500, "Api")
+print(f"Monster: {smaug.nama} | HP: {smaug.hp} | Elemen: {smaug.elemen}")
+print("Auman:", smaug.bersuara())
+smaug.kena_serang(150)
+print(f"Sisa HP: {smaug.hp}")`}
+  initialCode={`class KarakterGame:
+    def __init__(self, nama: str, hp_awal: int):
+        self.nama = nama
+        self._hp = max(0, hp_awal)
+
+    @property
+    def hp(self) -> int:
+        return self._hp
+
+    def kena_serang(self, damage: int):
+        self._hp = max(0, self._hp - damage)
+        return self._hp
+
+    def bersuara(self) -> str:
+        return "..."
+
+class MonsterNaga(KarakterGame):
+    def __init__(self, nama: str, hp_awal: int, elemen: str):
+        super().__init__(nama, hp_awal)
+        self.elemen = elemen
+
+    def bersuara(self) -> str:
+        return f"ROOOAAAR! Naga {self.elemen} menyemburkan nafas panas!"
+
+smaug = MonsterNaga("Smaug", 500, "Api")
+print(f"Monster: {smaug.nama} | HP: {smaug.hp} | Elemen: {smaug.elemen}")
+print("Auman:", smaug.bersuara())
+smaug.kena_serang(150)
+print(f"Sisa HP: {smaug.hp}")`}
+  expectedOutput={`Monster: Smaug | HP: 500 | Elemen: Api\nAuman: ROOOAAAR! Naga Api menyemburkan nafas panas!\nSisa HP: 350`}
+/>
+
+---
+
+## 5. LATIHAN MANDIRI (AUTO-GRADED) & TANGGA PETUNJUK
+
 <div id="subbab-5-1" className="scroll-mt-24">
 
-## Sub-bab 5.1: Class & Object
+### Sub-bab 5.1: Class, Object & Parameter self
 
-Class adalah cetak biru (*blueprint*) yang mendefinisikan atribut (data) dan method (perilaku). Object adalah perwujudan konkret (*instance*) dari class tersebut yang hidup di memori.
-
-Method spesial `__init__` bertindak sebagai konstruktor inisialisasi yang dipanggil secara otomatis saat objek baru dibuat:
+Mari kita buat Class sederhana pertama kita. Ingat: `self` adalah pointer eksplisit ke objek spesifik yang sedang aktif.
 
 <CodePlayground
   client:load
   language="python"
-  title="Latihan 5.1: Definisi Class dan Konstruktor __init__"
-  initialCode={`class Kendaraan:
-    def __init__(self, merk: str, kecepatan_maks: int):
-        self.merk = merk
-        self.kecepatan_maks = kecepatan_maks
-        self.kecepatan_saat_ini = 0
+  title="Latihan 5.1: Class Kucing, Konstruktor __init__, dan Peran self"
+  initialCode={`class Kucing:
+    def __init__(self, nama: str, ras: str):
+        self.nama = nama
+        self.ras = ras
+        self.energi = 100
 
-    def akselerasi(self, tambahan: int):
-        self.kecepatan_saat_ini = min(self.kecepatan_maks, self.kecepatan_saat_ini + tambahan)
-        return self.kecepatan_saat_ini
+    def makan(self, porsi: int):
+        self.energi += porsi * 10
+        return self.energi
 
-mobil = Kendaraan("Toyota", 180)
-print(f"Kendaraan: {mobil.merk} | Kecepatan Awal: {mobil.kecepatan_saat_ini} km/h")
-mobil.akselerasi(60)
-print(f"Setelah Akselerasi: {mobil.kecepatan_saat_ini} km/h")`}
-  expectedOutput={`Kendaraan: Toyota | Kecepatan Awal: 0 km/h\nSetelah Akselerasi: 60 km/h`}
+kucing_oyen = Kucing("Oyen", "Tabby")
+print(f"Kucing: {kucing_oyen.nama} ({kucing_oyen.ras}) | Energi Awal: {kucing_oyen.energi}")
+kucing_oyen.makan(3)
+print(f"Setelah Makan: {kucing_oyen.energi}")`}
+  expectedOutput={`Kucing: Oyen (Tabby) | Energi Awal: 100\nSetelah Makan: 130`}
 />
 
 </div>
@@ -89,32 +260,41 @@ print(f"Setelah Akselerasi: {mobil.kecepatan_saat_ini} km/h")`}
 
 <div id="subbab-5-2" className="scroll-mt-24">
 
-## Sub-bab 5.2: Atribut & Method self
+### Sub-bab 5.2: Pilar 1 - Enkapsulasi & Proteksi Data (@property)
 
-Mengapa setiap method di Python menerima parameter `self` di posisi pertama? Karena `self` adalah pointer referensi eksplisit ke objek instance yang sedang memanggil method tersebut. Saat kamu menulis `mobil.akselerasi(60)`, Python menerjemahkannya menjadi `Kendaraan.akselerasi(mobil, 60)`.
-
-Kita juga harus membedakan:
-- **Atribut Instance (`self.nama`):** Melekat pada tiap instance objek secara unik.
-- **Atribut Class (`jumlah_karyawan = 0`):** Melekat pada class itu sendiri dan nilainya dibagi bersama oleh seluruh instance.
+Di bawah ini adalah simulasi Rekening Bank ATM. Perhatikan bagaimana `_saldo` dilindungi dari modifikasi liar menggunakan `@property` dan `@saldo.setter`, serta bagaimana PIN dilindungi dengan Name Mangling `__pin_rahasia`:
 
 <CodePlayground
   client:load
   language="python"
-  title="Latihan 5.2: Atribut Class vs Atribut Instance"
-  initialCode={`class Karyawan:
-    jumlah_karyawan = 0
+  title="Latihan 5.2: Enkapsulasi Rekening ATM dengan @property dan Name Mangling"
+  initialCode={`class RekeningBank:
+    def __init__(self, nasabah: str, saldo_awal: int):
+        self.nasabah = nasabah
+        self._saldo = max(0, saldo_awal)
+        self.__pin_rahasia = 1234
 
-    def __init__(self, nama: str, divisi: str):
-        self.nama = nama
-        self.divisi = divisi
-        Karyawan.jumlah_karyawan += 1
+    @property
+    def saldo(self) -> int:
+        return self._saldo
 
-k1 = Karyawan("Rina", "Teknologi")
-k2 = Karyawan("Doni", "Pemasaran")
-print(f"Karyawan 1: {k1.nama} ({k1.divisi})")
-print(f"Karyawan 2: {k2.nama} ({k2.divisi})")
-print("Total Karyawan Terdaftar:", Karyawan.jumlah_karyawan)`}
-  expectedOutput={`Karyawan 1: Rina (Teknologi)\nKaryawan 2: Doni (Pemasaran)\nTotal Karyawan Terdaftar: 2`}
+    @saldo.setter
+    def saldo(self, nominal_baru: int):
+        if nominal_baru < 0:
+            print("Peringatan: Saldo tidak boleh negatif!")
+            return
+        self._saldo = nominal_baru
+
+    def verifikasi_pin(self, pin_input: int) -> bool:
+        return self.__pin_rahasia == pin_input
+
+akun = RekeningBank("Budi", 500000)
+print(f"Nasabah: {akun.nasabah} | Saldo: Rp{akun.saldo:,}")
+akun.saldo = 750000
+print(f"Saldo Baru: Rp{akun.saldo:,}")
+print("PIN 1234 Cocok:", akun.verifikasi_pin(1234))
+print("PIN 9999 Cocok:", akun.verifikasi_pin(9999))`}
+  expectedOutput={`Nasabah: Budi | Saldo: Rp500,000\nSaldo Baru: Rp750,000\nPIN 1234 Cocok: True\nPIN 9999 Cocok: False`}
 />
 
 </div>
@@ -123,40 +303,41 @@ print("Total Karyawan Terdaftar:", Karyawan.jumlah_karyawan)`}
 
 <div id="subbab-5-3" className="scroll-mt-24">
 
-## Sub-bab 5.3: Pewarisan & super()
+### Sub-bab 5.3: Pilar 2 - Pewarisan (Inheritance) & super()
 
-Pewarisan (*Inheritance*) memungkinkan subclass mewarisi atribut dan method dari superclass induknya, mencegah pengulangan logika.
-
-Gunakan fungsi `super().__init__(...)` untuk memanggil konstruktor milik kelas induk secara bersih dan aman:
+Sekarang kita turunkan sifat dari class induk `Kendaraan` ke class anak `MobilBalap`. Kita manfaatkan `super().__init__()` untuk menghemat kode dan menambahkan fitur NOS eksklusif:
 
 <CodePlayground
   client:load
   language="python"
-  title="Latihan 5.3: Pewarisan dan Pendelegasian super()"
-  initialCode={`class AkunBank:
-    def __init__(self, nomor_rekening: str, saldo_awal: int):
-        self.nomor = nomor_rekening
-        self.saldo = saldo_awal
+  title="Latihan 5.3: Pewarisan Cetak Biru Kendaraan ke Mobil Balap via super()"
+  initialCode={`class Kendaraan:
+    def __init__(self, merk: str, kecepatan_maks: int):
+        self.merk = merk
+        self.kecepatan_maks = kecepatan_maks
+        self.kecepatan = 0
 
-    def setor(self, jumlah: int):
-        self.saldo += jumlah
-        return self.saldo
+    def gas(self, tambah: int):
+        self.kecepatan = min(self.kecepatan_maks, self.kecepatan + tambah)
+        return self.kecepatan
 
-class TabunganBunga(AkunBank):
-    def __init__(self, nomor_rekening: str, saldo_awal: int, bunga_tahunan: float):
-        super().__init__(nomor_rekening, saldo_awal)
-        self.bunga = bunga_tahunan
+class MobilBalap(Kendaraan):
+    def __init__(self, merk: str, kecepatan_maks: int, nos_tersedia: int):
+        super().__init__(merk, kecepatan_maks)
+        self.nos = nos_tersedia
 
-    def terapkan_bunga(self):
-        nominal_bunga = int(self.saldo * self.bunga)
-        self.saldo += nominal_bunga
-        return self.saldo
+    def aktifkan_nos(self):
+        if self.nos > 0:
+            self.nos -= 1
+            self.kecepatan = min(self.kecepatan_maks, self.kecepatan + 50)
+            return f"NOS aktif! Kecepatan loncat ke {self.kecepatan} km/h (Sisa NOS: {self.nos})"
+        return "NOS habis!"
 
-rek = TabunganBunga("ID-00123", 1000000, 0.05)
-rek.setor(200000)
-saldo_akhir = rek.terapkan_bunga()
-print(f"Rekening {rek.nomor} Saldo Akhir: Rp{saldo_akhir:,}")`}
-  expectedOutput={`Rekening ID-00123 Saldo Akhir: Rp1,260,000`}
+ferrari = MobilBalap("Ferrari F8", 340, 2)
+ferrari.gas(120)
+print(f"Mobil: {ferrari.merk} | Kecepatan Santai: {ferrari.kecepatan} km/h")
+print(ferrari.aktifkan_nos())`}
+  expectedOutput={`Mobil: Ferrari F8 | Kecepatan Santai: 120 km/h\nNOS aktif! Kecepatan loncat ke 170 km/h (Sisa NOS: 1)`}
 />
 
 </div>
@@ -165,117 +346,235 @@ print(f"Rekening {rek.nomor} Saldo Akhir: Rp{saldo_akhir:,}")`}
 
 <div id="subbab-5-4" className="scroll-mt-24">
 
-## Sub-bab 5.4: Enkapsulasi @property & Dunder
+### Sub-bab 5.4: Pilar 3 - Polimorfisme & Magic Dunder Methods
 
-Enkapsulasi melindungi status internal objek dari modifikasi sembarangan:
-1. **Konvensi Internal (`_nama`):** Menandai atribut yang tidak boleh disentuh langsung dari luar class.
-2. **Dekorator `@property`:** Mengakses method getter seperti membaca atribut biasa (`dompet.saldo`).
-3. **Dekorator `@saldo.setter`:** Memvalidasi data baru sebelum disimpan ke memori.
+Saksikan keajaiban Polimorfisme! Kita punya tiga karakter berbeda (`Ksatria`, `Penyihir`, dan `RobotPemanah` yang bahkan tidak satu keturunan class). Semuanya bisa kita kumpulkan dalam satu list `party` dan dipanggil dengan perintah seragam `karakter.serang()`:
 
 <CodePlayground
   client:load
   language="python"
-  title="Latihan 5.4: Enkapsulasi Validasi dengan @property dan Setter"
-  initialCode={`class DompetDigital:
-    def __init__(self, nama_pemilik: str, saldo_awal: int = 0):
-        self.pemilik = nama_pemilik
-        self._saldo = max(0, saldo_awal)
+  title="Latihan 5.4: Polimorfisme Karakter Game RPG & Duck Typing"
+  initialCode={`class Pahlawan:
+    def serang(self) -> str:
+        return "Menyerang dengan tangan kosong!"
 
-    @property
-    def saldo(self) -> int:
-        return self._saldo
+class Ksatria(Pahlawan):
+    def serang(self) -> str:
+        return "Menebas musuh dengan pedang! (-50 HP)"
 
-    @saldo.setter
-    def saldo(self, nilai_baru: int):
-        if nilai_baru < 0:
-            raise ValueError("Saldo tidak boleh negatif")
-        self._saldo = nilai_baru
+class Penyihir(Pahlawan):
+    def serang(self) -> str:
+        return "Melempar bola api meteor! (-80 HP)"
 
-dompet = DompetDigital("Fajar", 50000)
-print(f"Pemilik: {dompet.pemilik} | Saldo: Rp{dompet.saldo:,}")
-dompet.saldo = 75000
-print(f"Saldo Terkini: Rp{dompet.saldo:,}")`}
-  expectedOutput={`Pemilik: Fajar | Saldo: Rp50,000\nSaldo Terkini: Rp75,000`}
+class RobotPemanah:
+    def serang(self) -> str:
+        return "Menembakkan panah laser otomatis! (-65 HP)"
+
+party = [Ksatria(), Penyihir(), RobotPemanah()]
+for karakter in party:
+    print(f"- {karakter.__class__.__name__}: {karakter.serang()}")`}
+  expectedOutput={`- Ksatria: Menebas musuh dengan pedang! (-50 HP)\n- Penyihir: Melempar bola api meteor! (-80 HP)\n- RobotPemanah: Menembakkan panah laser otomatis! (-65 HP)`}
 />
 
-Python juga memiliki **Dunder Methods** (*Double Underscore* / Magic Methods) untuk mengintegrasikan class kustom dengan fungsi bawaan Python seperti `str()`, `len()`, dan operator `==`:
-- `__str__`: Representasi teks ramah pengguna saat dicetak.
-- `__len__`: Menentukan panjang objek saat dipanggil via `len(obj)`.
-- `__eq__`: Operator kesamaan `==` antar dua objek.
+Selain itu, Python memiliki **Magic Dunder Methods** (*Double Underscore*) untuk mengintegrasikan objek buatanmu dengan fungsi bawaan Python seperti `str()`, `len()`, dan operator perbandingan `==`:
 
 <CodePlayground
   client:load
   language="python"
   title="Latihan 5.5: Magic Dunder Methods (__str__, __len__, __eq__)"
-  initialCode={`class KeranjangBelanja:
-    def __init__(self, nama_pembeli: str):
-        self.pembeli = nama_pembeli
-        self.items: list[str] = []
+  initialCode={`class PlaylistLagu:
+    def __init__(self, judul_playlist: str):
+        self.judul = judul_playlist
+        self.lagu: list[str] = []
 
-    def tambah(self, item: str):
-        self.items.append(item)
+    def tambah_lagu(self, nama_lagu: str):
+        self.lagu.append(nama_lagu)
 
     def __len__(self) -> int:
-        return len(self.items)
+        return len(self.lagu)
 
     def __str__(self) -> str:
-        return f"Keranjang {self.pembeli}: {len(self.items)} item"
+        return f"Playlist '{self.judul}' ({len(self.lagu)} lagu)"
 
     def __eq__(self, other) -> bool:
-        if not isinstance(other, KeranjangBelanja):
+        if not isinstance(other, PlaylistLagu):
             return False
-        return self.items == other.items
+        return self.lagu == other.lagu
 
-k1 = KeranjangBelanja("Budi")
-k1.tambah("Kopi")
-k1.tambah("Gula")
+p1 = PlaylistLagu("Favorit Santai")
+p1.tambah_lagu("Kopi Dangdut")
+p1.tambah_lagu("Bento")
 
-k2 = KeranjangBelanja("Sari")
-k2.tambah("Kopi")
-k2.tambah("Gula")
+p2 = PlaylistLagu("Lagu Nongkrong")
+p2.tambah_lagu("Kopi Dangdut")
+p2.tambah_lagu("Bento")
 
-print(str(k1))
-print("Jumlah Item:", len(k1))
-print("Apakah isi belanja sama:", k1 == k2)`}
-  expectedOutput={`Keranjang Budi: 2 item\nJumlah Item: 2\nApakah isi belanja sama: True`}
+print(str(p1))
+print("Jumlah Lagu:", len(p1))
+print("Apakah isi lagu p1 dan p2 sama?", p1 == p2)`}
+  expectedOutput={`Playlist 'Favorit Santai' (2 lagu)\nJumlah Lagu: 2\nApakah isi lagu p1 dan p2 sama? True`}
 />
 
-Sebagai penutup arsitektur OOP, mari perhatikan konsep Polimorfisme di mana berbagai subclass mengimplementasikan method `render()` yang sama dengan perilaku spesifik masing-masing:
+Sebagai tantangan terpadu, mari kita buat sistem pembayaran e-commerce berbasis Polimorfisme:
 
 <CodePlayground
   client:load
   language="python"
-  title="Latihan 5.6: Polimorfisme Arsitektur Objek"
-  initialCode={`class Dokumen:
-    def __init__(self, judul: str):
-        self.judul = judul
-
-    def render(self) -> str:
+  title="Latihan 5.6: Sistem Pembayaran Transaksi Polimorfik"
+  initialCode={`class MetodePembayaran:
+    def bayar(self, nominal: int) -> str:
         raise NotImplementedError
 
-class DokumenTeks(Dokumen):
-    def render(self) -> str:
-        return f"[TXT] {self.judul}.txt"
+class TransferBank(MetodePembayaran):
+    def __init__(self, nama_bank: str):
+        self.bank = nama_bank
 
-class DokumenPDF(Dokumen):
-    def render(self) -> str:
-        return f"[PDF] {self.judul}.pdf"
+    def bayar(self, nominal: int) -> str:
+        return f"Transfer ke Bank {self.bank} sebesar Rp{nominal:,} berhasil diverifikasi."
 
-berkas: list[Dokumen] = [DokumenTeks("catatan_kuliah"), DokumenPDF("laporan_keuangan")]
-for doc in berkas:
-    print("Mengekspor:", doc.render())`}
-  expectedOutput={`Mengekspor: [TXT] catatan_kuliah.txt\nMengekspor: [PDF] laporan_keuangan.pdf`}
+class DompetDigital(MetodePembayaran):
+    def __init__(self, nama_app: str):
+        self.app = nama_app
+
+    def bayar(self, nominal: int) -> str:
+        return f"Scan QRIS via {self.app} sebesar Rp{nominal:,} sukses."
+
+pesanan = [TransferBank("BCA"), DompetDigital("GoPay")]
+for m in pesanan:
+    print(m.bayar(125000))`}
+  expectedOutput={`Transfer ke Bank BCA sebesar Rp125,000 berhasil diverifikasi.\nScan QRIS via GoPay sebesar Rp125,000 sukses.`}
 />
 
 </div>
 
 ---
 
+<SocraticTutorPanel
+  client:load
+  lessonId="P5"
+  language="python"
+  defaultCodeSnippet={`# Eksperimen perancangan class OOP di sini:
+class Titik:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+t = Titik(3, 4)
+print(f"Titik berada di ({t.x}, {t.y})")`}
+/>
+
+---
+
+## 6. KESALAHAN UMUM (COMMON MISCONCEPTIONS / JEBAKAN UMUM)
+
+1. **Lupa Menulis Parameter `self` di Method:**
+   Sering terjadi pemula menulis `def sapa():` di dalam class. Saat dijalankan, muncul error menyebalkan: `TypeError: sapa() takes 0 positional arguments but 1 was given`. Ingat: Python secara otomatis selalu menyisipkan objek instance sebagai argumen pertama, sehingga method wajib menerima parameter `self`!
+2. **Tertukar antara Atribut Class vs Atribut Instance:**
+   Jika kamu mendeklarasikan variabel langsung di bawah `class Karakter:` (bukan di dalam `__init__`), variabel tersebut menjadi atribut milik bersama seluruh pemain. Mengubah nilainya di satu karakter bisa tanpa sengaja mengubah nilai seluruh karakter lain di server!
+3. **Membuat Subclass tapi Lupa Memanggil `super().__init__()`:**
+   Jika class anak membuat method `__init__` baru tanpa memanggil `super().__init__()`, konstruktor class induk TIDAK AKAN berjalan. Akibatnya, semua atribut warisan orang tua tidak pernah terinisialisasi.
+4. **Mengira `__private` adalah Benteng Gaib yang Mutlak:**
+   Di Python tidak ada keamanan mutlak. Awalan dua garis bawah `__pin` hanyalah mekanisme *Name Mangling* (disamarkan menjadi `_NamaClass__pin`). Slogan komunitas Python berbunyi: *"We are all consenting adults here"* — kita saling percaya dan menghormati konvensi, bukan mengunci kode seperti penjara.
+5. **Memaksakan Rantai Pewarisan Terlalu Dalam (Over-engineering):**
+   Jangan membuat hierarki silsilah yang terlalu rumit (`MakhlukHidup` -> `Hewan` -> `Mamalia` -> `Karnivora` -> `Kucing`). Sering kali prinsip Duck Typing dan komposisi sederhana jauh lebih bersih, fleksibel, dan mudah dibaca!
+
+---
+
+## 7. RANGKUMAN & KUIS EVALUASI (RETRIEVAL PRACTICE)
+
+<MiniQuiz
+  client:load
+  lessonId="P5"
+  title="Kuis Mini: Cek Pemahaman Konseptual 3 Pilar OOP"
+  questions={[
+    {
+      question: "Apa tujuan utama dari konsep Enkapsulasi dalam pemrograman berorientasi objek?",
+      conceptId: "python.oop.encapsulation_convention",
+      options: [
+        {
+          text: "Membungkus data dan menyembunyikan detail internal agar status objek tidak dapat diubah sembarangan tanpa validasi.",
+          isCorrect: true,
+          explanation: "Tepat! Enkapsulasi melindungi integritas data internal objek melalui antarmuka resmi yang terkendali."
+        },
+        {
+          text: "Mengompresi file kode agar ukuran file menjadi lebih kecil di hard disk.",
+          isCorrect: false,
+          explanation: "Enkapsulasi adalah paradigma arsitektur kode, bukan utilitas kompresi file ZIP."
+        },
+        {
+          text: "Menghapus seluruh method agar class hanya berisi teks biasa.",
+          isCorrect: false,
+          explanation: "Enkapsulasi justru memadukan data bersama method pengelolanya."
+        },
+        {
+          text: "Membuat program otomatis berjalan di browser tanpa instalasi Python.",
+          isCorrect: false,
+          explanation: "Eksekusi di browser adalah peran WebAssembly/Pyodide, bukan prinsip enkapsulasi OOP."
+        }
+      ]
+    },
+    {
+      question: "Apa peran fungsi super().__init__() saat kita membuat class anak pada Pewarisan (Inheritance)?",
+      conceptId: "python.oop.super_inheritance",
+      options: [
+        {
+          text: "Mendelegasikan pemanggilan konstruktor class induk untuk menginisialisasi atribut dasar bawaan induk.",
+          isCorrect: true,
+          explanation: "Tepat! super() memastikan class induk menyelesaikan inisialisasi dasarnya sebelum anak menambahkan fitur spesifik."
+        },
+        {
+          text: "Menghapus class induk agar memori laptop hemat.",
+          isCorrect: false,
+          explanation: "Class induk tetap utuh dan aktif di memori untuk digunakan objek lain."
+        },
+        {
+          text: "Mengubah class anak menjadi class induk secara permanen.",
+          isCorrect: false,
+          explanation: "super() adalah delegasi pemanggilan method, bukan mutasi identitas class."
+        },
+        {
+          text: "Mengunduh modul tambahan dari internet.",
+          isCorrect: false,
+          explanation: "super() adalah fungsi bawaan bahasa Python murni."
+        }
+      ]
+    },
+    {
+      question: "Bagaimana filosofi Duck Typing di Python mewujudkan Polimorfisme?",
+      conceptId: "python.oop.duck_typing",
+      options: [
+        {
+          text: "Python fokus pada kapabilitas objek: selama objek memiliki method yang dipanggil, program akan mengeksekusinya tanpa peduli silsilah class-nya.",
+          isCorrect: true,
+          explanation: "Tepat! 'Jika ia berjalan seperti bebek dan bersuara seperti bebek, maka itu bebek'. Antarmuka aksi lebih utama daripada hierarki tipe kaku."
+        },
+        {
+          text: "Semua class diwajibkan memiliki suara hewan bebek.",
+          isCorrect: false,
+          explanation: "Duck typing adalah perumpamaan filosofis dinamis, bukan kewajiban suara unggas."
+        },
+        {
+          text: "Program akan otomatis error jika objek tidak memiliki sertifikat pewarisan formal.",
+          isCorrect: false,
+          explanation: "Justru duck typing membebaskan kita dari keharusan membuat hierarki pewarisan kaku."
+        },
+        {
+          text: "Duck typing hanya berlaku untuk tipe data angka desimal.",
+          isCorrect: false,
+          explanation: "Duck typing berlaku untuk semua objek di ekosistem Python."
+        }
+      ]
+    }
+  ]}
+/>
+
+---
+
 <div id="kuis-python-bab5" className="scroll-mt-24">
 
-## Kuis Evaluasi Bab 5
+## Kuis Evaluasi Akhir Bab 5
 
-Selamat! Kamu telah mencapai evaluasi akhir dari kurikulum Python. Buktikan penguasaan konsep OOP kamu di **Kuis Evaluasi Bab 5**.
+Selamat! Kamu telah menguasai seluruh fondasi dan 3 Pilar OOP di kurikulum Python! Saatnya membuktikan keahlianmu di **Kuis Evaluasi Bab 5**.
 
 > **Standar Kelulusan Akhir:** Soal dipilih dan diacak secara dinamis dari bank materi Bab 5. Kamu harus mencapai skor minimal **80% (maksimal salah 1)** untuk menamatkan kurikulum Python dan meraih status Mastered!
 
@@ -293,15 +592,9 @@ Selamat! Kamu telah mencapai evaluasi akhir dari kurikulum Python. Buktikan peng
 
 ---
 
-<SocraticTutorPanel
-  client:load
-  lessonId="P5"
-  defaultCode={`# Eksperimen perancangan class OOP di sini:
-class Titik:
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
+## 8. SELAMI LEBIH DALAM (DIVE DEEPER)
 
-t = Titik(3, 4)
-print(f"Titik berada di ({t.x}, {t.y})")`}
-/>
+- **Dokumentasi Resmi Python Data Model:** Pelajari daftar lengkap magic methods di [Python 3.12 Documentation: Data Model](https://docs.python.org/3/reference/datamodel.html).
+- **Panduan Descriptors & @property:** Telusuri [Python HOWTOs: Descriptor Guide](https://docs.python.org/3/howto/descriptor.html) untuk memahami bagaimana `@property` bekerja di balik layar CPython.
+- **Video Edukasi Rekomendasi:** Tonton seri OOP Python oleh Corey Schafer (*"Python OOP Tutorials: Working with Classes"*) dan pembedahan kilat oleh Fireship (*"Object Oriented Programming in 10 Minutes"*).
+- **Buku Klasik Tingkat Mahir:** Baca buku legendaris *"Fluent Python"* karya Luciano Ramalho (khususnya Bab tentang *Object References*, *Pythonic Objects*, dan *Inheritance: For Good or For Worse*).
