@@ -41,10 +41,10 @@ const { title, description = 'belajar.in - Bengkel Kode & Buku Teks Hidup Pemrog
 
         <nav class="flex items-center gap-3 sm:gap-4 text-sm font-display font-medium">
           <a href="/curriculum/javascript/j1" class="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors hidden lg:inline">
-            JS (J1/J2)
+            JS (J1-J3)
           </a>
           <a href="/curriculum/python/p1" class="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors hidden lg:inline">
-            Python (P1/P2)
+            Python (P1-P3)
           </a>
           <a href="/placement" class="text-[var(--text-secondary)] hover:text-[var(--accent-terracotta)] transition-colors hidden sm:inline">
             Placement Test
@@ -95,6 +95,13 @@ const { title, description = 'belajar.in - Bengkel Kode & Buku Teks Hidup Pemrog
         if (saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
           document.documentElement.classList.add('dark');
         }
+      }
+
+      // Register PWA Service Worker for Offline Resilience
+      if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch(() => {});
+        });
       }
     </script>
   </body>

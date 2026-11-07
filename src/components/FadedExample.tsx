@@ -4,24 +4,37 @@ import { CodePlayground } from './CodePlayground';
 interface FadedExampleProps {
   title: string;
   language: 'javascript' | 'python';
-  initialCode: string; // Full reference solution
+  initialCode?: string; // Full reference solution
+  solutionCode?: string; // Alternative naming
   starterCode?: string; // 80% Scaffolded starter code
-  expectedOutput: string;
-  missingTaskDescription: string;
-  fadedHint: string;
+  scaffoldCode?: string; // Alternative naming
+  expectedOutput?: string;
+  missingTaskDescription?: string;
+  description?: string;
+  fadedHint?: string;
+  tips?: string[];
 }
 
 export const FadedExample: React.FC<FadedExampleProps> = ({
   title,
   language,
   initialCode,
+  solutionCode,
   starterCode,
+  scaffoldCode,
   expectedOutput,
   missingTaskDescription,
+  description,
   fadedHint,
+  tips,
 }) => {
+  const effectiveSolution = solutionCode || initialCode || '';
+  const effectiveStarter = starterCode || scaffoldCode || '';
+  const effectiveTask = missingTaskDescription || description || 'Lengkapi bagian kode di bawah ini:';
+  const effectiveHint = fadedHint || (tips && tips.length > 0 ? tips[0] : 'Perhatikan instruksi logika di atas.');
+
   const [activeCodeMode, setActiveCodeMode] = useState<'starter' | 'solution'>(
-    starterCode ? 'starter' : 'solution'
+    effectiveStarter ? 'starter' : 'solution'
   );
   const [versionKey, setVersionKey] = useState(0);
 
@@ -35,7 +48,7 @@ export const FadedExample: React.FC<FadedExampleProps> = ({
     setVersionKey((prev) => prev + 1);
   };
 
-  const codeToDisplay = activeCodeMode === 'starter' && starterCode ? starterCode : initialCode;
+  const codeToDisplay = activeCodeMode === 'starter' && effectiveStarter ? effectiveStarter : effectiveSolution;
 
   return (
     <div className="my-6 rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] overflow-hidden shadow-xs">
@@ -75,9 +88,9 @@ export const FadedExample: React.FC<FadedExampleProps> = ({
       <div className="p-4 sm:p-5">
         <div className="mb-4 p-3 rounded-lg bg-[var(--bg-canvas)] border border-dashed border-amber-500/30 text-xs sm:text-sm">
           <div className="font-bold font-sans text-[var(--text-primary)] mb-1">Tugasmu:</div>
-          <p className="text-[var(--text-secondary)] mb-2">{missingTaskDescription}</p>
+          <p className="text-[var(--text-secondary)] mb-2">{effectiveTask}</p>
           <div className="text-[11px] font-mono text-[var(--accent-teal)]">
-            💡 Petunjuk Kunci: {fadedHint}
+            💡 Petunjuk Kunci: {effectiveHint}
           </div>
         </div>
 

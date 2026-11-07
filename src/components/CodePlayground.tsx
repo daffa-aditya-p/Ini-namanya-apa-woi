@@ -17,13 +17,14 @@ interface CodePlaygroundProps {
 }
 
 export const CodePlayground: React.FC<CodePlaygroundProps> = ({
-  initialCode,
+  initialCode = '',
   language,
   title,
   expectedOutput,
   awardXp = true,
 }) => {
-  const [code, setCode] = useState(initialCode.trim());
+  const safeInitialCode = initialCode || '';
+  const [code, setCode] = useState(safeInitialCode.trim());
   const [isRunning, setIsRunning] = useState(false);
   const [output, setOutput] = useState<ExecutionResult | null>(null);
   const [awardResult, setAwardResult] = useState<AwardResult | null>(null);
@@ -32,7 +33,7 @@ export const CodePlayground: React.FC<CodePlaygroundProps> = ({
   const editorViewRef = useRef<unknown>(null);
   const [cmReady, setCmReady] = useState(false);
 
-  const exerciseKey = title || `exercise_${language}_${initialCode.slice(0, 30)}`;
+  const exerciseKey = title || `exercise_${language}_${safeInitialCode.slice(0, 30)}`;
 
   useEffect(() => {
     const updateCompletionStatus = () => {
@@ -159,7 +160,7 @@ export const CodePlayground: React.FC<CodePlaygroundProps> = ({
         });
 
         const state = EditorState.create({
-          doc: initialCode.trim(),
+          doc: safeInitialCode.trim(),
           extensions: [
             lineNumbers(),
             langExtension,
@@ -199,7 +200,7 @@ export const CodePlayground: React.FC<CodePlaygroundProps> = ({
   }, [initialCode, language]);
 
   const handleReset = useCallback(() => {
-    setCode(initialCode.trim());
+    setCode(safeInitialCode.trim());
     setOutput(null);
     if (editorViewRef.current) {
       const view = editorViewRef.current as {
@@ -207,10 +208,10 @@ export const CodePlayground: React.FC<CodePlaygroundProps> = ({
         state: { doc: { length: number } };
       };
       view.dispatch({
-        changes: { from: 0, to: view.state.doc.length, insert: initialCode.trim() },
+        changes: { from: 0, to: view.state.doc.length, insert: safeInitialCode.trim() },
       });
     }
-  }, [initialCode]);
+  }, [safeInitialCode]);
 
   return (
     <div className="my-6 rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface)] overflow-hidden shadow-xs">

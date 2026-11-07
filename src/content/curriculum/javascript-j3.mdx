@@ -1,0 +1,485 @@
+---
+id: "J3"
+track: "javascript"
+level: "J3"
+title: "JavaScript Asinkron, Web APIs & Model Antrean Event Loop"
+slug: "curriculum/javascript/j3"
+estimatedMinutes: 150
+prerequisites:
+  - "J1"
+  - "J2"
+learningObjectives:
+  - "Memahami arsitektur konkurensi single-threaded JavaScript: Call Stack, Web APIs, Microtask Queue vs Macrotask Queue"
+  - "Menguasai evolusi penanganan asinkron dari Callback ke Promise hingga async/await"
+  - "Menerapkan orkestrasi paralel tangguh dengan Promise Combinators (all, allSettled, race, any)"
+  - "Mengendalikan pembatalan request jaringan dan timeout menggunakan AbortController"
+  - "Merancang mekanisme persistensi storage in-memory dengan validasi waktu kedaluwarsa (TTL)"
+relatedConcepts:
+  - "Event Loop (HTML Living Standard §8.1.6)"
+  - "Microtask & Macrotask Queue"
+  - "Promise Combinators"
+  - "AbortController & Signal"
+  - "Web Storage API & Quota Resilience"
+languageVersion: "ES2024"
+summary: "Kuasai arsitektur asinkron modern JavaScript, pahami prioritas antrean Event Loop, orkestrasi paralel via Promise combinators, dan kendalikan timeout dengan AbortController."
+---
+
+import { CodePlayground } from '../../components/CodePlayground';
+import { DualTrackView } from '../../components/DualTrackView';
+import { PredictOutput } from '../../components/PredictOutput';
+import { FadedExample } from '../../components/FadedExample';
+import { SocraticTutorPanel } from '../../components/SocraticTutorPanel';
+import { MiniQuiz } from '../../components/MiniQuiz';
+
+# Level J3: JavaScript Asinkron & Event Loop
+
+Selamat datang di Level J3. Pada level ini, kamu akan menguasai cara kerja mesin eksekusi JavaScript di dunia nyata: bagaimana bahasa yang beroperasi dengan **satu benang eksekusi (*single-threaded*)** sanggup menangani ribuan permintaan jaringan, pewaktu, dan interaksi pengguna tanpa membekukan layar antarmuka.
+
+---
+
+## 1. HOOK: Masalah Nyata & Analogi Keseharian
+
+<DualTrackView
+  client:load
+  santaiTitle="Jalur Santai: Antrean Ojek Online & Bel Rumah Tangga"
+  santaiParagraphs={[
+    "Bayangkan kamu memesan sate padang melalui aplikasi ojek daring. Ketika pesanan dikonfirmasi oleh restoran, kamu tidak berdiri mematung di depan pintu pagar selama 30 menit menatap jalan kosong (pemrograman sinkron/blocking). Layar ponselmu bebas digunakan, kamu bisa mencuci piring, menyeduh teh, atau membaca buku.",
+    "Notifikasi ponsel berdering saat abang ojol tiba di depan pagar: itulah penyelesaian Promise (resolve). Kamu mengambil makanan dan melanjutkan rutinitasmu tanpa membuang waktu seperseratus detik pun."
+  ]}
+  cepatTitle="Jalur Cepat: V8 Call Stack, Libuv/Host APIs & Task Scheduling"
+  cepatParagraphs={[
+    "JavaScript memiliki satu Call Stack tunggal pada thread eksekusi utama. Operasi I/O jaringan, timer resolusi tinggi, dan event listener didelegasikan ke thread pool runtime hosting (Web APIs pada browser atau libuv pada Node.js).",
+    "Berdasarkan spesifikasi resmi HTML Living Standard §8.1.6, Event Loop memiliki dua tingkat antrean: Microtask Queue (Promise callbacks, queueMicrotask, MutationObserver) yang diproses sampai tuntas (drain to exhaustion) setelah setiap eksekusi stack, sebelum Macrotask Queue (setTimeout, setInterval, I/O callbacks) diizinkan berjalan."
+  ]}
+/>
+
+---
+
+## 2. KONSEP INTI: Arsitektur Konkurensi & Siklus Hidup Asinkron
+
+Tiga fondasi penanganan asinkron modern yang wajib kamu kuasai:
+
+1. **Prioritas Antrean Event Loop:**
+   - **Call Stack:** Mengeksekusi instruksi sinkron baris per baris.
+   - **Microtask Queue:** Antrean berprioritas tinggi. Seluruh antrean microtask harus kosong sebelum browser melakukan render layar atau mengambil task berikutnya.
+   - **Macrotask Queue:** Antrean pekerjaan berprioritas normal (timer, event I/O).
+2. **Orkestrasi Promise Combinators:**
+   - `Promise.allSettled()`: Menunggu semua promise selesai (baik `fulfilled` maupun `rejected`). Pola paling tangguh untuk dasbor analitik multi-sumber karena tidak langsung patah jika salah satu layanan mati.
+   - `Promise.all()`: Pola *fail-fast*; langsung menolak jika satu saja promise mengalami error.
+   - `Promise.race()`: Mengambil hasil pertama yang selesai (cocok untuk pembatas waktu/deadline).
+3. **Penyelamat Timeout: AbortController:**
+   - Mekanisme standar web modern untuk membatalkan sinyal komputasi atau request `fetch` yang berjalan terlalu lambat, mencegah pemborosan memori dan bandwidth.
+
+---
+
+## 3. CONTOH HIDUP + PREDIKSI OUTPUT
+
+Uji intuisi alur waktu dan antrean microtask vs macrotask sebelum mengeksekusi kode berikut:
+
+<PredictOutput
+  client:load
+  language="javascript"
+  title="Prediksi Output J3.1: Prioritas Antrean Event Loop"
+  code={`const urutan = [];
+urutan.push("1. Call Stack Utama");
+
+await new Promise((resolve) => {
+  setTimeout(() => {
+    urutan.push("3. Macrotask Timer");
+    resolve(null);
+  }, 10);
+
+  queueMicrotask(() => {
+    urutan.push("2. Microtask Queue");
+  });
+});
+
+for (const langkah of urutan) {
+  console.log(langkah);
+}`}
+  options={[
+    {
+      text: "1. Call Stack Utama\\n2. Microtask Queue\\n3. Macrotask Timer",
+      isCorrect: true,
+      explanation: "Tepat! Call stack utama berjalan lebih dulu. Kemudian antrean microtask (queueMicrotask) selalu diproses tuntas sebelum macrotask timer (setTimeout) diizinkan berjalan."
+    },
+    {
+      text: "1. Call Stack Utama\\n3. Macrotask Timer\\n2. Microtask Queue",
+      isCorrect: false,
+      explanation: "Salah. Macrotask timer memiliki prioritas lebih rendah dibandingkan microtask queue dalam spesifikasi HTML Event Loop."
+    },
+    {
+      text: "2. Microtask Queue\\n1. Call Stack Utama\\n3. Macrotask Timer",
+      isCorrect: false,
+      explanation: "Salah. Kode sinkron pada call stack utama selalu dieksekusi sebelum runtime memeriksa antrean antrean asinkron."
+    }
+  ]}
+/>
+
+---
+
+## 4. ANATOMI & BEDAH KODE: Ketahanan Jaringan via Promise.allSettled
+
+Perhatikan bagaimana kita memeriksa status layanan multi-sumber tanpa risiko crash seluruh aplikasi:
+
+```javascript
+// Memeriksa tiga layanan secara bersamaan tanpa memblokir satu sama lain
+const cekLayanan = async (nama, berhasil, waktuMs) => {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      if (berhasil) {
+        resolve({ layanan: nama, status: "OK" });
+      } else {
+        reject(new Error("Layanan " + nama + " down!"));
+      }
+    }, waktuMs);
+  });
+};
+
+const hasil = await Promise.allSettled([
+  cekLayanan("Autentikasi", true, 10),
+  cekLayanan("Database BMKG", false, 15),
+  cekLayanan("Cache Redis", true, 5),
+]);
+```
+
+---
+
+## 5. CONTOH BERTAHAP (Faded Examples): Resilient Fetcher dengan Auto-Retry
+
+Di dunia nyata, koneksi internet seluler sering terputus sesaat (*flaky network*). Berikut adalah pola *exponential retry* yang secara otomatis mencoba kembali ketika terjadi kegagalan:
+
+<FadedExample
+  client:load
+  language="javascript"
+  title="Latihan Bertahap J3.2: Pola Resilient Fetcher dengan Percobaan Ulang"
+  description="Lengkapi fungsi penanganan request dengan batas maksimum percobaan dan pelaporan error yang aman."
+  scaffoldCode={`async function fetchDenganRetry(ambilData, maksPercobaan = 3) {
+  let percobaan = 0;
+  while (percobaan < maksPercobaan) {
+    try {
+      percobaan++;
+      return await ambilData(percobaan);
+    } catch (err) {
+      if (percobaan >= maksPercobaan) {
+        throw new Error("Gagal total setelah " + percobaan + " percobaan: " + err.message);
+      }
+      console.log("Percobaan " + percobaan + " gagal (" + err.message + "). Mencoba kembali...");
+    }
+  }
+}
+
+let hit = 0;
+const apiFlaky = async (ke) => {
+  hit++;
+  if (hit < 3) {
+    throw new Error("Koneksi 503 Service Unavailable");
+  }
+  return { status: 200, payload: "Data BMKG Berhasil Diterima" };
+};
+
+const hasil = await fetchDenganRetry(apiFlaky, 3);
+console.log("Status: " + hasil.status);
+console.log("Payload: " + hasil.payload);`}
+  solutionCode={`async function fetchDenganRetry(ambilData, maksPercobaan = 3) {
+  let percobaan = 0;
+  while (percobaan < maksPercobaan) {
+    try {
+      percobaan++;
+      return await ambilData(percobaan);
+    } catch (err) {
+      if (percobaan >= maksPercobaan) {
+        throw new Error("Gagal total setelah " + percobaan + " percobaan: " + err.message);
+      }
+      console.log("Percobaan " + percobaan + " gagal (" + err.message + "). Mencoba kembali...");
+    }
+  }
+}
+
+let hit = 0;
+const apiFlaky = async (ke) => {
+  hit++;
+  if (hit < 3) {
+    throw new Error("Koneksi 503 Service Unavailable");
+  }
+  return { status: 200, payload: "Data BMKG Berhasil Diterima" };
+};
+
+const hasil = await fetchDenganRetry(apiFlaky, 3);
+console.log("Status: " + hasil.status);
+console.log("Payload: " + hasil.payload);`}
+  tips={[
+    "Gunakan struktur perulangan while atau for untuk mengontrol jumlah percobaan berulang.",
+    "Selalu sertakan kondisi terminasi ketika batas maksimum percobaan telah tercapai agar tidak menimbulkan infinite loop.",
+    "Bungkus pemanggilan async dengan try-catch agar error individual dapat dicatat tanpa menghentikan iterasi."
+  ]}
+/>
+
+---
+
+## 6. COBA SENDIRI: Interactive Playground
+
+Ujilah konsep-konsep asinkron di bawah ini langsung di browser. Setiap snippet dieksekusi oleh mesin JavaScript terisolasi:
+
+### Latihan 6.1: Antrean Microtask vs Macrotask
+
+<CodePlayground
+  client:load
+  language="javascript"
+  initialCode={`const urutan = [];
+urutan.push("1. Call Stack Utama");
+
+await new Promise((resolve) => {
+  setTimeout(() => {
+    urutan.push("3. Macrotask Timer");
+    resolve(null);
+  }, 10);
+
+  queueMicrotask(() => {
+    urutan.push("2. Microtask Queue");
+  });
+});
+
+for (const langkah of urutan) {
+  console.log(langkah);
+}`}
+  expectedOutput={`1. Call Stack Utama\n2. Microtask Queue\n3. Macrotask Timer`}
+/>
+
+### Latihan 6.2: Ketahanan Multi-Layanan dengan Promise.allSettled
+
+<CodePlayground
+  client:load
+  language="javascript"
+  initialCode={`const cekLayanan = async (nama, berhasil, waktuMs) => {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      if (berhasil) {
+        resolve({ layanan: nama, status: "OK" });
+      } else {
+        reject(new Error("Layanan " + nama + " down!"));
+      }
+    }, waktuMs);
+  });
+};
+
+const hasil = await Promise.allSettled([
+  cekLayanan("Autentikasi", true, 10),
+  cekLayanan("Database BMKG", false, 15),
+  cekLayanan("Cache Redis", true, 5),
+]);
+
+for (const item of hasil) {
+  if (item.status === "fulfilled") {
+    console.log("[SUKSES] " + item.value.layanan + ": " + item.value.status);
+  } else {
+    console.log("[GAGAL] " + item.reason.message);
+  }
+}`}
+  expectedOutput={`[SUKSES] Autentikasi: OK\n[GAGAL] Layanan Database BMKG down!\n[SUKSES] Cache Redis: OK`}
+/>
+
+### Latihan 6.3: Pembatalan Aman Menggunakan AbortController
+
+<CodePlayground
+  client:load
+  language="javascript"
+  initialCode={`const controller = new AbortController();
+const signal = controller.signal;
+
+const tugasAsinkron = (sinyal) => {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      resolve("Data berhasil diunduh");
+    }, 500);
+
+    sinyal.addEventListener("abort", () => {
+      clearTimeout(timer);
+      reject(new Error("Request dibatalkan: Timeout tercapai"));
+    });
+  });
+};
+
+setTimeout(() => controller.abort(), 20);
+
+try {
+  await tugasAsinkron(signal);
+  console.log("Berhasil!");
+} catch (err) {
+  console.log("Tertangkap: " + err.message);
+}`}
+  expectedOutput={`Tertangkap: Request dibatalkan: Timeout tercapai`}
+/>
+
+### Latihan 6.4: Pola Resilient Fetcher dengan Auto-Retry
+
+<CodePlayground
+  client:load
+  language="javascript"
+  initialCode={`async function fetchDenganRetry(ambilData, maksPercobaan = 3) {
+  let percobaan = 0;
+  while (percobaan < maksPercobaan) {
+    try {
+      percobaan++;
+      return await ambilData(percobaan);
+    } catch (err) {
+      if (percobaan >= maksPercobaan) {
+        throw new Error("Gagal total setelah " + percobaan + " percobaan: " + err.message);
+      }
+      console.log("Percobaan " + percobaan + " gagal (" + err.message + "). Mencoba kembali...");
+    }
+  }
+}
+
+let hit = 0;
+const apiFlaky = async (ke) => {
+  hit++;
+  if (hit < 3) {
+    throw new Error("Koneksi 503 Service Unavailable");
+  }
+  return { status: 200, payload: "Data BMKG Berhasil Diterima" };
+};
+
+const hasil = await fetchDenganRetry(apiFlaky, 3);
+console.log("Status: " + hasil.status);
+console.log("Payload: " + hasil.payload);`}
+  expectedOutput={`Percobaan 1 gagal (Koneksi 503 Service Unavailable). Mencoba kembali...\nPercobaan 2 gagal (Koneksi 503 Service Unavailable). Mencoba kembali...\nStatus: 200\nPayload: Data BMKG Berhasil Diterima`}
+/>
+
+### Latihan 6.5: Simulasi Storage In-Memory dengan Waktu Kedaluwarsa (TTL)
+
+<CodePlayground
+  client:load
+  language="javascript"
+  initialCode={`class StorageManager {
+  constructor() {
+    this.store = new Map();
+  }
+
+  set(kunci, nilai, ttlMs = 1000) {
+    const batasKadaluarsa = Date.now() + ttlMs;
+    this.store.set(kunci, JSON.stringify({ nilai, batasKadaluarsa }));
+  }
+
+  get(kunci) {
+    const data = this.store.get(kunci);
+    if (!data) return null;
+    const { nilai, batasKadaluarsa } = JSON.parse(data);
+    if (Date.now() > batasKadaluarsa) {
+      this.store.delete(kunci);
+      return null;
+    }
+    return nilai;
+  }
+}
+
+const storage = new StorageManager();
+storage.set("token_sesi", "xyz123", 5000);
+console.log("Token aktif: " + storage.get("token_sesi"));
+storage.set("temp_otp", "9988", -10);
+console.log("OTP kadaluarsa: " + storage.get("temp_otp"));`}
+  expectedOutput={`Token aktif: xyz123\nOTP kadaluarsa: null`}
+/>
+
+### Latihan 6.6: Pipeline Agregasi Statistik Sensor
+
+<CodePlayground
+  client:load
+  language="javascript"
+  initialCode={`const hitungStatistikSensor = async (daftarBacaan) => {
+  const dataValid = daftarBacaan.filter((n) => typeof n === "number" && !isNaN(n));
+  if (dataValid.length === 0) {
+    throw new Error("Tidak ada data sensor valid");
+  }
+
+  const total = dataValid.reduce((acc, curr) => acc + curr, 0);
+  const rataRata = total / dataValid.length;
+  const maksimum = Math.max(...dataValid);
+
+  return {
+    jumlahSampel: dataValid.length,
+    rataRata: Number(rataRata.toFixed(2)),
+    maksimum,
+  };
+};
+
+const statistik = await hitungStatistikSensor([28.5, 30.2, 29.8, NaN, 31.0]);
+console.log("Sampel Valid: " + statistik.jumlahSampel);
+console.log("Rata-rata: " + statistik.rataRata + "°C");
+console.log("Maksimum: " + statistik.maksimum + "°C");`}
+  expectedOutput={`Sampel Valid: 4\nRata-rata: 29.88°C\nMaksimum: 31°C`}
+/>
+
+---
+
+## 7. ASISTEN SOKRATIK: Diskusi & Diagnosa Galat Asinkron
+
+Ada pertanyaan konseptual atau kendala memahami async/await? Gunakan panel AI Sokratik di bawah. Tutor kami dirancang membimbing pemikiranmu selangkah demi selangkah tanpa memberikan bocoran jawaban langsung:
+
+<SocraticTutorPanel
+  client:load
+  conceptTitle="Event Loop, Microtasks & AbortController (J3)"
+  contextDescription="Diskusikan arsitektur antrean event loop, perbedaan Promise.all vs Promise.allSettled, dan teknik penanganan timeout jaringan."
+/>
+
+---
+
+## 8. CEK KONSEPTUAL & MINI-PROYEK J3
+
+Uji pemahamanmu sebelum gerbang kelulusan Level J3 terbuka:
+
+<MiniQuiz
+  client:load
+  title="Kuis Evaluasi Konseptual: Level J3"
+  questions={[
+    {
+      question: "Mengapa blok try/catch sinkron gagal menangkap error yang dilempar di dalam callback setTimeout?",
+      options: [
+        "Karena callback setTimeout dieksekusi di putaran Event Loop berikutnya ketika Call Stack try/catch sudah selesai dan hancur.",
+        "Karena JavaScript tidak mengizinkan kata kunci throw di dalam fungsi buatan.",
+        "Karena setTimeout selalu mengubah error menjadi pesan peringatan (warning).",
+        "Karena memori RAM browser memblokir penanganan error pewaktu."
+      ],
+      correctAnswerIndex: 0,
+      explanation: "Tepat! Ketika timer setTimeout akhirnya terpicu, konteks eksekusi fungsi yang memuat try/catch sudah keluar dari Call Stack. Untuk menangani error asinkron, gunakan Promise rejection atau struktur async/await."
+    },
+    {
+      question: "Manakah perbedaan utama antara Promise.all() dan Promise.allSettled()?",
+      options: [
+        "Promise.all() langsung menolak (fail-fast) jika ada satu saja promise gagal, sedangkan Promise.allSettled() menunggu seluruh promise tuntas apa pun statusnya.",
+        "Promise.allSettled() hanya berjalan di lingkungan Node.js dan tidak didukung oleh browser.",
+        "Promise.all() tidak mengembalikan array hasil.",
+        "Promise.allSettled() membatalkan promise lain secara otomatis jika ada error."
+      ],
+      correctAnswerIndex: 0,
+      explanation: "Tepat! Promise.all cocok jika semua sub-tugas wajib berhasil. Promise.allSettled cocok untuk dasbor multi-komponen di mana kegagalan satu komponen tidak boleh merusak komponen lainnya."
+    },
+    {
+      question: "Apa fungsi utama dari kelas standar web AbortController?",
+      options: [
+        "Menyediakan sinyal pembatalan terstandarisasi untuk membatalkan operasi asinkron seperti fetch atau timer yang tertunda.",
+        "Menghapus seluruh berkas cache browser seketika.",
+        "Mematikan thread Web Worker secara paksa tanpa izin.",
+        "Menggantikan fungsi JSON.parse untuk membaca data string."
+      ],
+      correctAnswerIndex: 0,
+      explanation: "Tepat! AbortController menyediakan objek Signal yang dapat dioperasikan ke fetch API atau event listener untuk menghentikan operasi secara terkendali."
+    }
+  ]}
+/>
+
+---
+
+### Mini Proyek J3: Engine Agregator Berita & Gempa Realtime (Resilient Data Aggregator)
+
+**Deskripsi Tugas Mandiri:**
+Rancang modul aggregator asinkron yang memadukan data dari 3 sumber independen:
+1. Menggunakan `Promise.allSettled` untuk mengumpulkan hasil tanpa crash jika salah satu layanan down.
+2. Memasang batas waktu (*timeout guard*) 3000ms menggunakan `AbortController`.
+3. Menyimpan data yang berhasil ke simulator cache in-memory dengan waktu kedaluwarsa 60 detik.
+4. Menghasilkan objek ringkasan berisi status seluruh endpoint, jumlah data valid, dan catatan galat endpoint yang gagal.
+
+**Gerbang Kelulusan (Mastery Gate Level J3):**
+- [x] Lulus 6 Latihan Kode Interaktif di atas dengan status 100% hijau.
+- [x] Skor Kuis Evaluasi Konseptual minimal 80%.
+- [x] Nilai probabilitas penguasaan BKT untuk konsep Asinkron $P(L) \ge 0.85$.

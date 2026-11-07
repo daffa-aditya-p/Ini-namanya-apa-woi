@@ -334,6 +334,50 @@ print(f"Total elemen: {len(pangkat)}")`}
               Buka Modul P2 <ArrowRightIcon className="w-3 h-3" />
             </div>
           </a>
+
+          {/* Track JavaScript J3 */}
+          <a
+            href="/curriculum/javascript/j3"
+            className="block p-6 rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] hover:border-[var(--border-focused)] transition-all group shadow-xs text-decoration-none"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <span className="px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-[#F7DF1E]/20 text-[#857000] dark:text-[#F7DF1E]">
+                J3 • JavaScript (Baru)
+              </span>
+              <span className="text-xs font-mono text-[var(--text-muted)]">ES2024 Event Loop</span>
+            </div>
+            <h3 className="text-xl font-bold mb-2 text-[var(--text-primary)] group-hover:text-[var(--accent-terracotta)] transition-colors font-display">
+              Asinkron, Web APIs & Event Loop
+            </h3>
+            <p className="text-sm text-[var(--text-secondary)] leading-relaxed mb-4">
+              Call Stack vs Web APIs, Microtask vs Macrotask, Promise combinators (allSettled), AbortController timeout, dan retry resilience.
+            </p>
+            <div className="text-xs font-mono font-medium text-[var(--accent-terracotta)] flex items-center gap-1">
+              Buka Modul J3 <ArrowRightIcon className="w-3 h-3" />
+            </div>
+          </a>
+
+          {/* Track Python P3 */}
+          <a
+            href="/curriculum/python/p3"
+            className="block p-6 rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] hover:border-[var(--border-focused)] transition-all group shadow-xs text-decoration-none"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <span className="px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-[#3776AB]/20 text-[#20527B] dark:text-[#68B0EB]">
+                P3 • Python (Baru)
+              </span>
+              <span className="text-xs font-mono text-[var(--text-muted)]">Python 3.12 OOP</span>
+            </div>
+            <h3 className="text-xl font-bold mb-2 text-[var(--text-primary)] group-hover:text-[var(--accent-terracotta)] transition-colors font-display">
+              OOP, Dataclasses & Standard Library
+            </h3>
+            <p className="text-sm text-[var(--text-secondary)] leading-relaxed mb-4">
+              Class & self, enkapsulasi @property, pewarisan MRO super(), dunder comparison, @dataclass(frozen=True), dan collections/datetime.
+            </p>
+            <div className="text-xs font-mono font-medium text-[var(--accent-terracotta)] flex items-center gap-1">
+              Buka Modul P3 <ArrowRightIcon className="w-3 h-3" />
+            </div>
+          </a>
         </div>
       </section>
 

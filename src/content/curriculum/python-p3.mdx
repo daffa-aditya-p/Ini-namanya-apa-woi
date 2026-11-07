@@ -1,0 +1,491 @@
+---
+id: "P3"
+track: "python"
+level: "P3"
+title: "Pemrograman Berorientasi Objek, Dataclasses & Standard Library Python"
+slug: "curriculum/python/p3"
+estimatedMinutes: 150
+prerequisites:
+  - "P1"
+  - "P2"
+learningObjectives:
+  - "Menguasai paradigma OOP modern: Class, Instance, atribut, method __init__, dan parameter self"
+  - "Menerapkan enkapsulasi dengan konvensi _protected, name mangling __private, dan dekorator @property"
+  - "Memahami pewarisan (inheritance) dan Method Resolution Order (MRO) via super()"
+  - "Mengimplementasikan Dunder (Magic) Methods (__str__, __repr__, __eq__, __lt__)"
+  - "Memanfaatkan modul @dataclass(frozen=True) untuk pemodelan data bersih dan immutable"
+  - "Menguasai standard library esensial: collections (Counter, defaultdict), datetime, dan typing"
+relatedConcepts:
+  - "PyTypeObject & CPython Object Model"
+  - "C3 Linearization / MRO"
+  - "Dunder Protocols & Operator Overloading"
+  - "PEP 557 Dataclasses"
+  - "PEP 484 Type Hints"
+languageVersion: "Python 3.12"
+summary: "Kuasai arsitektur OOP modern Python, enkapsulasi via @property, Dunder methods, pemodelan data immutability via @dataclass, dan pustaka collections/datetime."
+---
+
+import { CodePlayground } from '../../components/CodePlayground';
+import { DualTrackView } from '../../components/DualTrackView';
+import { PredictOutput } from '../../components/PredictOutput';
+import { FadedExample } from '../../components/FadedExample';
+import { SocraticTutorPanel } from '../../components/SocraticTutorPanel';
+import { MiniQuiz } from '../../components/MiniQuiz';
+
+# Level P3: Pemrograman Berorientasi Objek & Standard Library
+
+Selamat datang di Level P3. Di level ini, kamu beralih dari sekadar menyusun fungsi dan struktur data terpisah menuju **arsitektur kode modular, terstruktur, dan dapat diskalakan** menggunakan paradigma Pemrograman Berorientasi Objek (*Object-Oriented Programming* / OOP) dan pustaka standar Python yang kaya.
+
+---
+
+## 1. HOOK: Masalah Nyata & Analogi Keseharian
+
+<DualTrackView
+  client:load
+  santaiTitle="Jalur Santai: Cetak Biru Rumah & Blangko KTP"
+  santaiParagraphs={[
+    "Bayangkan kamu memesan KTP di kantor Dukcapil. Blangko KTP kosong yang memiliki kolom Nama, NIK, dan Alamat adalah Class (cetak biru/blueprint). KTP fisik yang tercetak dengan foto dan identitas pribadimu adalah Instance (objek nyata hasil cetak).",
+    "Ketika dua orang memperlihatkan KTP, petugas membandingkan nomor NIK-nya untuk menentukan apakah mereka orang yang sama. Di Python, kamu mengatur cara perbandingan tersebut menggunakan Dunder method __eq__, sehingga objekmu berperilaku pintar layaknya benda di dunia nyata."
+  ]}
+  cepatTitle="Jalur Cepat: PyTypeObject, Descriptor Protocol & C3 MRO"
+  cepatParagraphs={[
+    "Di CPython, setiap Class direpresentasikan sebagai PyTypeObject pada tingkat runtime C. Atribut dan method disimpan dalam dictionary __dict__ objek atau dioptimalkan melalui __slots__ untuk efisiensi memori.",
+    "Python menerapkan C3 Linearization untuk menyelesaikan Method Resolution Order (MRO) pada pewarisan berganda. Melalui dekorator @property, Python memanfaatkan Descriptor Protocol (__get__, __set__) guna menyediakan enkapsulasi murni tanpa overhead sintaksis getter/setter gaya Java."
+  ]}
+/>
+
+---
+
+## 2. KONSEP INTI: Pilar OOP & Anatomi Kelas Python
+
+Empat konsep kunci yang menjadi fondasi Level P3:
+
+1. **Class, Instance, dan Parameter `self`:**
+   - `self` mewakili instance objek yang sedang aktif. Python mewajibkan `self` ditulis eksplisit pada pendefinisian method agar relasi atribut transparan.
+2. **Enkapsulasi & Dekorator `@property`:**
+   - Gunakan awalan `_variabel` untuk menandai atribut terproteksi (konvensi) dan proteksi validasi via getter/setter `@property`.
+3. **Dunder (Double Underscore / Magic) Methods:**
+   - `__init__`: Konstruktor inisialisasi instance.
+   - `__eq__`: Logika kesetaraan perbandingan `==`.
+   - `__lt__`: Logika perbandingan lebih kecil `<` (memungkinkan fungsi `sort()` bekerja otomatis).
+4. **Modern Data Modeling: `@dataclass`:**
+   - Sejak Python 3.7 (PEP 557), dekorator `@dataclass` otomatis menghasilkan `__init__`, `__repr__`, dan `__eq__` tanpa boilerplate manual. Gunakan `frozen=True` untuk menjamin immutability.
+
+---
+
+## 3. CONTOH HIDUP + PREDIKSI OUTPUT
+
+Uji intuisimu mengenai bagaimana perbandingan objek `==` dan `<` bekerja saat dunder methods diimplementasikan:
+
+<PredictOutput
+  client:load
+  language="python"
+  title="Prediksi Output P3.1: Dunder Equality & Comparison"
+  code={`class NilaiMahasiswa:
+    def __init__(self, nama: str, skor: float):
+        self.nama = nama
+        self.skor = skor
+
+    def __eq__(self, other):
+        if not isinstance(other, NilaiMahasiswa):
+            return False
+        return self.skor == other.skor
+
+    def __lt__(self, other):
+        if not isinstance(other, NilaiMahasiswa):
+            return NotImplemented
+        return self.skor < other.skor
+
+m1 = NilaiMahasiswa("Budi", 85.0)
+m2 = NilaiMahasiswa("Siti", 85.0)
+m3 = NilaiMahasiswa("Andi", 92.5)
+
+print(m1 == m2)
+print(m1 < m3)`}
+  options={[
+    {
+      text: "True\\nTrue",
+      isCorrect: true,
+      explanation: "Tepat! Method __eq__ membandingkan skor m1 (85.0) dan m2 (85.0) sehingga bernilai True. Method __lt__ membandingkan skor m1 (85.0) < m3 (92.5) sehingga juga bernilai True."
+    },
+    {
+      text: "False\\nTrue",
+      isCorrect: false,
+      explanation: "Salah. Jika __eq__ tidak dioverride, Python akan membandingkan alamat memori (id), tetapi di sini __eq__ telah disesuaikan untuk membandingkan atribut skor."
+    },
+    {
+      text: "True\\nFalse",
+      isCorrect: false,
+      explanation: "Salah. Skor 85.0 lebih kecil daripada 92.5, sehingga m1 < m3 menghasilkan True."
+    }
+  ]}
+/>
+
+---
+
+## 4. ANATOMI & BEDAH KODE: Pewarisan Terstruktur via `super()`
+
+Perhatikan bagaimana `super()` meneruskan konstruksi class induk secara bersih:
+
+```python
+class Pegawai:
+    def __init__(self, nama: str, gaji_pokok: float):
+        self.nama = nama
+        self.gaji_pokok = gaji_pokok
+
+    def hitung_penghasilan(self) -> float:
+        return self.gaji_pokok
+
+class Manajer(Pegawai):
+    def __init__(self, nama: str, gaji_pokok: float, tunjangan: float):
+        super().__init__(nama, gaji_pokok)
+        self.tunjangan = tunjangan
+
+    def hitung_penghasilan(self) -> float:
+        return super().hitung_penghasilan() + self.tunjangan
+```
+
+---
+
+## 5. CONTOH BERTAHAP (Faded Examples): Sistem Manajemen Inventaris Gudang
+
+Pelajari bagaimana Dataclasses dipadukan dengan agregasi bisnis untuk menghitung valuasi total stok:
+
+<FadedExample
+  client:load
+  language="python"
+  title="Latihan Bertahap P3.2: Arsitektur Gudang & Valuasi Stok"
+  description="Lengkapi method penambahan barang dan kalkulasi ringkasan valuasi gudang secara terstruktur."
+  scaffoldCode={`from dataclasses import dataclass
+
+@dataclass
+class StokBarang:
+    sku: str
+    nama: str
+    jumlah: int
+    harga_satuan: int
+
+    @property
+    def nilai_total(self) -> int:
+        return self.jumlah * self.harga_satuan
+
+class GudangInventaris:
+    def __init__(self):
+        self._stok: dict[str, StokBarang] = {}
+
+    def tambah_barang(self, barang: StokBarang) -> None:
+        self._stok[barang.sku] = barang
+
+    def total_valuasi(self) -> int:
+        return sum(b.nilai_total for b in self._stok.values())
+
+    def ringkasan(self) -> str:
+        return f"Gudang: {len(self._stok)} SKU | Valuasi: Rp{self.total_valuasi():,}"
+
+gudang = GudangInventaris()
+gudang.tambah_barang(StokBarang("BRG-1", "Beras Ramos 5kg", 10, 75000))
+gudang.tambah_barang(StokBarang("BRG-2", "Minyak Goreng 2L", 25, 34000))
+
+print(gudang.ringkasan())`}
+  solutionCode={`from dataclasses import dataclass
+
+@dataclass
+class StokBarang:
+    sku: str
+    nama: str
+    jumlah: int
+    harga_satuan: int
+
+    @property
+    def nilai_total(self) -> int:
+        return self.jumlah * self.harga_satuan
+
+class GudangInventaris:
+    def __init__(self):
+        self._stok: dict[str, StokBarang] = {}
+
+    def tambah_barang(self, barang: StokBarang) -> None:
+        self._stok[barang.sku] = barang
+
+    def total_valuasi(self) -> int:
+        return sum(b.nilai_total for b in self._stok.values())
+
+    def ringkasan(self) -> str:
+        return f"Gudang: {len(self._stok)} SKU | Valuasi: Rp{self.total_valuasi():,}"
+
+gudang = GudangInventaris()
+gudang.tambah_barang(StokBarang("BRG-1", "Beras Ramos 5kg", 10, 75000))
+gudang.tambah_barang(StokBarang("BRG-2", "Minyak Goreng 2L", 25, 34000))
+
+print(gudang.ringkasan())`}
+  tips={[
+    "Gunakan @dataclass untuk class penampung data tanpa perlu menulis __init__ manual.",
+    "Properti kalkulasi turunan seperti nilai_total paling bersih didefinisikan menggunakan dekorator @property.",
+    "Gunakan generator expression sum(...) untuk mengagregasi nilai dari dictionary tanpa alokasi memori list sementara."
+  ]}
+/>
+
+---
+
+## 6. COBA SENDIRI: Interactive Playground
+
+Ujilah materi OOP dan Standard Library langsung di browser melalui runtime WebAssembly Pyodide:
+
+### Latihan 6.1: Dunder Equality & Comparison Operator Overloading
+
+<CodePlayground
+  client:load
+  language="python"
+  initialCode={`class NilaiMahasiswa:
+    def __init__(self, nama: str, skor: float):
+        self.nama = nama
+        self.skor = skor
+
+    def __eq__(self, other):
+        if not isinstance(other, NilaiMahasiswa):
+            return False
+        return self.skor == other.skor
+
+    def __lt__(self, other):
+        if not isinstance(other, NilaiMahasiswa):
+            return NotImplemented
+        return self.skor < other.skor
+
+m1 = NilaiMahasiswa("Budi", 85.0)
+m2 = NilaiMahasiswa("Siti", 85.0)
+m3 = NilaiMahasiswa("Andi", 92.5)
+
+print(m1 == m2)
+print(m1 < m3)`}
+  expectedOutput={`True\nTrue`}
+/>
+
+### Latihan 6.2: Enkapsulasi & Proteksi Mutasi Saldo Bank
+
+<CodePlayground
+  client:load
+  language="python"
+  initialCode={`class RekeningBank:
+    def __init__(self, nomor: str, saldo_awal: float = 0.0):
+        self.nomor = nomor
+        self._saldo = max(0.0, float(saldo_awal))
+
+    @property
+    def saldo(self) -> float:
+        return self._saldo
+
+    def setor(self, jumlah: float) -> None:
+        if jumlah <= 0:
+            raise ValueError("Jumlah setor harus positif")
+        self._saldo += jumlah
+
+    def tarik(self, jumlah: float) -> bool:
+        if 0 < jumlah <= self._saldo:
+            self._saldo -= jumlah
+            return True
+        return False
+
+rek = RekeningBank("ACC-001", 500000)
+rek.setor(250000)
+print(f"Saldo setelah setor: Rp{rek.saldo:,.0f}")
+sukses = rek.tarik(100000)
+print(f"Penarikan 100k: {sukses}, Sisa saldo: Rp{rek.saldo:,.0f}")`}
+  expectedOutput={`Saldo setelah setor: Rp750,000\nPenarikan 100k: True, Sisa saldo: Rp650,000`}
+/>
+
+### Latihan 6.3: Pewarisan Bersih & Komputasi Bertingkat dengan super()
+
+<CodePlayground
+  client:load
+  language="python"
+  initialCode={`class Pegawai:
+    def __init__(self, nama: str, gaji_pokok: float):
+        self.nama = nama
+        self.gaji_pokok = gaji_pokok
+
+    def hitung_penghasilan(self) -> float:
+        return self.gaji_pokok
+
+class Manajer(Pegawai):
+    def __init__(self, nama: str, gaji_pokok: float, tunjangan: float):
+        super().__init__(nama, gaji_pokok)
+        self.tunjangan = tunjangan
+
+    def hitung_penghasilan(self) -> float:
+        return super().hitung_penghasilan() + self.tunjangan
+
+tim = [
+    Pegawai("Dewi", 6000000),
+    Manajer("Bambang", 12000000, 4000000),
+]
+
+for p in tim:
+    print(f"{p.nama}: Rp{p.hitung_penghasilan():,.0f}")`}
+  expectedOutput={`Dewi: Rp6,000,000\nBambang: Rp16,000,000`}
+/>
+
+### Latihan 6.4: Pemodelan Data Immutable dengan @dataclass(frozen=True)
+
+<CodePlayground
+  client:load
+  language="python"
+  initialCode={`from dataclasses import dataclass, field
+
+@dataclass(frozen=True)
+class ItemProduk:
+    kode: str
+    nama: str
+    harga: int
+    kategori: str = "Umum"
+    tagar: tuple[str, ...] = field(default_factory=tuple)
+
+p1 = ItemProduk("KB-01", "Kopi Robusta Lampung", 45000, "Minuman", ("organik", "lokal"))
+p2 = ItemProduk("TH-02", "Teh Hitam Walini", 25000, "Minuman")
+
+tag_teks = ", ".join(p1.tagar)
+print(f"Produk 1: {p1.nama} ({p1.kategori}) - Rp{p1.harga}")
+print(f"Tagar p1: {tag_teks}")
+print(f"Produk 2: {p2.nama} - Tagar: {len(p2.tagar)}")`}
+  expectedOutput={`Produk 1: Kopi Robusta Lampung (Minuman) - Rp45000\nTagar p1: organik, lokal\nProduk 2: Teh Hitam Walini - Tagar: 0`}
+/>
+
+### Latihan 6.5: Pengelompokan Data & Frekuensi via collections
+
+<CodePlayground
+  client:load
+  language="python"
+  initialCode={`from collections import Counter, defaultdict
+
+transaksi = [
+    ("Makanan", "Nasi Goreng"),
+    ("Minuman", "Es Teh Manis"),
+    ("Makanan", "Ayam Bakar"),
+    ("Makanan", "Nasi Goreng"),
+    ("Minuman", "Es Jeruk"),
+    ("Camilan", "Kerupuk"),
+]
+
+pesanan_counter = Counter([item[1] for item in transaksi])
+print("Item terlaris:", pesanan_counter.most_common(1)[0])
+
+kategori_map = defaultdict(list)
+for kategori, menu in transaksi:
+    kategori_map[kategori].append(menu)
+
+print("Kategori Makanan:", sorted(set(kategori_map["Makanan"])))
+print("Total Kategori Terdata:", len(kategori_map))`}
+  expectedOutput={`Item terlaris: ('Nasi Goreng', 2)\nKategori Makanan: ['Ayam Bakar', 'Nasi Goreng']\nTotal Kategori Terdata: 3`}
+/>
+
+### Latihan 6.6: Sistem Manajemen Inventaris Gudang Terstruktur
+
+<CodePlayground
+  client:load
+  language="python"
+  initialCode={`from dataclasses import dataclass
+
+@dataclass
+class StokBarang:
+    sku: str
+    nama: str
+    jumlah: int
+    harga_satuan: int
+
+    @property
+    def nilai_total(self) -> int:
+        return self.jumlah * self.harga_satuan
+
+class GudangInventaris:
+    def __init__(self):
+        self._stok: dict[str, StokBarang] = {}
+
+    def tambah_barang(self, barang: StokBarang) -> None:
+        self._stok[barang.sku] = barang
+
+    def total_valuasi(self) -> int:
+        return sum(b.nilai_total for b in self._stok.values())
+
+    def ringkasan(self) -> str:
+        return f"Gudang: {len(self._stok)} SKU | Valuasi: Rp{self.total_valuasi():,}"
+
+gudang = GudangInventaris()
+gudang.tambah_barang(StokBarang("BRG-1", "Beras Ramos 5kg", 10, 75000))
+gudang.tambah_barang(StokBarang("BRG-2", "Minyak Goreng 2L", 25, 34000))
+
+print(gudang.ringkasan())`}
+  expectedOutput={`Gudang: 2 SKU | Valuasi: Rp1,600,000`}
+/>
+
+---
+
+## 7. ASISTEN SOKRATIK: Diskusi & Diagnosa Galat OOP
+
+Butuh klarifikasi seputar kapan memakai Dataclass vs Class biasa, atau bagaimana menghindari argumen default mutable? Tanyakan pada Asisten Sokratik:
+
+<SocraticTutorPanel
+  client:load
+  conceptTitle="OOP, Dataclass & Standard Library (P3)"
+  contextDescription="Diskusikan perancangan hierarki inheritance, enkapsulasi data dengan @property, dan pemanfaatan dunder methods."
+/>
+
+---
+
+## 8. CEK KONSEPTUAL & MINI-PROYEK P3
+
+Selesaikan kuis evaluasi pemahaman konseptual Level P3:
+
+<MiniQuiz
+  client:load
+  title="Kuis Evaluasi Konseptual: Level P3"
+  questions={[
+    {
+      question: "Mengapa argumen default bertipe mutable (misalnya list atau dict) pada definisi fungsi/method Python sangat berbahaya?",
+      options: [
+        "Karena nilai default tersebut dievaluasi satu kali saat modul dimuat, sehingga state list/dict akan dibagi dan bermutasi bersama di setiap pemanggilan berikutnya.",
+        "Karena CPython akan melempar TypeError seketika saat kode dikompilasi.",
+        "Karena sistem operasi Linux memblokir alokasi memori list pada fungsi.",
+        "Karena nilai mutable akan terhapus otomatis oleh garbage collector sebelum fungsi dipanggil."
+      ],
+      correctAnswerIndex: 0,
+      explanation: "Tepat! Di Python, default parameter dievaluasi saat fungsi didefinisikan (def-time), bukan saat fungsi dieksekusi (call-time). Gunakan nilai None dan lakukan inisialisasi di dalam tubuh fungsi."
+    },
+    {
+      question: "Apa keuntungan utama mendefinisikan dataclass dengan parameter frozen=True?",
+      options: [
+        "Objek menjadi immutable (tidak dapat diubah atributnya setelah inisialisasi) dan otomatis menghasilkan fungsi hash __hash__ sehingga dapat dijadikan kunci dictionary atau anggota set.",
+        "Program berjalan 100 kali lebih cepat karena mematikan interpreter Python.",
+        "File python otomatis dikonversi menjadi biner C/C++.",
+        "Memaksa semua method dalam kelas menjadi method asinkron."
+      ],
+      correctAnswerIndex: 0,
+      explanation: "Tepat! Parameter frozen=True melindungi data dari modifikasi liar tak disengaja dan memungkinkan instance dijadikan elemen himpunan (set) atau kunci hash map (dict)."
+    },
+    {
+      question: "Pada inheritance berjenjang, apa fungsi utama dari pemanggilan super().__init__()?",
+      options: [
+        "Mengeksekusi inisialisasi pada class induk sesuai urutan Method Resolution Order (MRO) tanpa menyebutkan nama class induk secara hardcode.",
+        "Menghapus method yang ada di class anak agar tidak memakan RAM.",
+        "Mengubah hak akses atribut menjadi public secara paksa.",
+        "Menghentikan eksekusi script jika class anak memiliki lebih dari 3 method."
+      ],
+      correctAnswerIndex: 0,
+      explanation: "Tepat! super() mendelegasikan pemanggilan ke class berikutnya dalam rantai pewarisan (MRO), sangat esensial untuk arsitektur berorientasi objek yang fleksibel dan bebas duplikasi kode."
+    }
+  ]}
+/>
+
+---
+
+### Mini Proyek P3: Sistem Inventaris Toko & Rekapitulasi Analitik (Warehouse Manager)
+
+**Deskripsi Tugas Mandiri:**
+Bangunlah sistem inventaris toko menggunakan OOP dan Dataclass:
+1. Definisikan `Produk` dengan `@dataclass(frozen=True)` memuat `sku`, `nama`, `harga`, dan `kategori`.
+2. Buat kelas `ManajerInventaris` yang menyimpan stok barang dan memanfaatkan `collections.defaultdict` untuk mengelompokkan produk per kategori.
+3. Tambahkan method untuk menghitung total aset barang, mendeteksi produk dengan harga tertinggi dan terendah, serta menghasilkan laporan berformat string rapi.
+4. Terapkan penanganan validasi agar penambahan kuantitas negatif otomatis ditolak dengan pesan error yang bermakna.
+
+**Gerbang Kelulusan (Mastery Gate Level P3):**
+- [x] Lulus 6 Latihan Kode Interaktif di atas dengan status 100% hijau.
+- [x] Skor Kuis Evaluasi Konseptual minimal 80%.
+- [x] Nilai probabilitas penguasaan BKT untuk konsep OOP & Dataclass $P(L) \ge 0.85$.

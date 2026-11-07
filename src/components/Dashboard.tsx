@@ -317,7 +317,7 @@ export function Dashboard({ user, onLogout, onUpdateUser }: DashboardProps) {
               Jalur kurikulum berjenjang dengan eksekusi WebAssembly & runtime sandboxed nyata.
             </p>
           </div>
-          <span className="text-xs font-mono text-[var(--text-muted)]">4 Modul Aktif • J1, J2, P1, P2</span>
+          <span className="text-xs font-mono text-[var(--text-muted)]">6 Modul Aktif • J1-J3, P1-P3</span>
         </div>
 
         {/* Fast-Track Placement Test Banner */}
@@ -451,6 +451,62 @@ export function Dashboard({ user, onLogout, onUpdateUser }: DashboardProps) {
                 className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-mono font-medium rounded-lg bg-[var(--accent-terracotta)] text-white hover:opacity-95 transition-opacity"
               >
                 Buka Level J2 <ArrowRightIcon className="w-3.5 h-3.5" />
+              </a>
+            </div>
+          </div>
+
+          {/* Kelas Python P3 (Baru!) */}
+          <div className="p-6 rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] hover:border-[var(--border-focused)] transition-all shadow-xs flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <span className="px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-[#3776AB]/15 text-[#20527B] dark:text-[#68B0EB] border border-[#3776AB]/20">
+                  Python • Level P3 (Baru)
+                </span>
+                <span className="text-xs font-mono text-[var(--text-muted)]">Python 3.12 OOP</span>
+              </div>
+              <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2 font-display">
+                OOP, Dataclasses & Standard Library
+              </h3>
+              <p className="text-sm text-[var(--text-secondary)] leading-relaxed mb-6">
+                Class & self, enkapsulasi @property, pewarisan MRO super(), dunder methods (__eq__, __lt__), @dataclass(frozen=True), dan modul collections/datetime.
+              </p>
+            </div>
+
+            <div className="pt-4 border-t border-[var(--border-default)] flex items-center justify-between">
+              <span className="text-xs font-mono text-[var(--text-muted)]">6 Latihan + Mini Proyek</span>
+              <a
+                href="/curriculum/python/p3"
+                className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-mono font-medium rounded-lg bg-[#3776AB] text-white hover:opacity-90 transition-opacity"
+              >
+                Buka Level P3 <ArrowRightIcon className="w-3.5 h-3.5" />
+              </a>
+            </div>
+          </div>
+
+          {/* Kelas JavaScript J3 (Baru!) */}
+          <div className="p-6 rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] hover:border-[var(--border-focused)] transition-all shadow-xs flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <span className="px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-[#F7DF1E]/20 text-[#857000] dark:text-[#F7DF1E] border border-[#F7DF1E]/30">
+                  JavaScript • Level J3 (Baru)
+                </span>
+                <span className="text-xs font-mono text-[var(--text-muted)]">ES2024 Event Loop</span>
+              </div>
+              <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2 font-display">
+                Asinkron, Web APIs & Event Loop
+              </h3>
+              <p className="text-sm text-[var(--text-secondary)] leading-relaxed mb-6">
+                Arsitektur single-thread Call Stack vs Web APIs, Microtask vs Macrotask, Promise combinators (allSettled), pembatalan AbortController, dan retry resilience.
+              </p>
+            </div>
+
+            <div className="pt-4 border-t border-[var(--border-default)] flex items-center justify-between">
+              <span className="text-xs font-mono text-[var(--text-muted)]">6 Latihan + Mini Proyek</span>
+              <a
+                href="/curriculum/javascript/j3"
+                className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-mono font-medium rounded-lg bg-[var(--accent-terracotta)] text-white hover:opacity-95 transition-opacity"
+              >
+                Buka Level J3 <ArrowRightIcon className="w-3.5 h-3.5" />
               </a>
             </div>
           </div>

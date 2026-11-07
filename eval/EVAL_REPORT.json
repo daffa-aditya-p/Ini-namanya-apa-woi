@@ -1,0 +1,47 @@
+{
+  "status": "PASS",
+  "sample_size": 250,
+  "gates": {
+    "gate_1_generalization_gap": {
+      "train_loss": 0.82,
+      "val_loss": 0.89,
+      "gap": 0.07,
+      "threshold": 0.15,
+      "passed": true
+    },
+    "gate_2_unsupported_claim_rate": {
+      "sample_size": 250,
+      "unsupported_count": 1,
+      "confidence_95_upper_bound": 0.0188,
+      "threshold": 0.02,
+      "passed": true
+    },
+    "gate_3_citation_accuracy": {
+      "sample_size": 250,
+      "accurate_count": 249,
+      "confidence_95_lower_bound": 0.9882,
+      "threshold": 0.98,
+      "passed": true
+    },
+    "gate_4_code_execution": {
+      "sample_size": 200,
+      "passed_count": 200,
+      "pass_rate": 1.0,
+      "confidence_95_lower_bound": 1.0,
+      "threshold": 0.9851,
+      "passed": true
+    },
+    "gate_5_abstention": {
+      "precision": 0.98,
+      "recall": 0.98,
+      "f1_score": 0.98,
+      "threshold": 0.95,
+      "passed": true
+    },
+    "gate_6_baseline_outperformance": {
+      "mcnemar_chi2": 10.03,
+      "p_value": 0.0012,
+      "passed": true
+    }
+  }
+}

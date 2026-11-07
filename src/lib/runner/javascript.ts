@@ -48,6 +48,9 @@ export class JavaScriptRunner implements CodeRunner {
         console: customConsole,
         setTimeout,
         clearTimeout,
+        queueMicrotask: typeof queueMicrotask !== 'undefined' ? queueMicrotask : (fn: () => void) => Promise.resolve().then(fn),
+        AbortController: typeof AbortController !== 'undefined' ? AbortController : undefined,
+        AbortSignal: typeof AbortSignal !== 'undefined' ? AbortSignal : undefined,
         Promise,
         JSON,
         Math,
@@ -77,8 +80,8 @@ export class JavaScriptRunner implements CodeRunner {
       };
       const context = vm.createContext(sandbox);
 
-      // Wrap in an IIFE so returns are supported
-      const wrapped = `"use strict";\n(() => {\n${code}\n})()`;
+      // Wrap in an async IIFE so returns and top-level await are supported
+      const wrapped = `"use strict";\n(async () => {\n${code}\n})()`;
       const result = vm.runInContext(wrapped, context, { timeout: timeoutMs });
 
       if (result && typeof result.then === 'function') {
@@ -150,7 +153,7 @@ self.onmessage = async (e) => {
     error: (...args) => stderr.push(args.map(formatArg).join(' ')),
   };
   try {
-    const fn = new Function('console', '"use strict";\\n' + code);
+    const fn = new Function('console', '"use strict";\\nreturn (async () => {\\n' + code + '\\n})();');
     const res = fn(customConsole);
     if (res && typeof res.then === 'function') {
       const awaited = await res;
@@ -267,7 +270,7 @@ self.onmessage = async (e) => {
       }, timeoutMs);
 
       try {
-        const runnerFn = new Function('console', `"use strict";\n${code}`);
+        const runnerFn = new Function('console', `"use strict";\nreturn (async () => {\n${code}\n})();`);
         const result = runnerFn(customConsole);
 
         if (result && typeof result.then === 'function') {
