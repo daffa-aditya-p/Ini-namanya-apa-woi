@@ -63,7 +63,7 @@ export const FadedExample: React.FC<FadedExampleProps> = ({
           <span className="text-xs font-mono text-amber-700 dark:text-amber-300 font-semibold">
             {activeCodeMode === 'starter' ? '80% Kode Siap • Lengkapi Bagian Kosong' : '✓ Solusi Terbuka'}
           </span>
-          {starterCode && (
+          {effectiveStarter && (
             activeCodeMode === 'starter' ? (
               <button
                 type="button"

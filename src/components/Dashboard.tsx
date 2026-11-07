@@ -544,7 +544,7 @@ export function Dashboard({ user, onLogout, onUpdateUser }: DashboardProps) {
             <div>
               <div className="flex items-center justify-between mb-4">
                 <span className="px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-[#F7DF1E]/20 text-[#857000] dark:text-[#F7DF1E] border border-[#F7DF1E]/30">
-                  JavaScript • Level J4 (Baru)
+                  JavaScript • Level J4
                 </span>
                 <span className="text-xs font-mono text-[var(--text-muted)]">Vitest & Tooling</span>
               </div>
@@ -563,6 +563,62 @@ export function Dashboard({ user, onLogout, onUpdateUser }: DashboardProps) {
                 className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-mono font-medium rounded-lg bg-[var(--accent-terracotta)] text-white hover:opacity-95 transition-opacity"
               >
                 Buka Level J4 <ArrowRightIcon className="w-3.5 h-3.5" />
+              </a>
+            </div>
+          </div>
+
+          {/* Kelas Python P5 (Baru!) */}
+          <div className="p-6 rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] hover:border-[var(--border-focused)] transition-all shadow-xs flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <span className="px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-[#3776AB]/15 text-[#20527B] dark:text-[#68B0EB] border border-[#3776AB]/20">
+                  Python • Level P5 (Baru)
+                </span>
+                <span className="text-xs font-mono text-[var(--text-muted)]">Data Science & ML</span>
+              </div>
+              <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2 font-display">
+                Descriptors, Data Science & Machine Learning
+              </h3>
+              <p className="text-sm text-[var(--text-secondary)] leading-relaxed mb-6">
+                Protokol Descriptors, hook __init_subclass__, matriks korelasi Pearson data science murni, mini REST API router in-memory, dan model Machine Learning Regresi Linier OLS dari nol.
+              </p>
+            </div>
+
+            <div className="pt-4 border-t border-[var(--border-default)] flex items-center justify-between">
+              <span className="text-xs font-mono text-[var(--text-muted)]">6 Latihan + Mini Proyek</span>
+              <a
+                href="/curriculum/python/p5"
+                className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-mono font-medium rounded-lg bg-[#3776AB] text-white hover:opacity-90 transition-opacity"
+              >
+                Buka Level P5 <ArrowRightIcon className="w-3.5 h-3.5" />
+              </a>
+            </div>
+          </div>
+
+          {/* Kelas JavaScript J5 (Baru!) */}
+          <div className="p-6 rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] hover:border-[var(--border-focused)] transition-all shadow-xs flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <span className="px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-[#F7DF1E]/20 text-[#857000] dark:text-[#F7DF1E] border border-[#F7DF1E]/30">
+                  JavaScript • Level J5 (Baru)
+                </span>
+                <span className="text-xs font-mono text-[var(--text-muted)]">Metaprogramming & Signals</span>
+              </div>
+              <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2 font-display">
+                Metaprogramming & Sistem Reaktivitas
+              </h3>
+              <p className="text-sm text-[var(--text-secondary)] leading-relaxed mb-6">
+                Proxy traps & Reflect, Generator function* paginasi, proteksi memori WeakMap bebas leak, Functional Pipe Currying, dan arsitektur Reactive Signal Store dengan dependency tracking.
+              </p>
+            </div>
+
+            <div className="pt-4 border-t border-[var(--border-default)] flex items-center justify-between">
+              <span className="text-xs font-mono text-[var(--text-muted)]">6 Latihan + Mini Proyek</span>
+              <a
+                href="/curriculum/javascript/j5"
+                className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-mono font-medium rounded-lg bg-[var(--accent-terracotta)] text-white hover:opacity-95 transition-opacity"
+              >
+                Buka Level J5 <ArrowRightIcon className="w-3.5 h-3.5" />
               </a>
             </div>
           </div>

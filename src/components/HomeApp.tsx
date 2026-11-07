@@ -408,7 +408,7 @@ print(f"Total elemen: {len(pangkat)}")`}
           >
             <div className="flex items-center justify-between mb-3">
               <span className="px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-[#3776AB]/20 text-[#20527B] dark:text-[#68B0EB]">
-                P4 • Python (Baru)
+                P4 • Python
               </span>
               <span className="text-xs font-mono text-[var(--text-muted)]">Python 3.12 Menengah</span>
             </div>
@@ -420,6 +420,50 @@ print(f"Total elemen: {len(pangkat)}")`}
             </p>
             <div className="text-xs font-mono font-medium text-[var(--accent-terracotta)] flex items-center gap-1">
               Buka Modul P4 <ArrowRightIcon className="w-3 h-3" />
+            </div>
+          </a>
+
+          {/* Track JavaScript J5 (Baru!) */}
+          <a
+            href="/curriculum/javascript/j5"
+            className="block p-6 rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] hover:border-[var(--border-focused)] transition-all group shadow-xs text-decoration-none"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <span className="px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-[#F7DF1E]/20 text-[#857000] dark:text-[#F7DF1E]">
+                J5 • JavaScript (Baru)
+              </span>
+              <span className="text-xs font-mono text-[var(--text-muted)]">Metaprogramming & Signals</span>
+            </div>
+            <h3 className="text-xl font-bold mb-2 text-[var(--text-primary)] group-hover:text-[var(--accent-terracotta)] transition-colors font-display">
+              Metaprogramming & Sistem Reaktivitas
+            </h3>
+            <p className="text-sm text-[var(--text-secondary)] leading-relaxed mb-4">
+              Proxy traps & Reflect, Generator function* paginasi, proteksi memori WeakMap bebas leak, Functional Pipe Currying, dan Reactive Signal Store.
+            </p>
+            <div className="text-xs font-mono font-medium text-[var(--accent-terracotta)] flex items-center gap-1">
+              Buka Modul J5 <ArrowRightIcon className="w-3 h-3" />
+            </div>
+          </a>
+
+          {/* Track Python P5 (Baru!) */}
+          <a
+            href="/curriculum/python/p5"
+            className="block p-6 rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] hover:border-[var(--border-focused)] transition-all group shadow-xs text-decoration-none"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <span className="px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-[#3776AB]/20 text-[#20527B] dark:text-[#68B0EB]">
+                P5 • Python (Baru)
+              </span>
+              <span className="text-xs font-mono text-[var(--text-muted)]">Data Science & ML</span>
+            </div>
+            <h3 className="text-xl font-bold mb-2 text-[var(--text-primary)] group-hover:text-[var(--accent-terracotta)] transition-colors font-display">
+              Descriptors, Data Science & Machine Learning
+            </h3>
+            <p className="text-sm text-[var(--text-secondary)] leading-relaxed mb-4">
+              Protokol Descriptors, hook __init_subclass__, matriks korelasi Pearson, mini REST router in-memory, dan model Regresi Linier OLS dari nol.
+            </p>
+            <div className="text-xs font-mono font-medium text-[var(--accent-terracotta)] flex items-center gap-1">
+              Buka Modul P5 <ArrowRightIcon className="w-3 h-3" />
             </div>
           </a>
         </div>

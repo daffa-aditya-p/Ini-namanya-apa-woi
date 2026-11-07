@@ -101,7 +101,7 @@ describe('Route Separation & Dedicated Page Architecture', () => {
     expect(content).toContain('window.location.href = \'/dashboard\'');
   });
 
-  it('verifies /placement route and J1-J4, P1-P4 curriculum files exist', () => {
+  it('verifies /placement route and J1-J5, P1-P5 curriculum files exist', () => {
     const placementPath = path.join(pagesDir, 'placement.astro');
     expect(fs.existsSync(placementPath)).toBe(true);
     const content = fs.readFileSync(placementPath, 'utf-8');
@@ -112,9 +112,11 @@ describe('Route Separation & Dedicated Page Architecture', () => {
     expect(fs.existsSync(path.join(curriculumDir, 'javascript-j2.mdx'))).toBe(true);
     expect(fs.existsSync(path.join(curriculumDir, 'javascript-j3.mdx'))).toBe(true);
     expect(fs.existsSync(path.join(curriculumDir, 'javascript-j4.mdx'))).toBe(true);
+    expect(fs.existsSync(path.join(curriculumDir, 'javascript-j5.mdx'))).toBe(true);
     expect(fs.existsSync(path.join(curriculumDir, 'python-p1.mdx'))).toBe(true);
     expect(fs.existsSync(path.join(curriculumDir, 'python-p2.mdx'))).toBe(true);
     expect(fs.existsSync(path.join(curriculumDir, 'python-p3.mdx'))).toBe(true);
     expect(fs.existsSync(path.join(curriculumDir, 'python-p4.mdx'))).toBe(true);
+    expect(fs.existsSync(path.join(curriculumDir, 'python-p5.mdx'))).toBe(true);
   });
 });

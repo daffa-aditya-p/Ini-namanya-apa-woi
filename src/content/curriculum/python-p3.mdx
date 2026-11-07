@@ -123,40 +123,17 @@ print(m1 < m3)`}
 
 ---
 
-## 4. ANATOMI & BEDAH KODE: Pewarisan Terstruktur via `super()`
+## 4. LATIHAN TERPANDU (FADED EXAMPLE)
 
-Perhatikan bagaimana `super()` meneruskan konstruksi class induk secara bersih:
-
-```python
-class Pegawai:
-    def __init__(self, nama: str, gaji_pokok: float):
-        self.nama = nama
-        self.gaji_pokok = gaji_pokok
-
-    def hitung_penghasilan(self) -> float:
-        return self.gaji_pokok
-
-class Manajer(Pegawai):
-    def __init__(self, nama: str, gaji_pokok: float, tunjangan: float):
-        super().__init__(nama, gaji_pokok)
-        self.tunjangan = tunjangan
-
-    def hitung_penghasilan(self) -> float:
-        return super().hitung_penghasilan() + self.tunjangan
-```
-
----
-
-## 5. CONTOH BERTAHAP (Faded Examples): Sistem Manajemen Inventaris Gudang
-
-Pelajari bagaimana Dataclasses dipadukan dengan agregasi bisnis untuk menghitung valuasi total stok:
+Pelajari bagaimana Dataclasses dipadukan dengan agregasi bisnis untuk mengelola inventaris gudang secara aman:
 
 <FadedExample
   client:load
+  title="Sistem Manajemen Inventaris Gudang dengan Dataclass"
   language="python"
-  title="Latihan Bertahap P3.2: Arsitektur Gudang & Valuasi Stok"
-  description="Lengkapi method penambahan barang dan kalkulasi ringkasan valuasi gudang secara terstruktur."
-  scaffoldCode={`from dataclasses import dataclass
+  missingTaskDescription="Lengkapi method tambah_barang dan total_valuasi pada kelas GudangInventaris menggunakan agregasi generator sum()."
+  fadedHint="Simpan barang ke dalam dictionary self._stok dengan kunci barang.sku, dan gunakan sum(b.nilai_total for b in self._stok.values()) untuk menghitung total valuasi."
+  starterCode={`from dataclasses import dataclass
 
 @dataclass
 class StokBarang:
@@ -174,10 +151,12 @@ class GudangInventaris:
         self._stok: dict[str, StokBarang] = {}
 
     def tambah_barang(self, barang: StokBarang) -> None:
-        self._stok[barang.sku] = barang
+        # TODO: Masukkan barang ke dalam self._stok dengan kunci barang.sku
+        pass
 
     def total_valuasi(self) -> int:
-        return sum(b.nilai_total for b in self._stok.values())
+        # TODO: Kembalikan total nilai seluruh barang dalam gudang
+        return 0
 
     def ringkasan(self) -> str:
         return f"Gudang: {len(self._stok)} SKU | Valuasi: Rp{self.total_valuasi():,}"
@@ -187,201 +166,6 @@ gudang.tambah_barang(StokBarang("BRG-1", "Beras Ramos 5kg", 10, 75000))
 gudang.tambah_barang(StokBarang("BRG-2", "Minyak Goreng 2L", 25, 34000))
 
 print(gudang.ringkasan())`}
-  solutionCode={`from dataclasses import dataclass
-
-@dataclass
-class StokBarang:
-    sku: str
-    nama: str
-    jumlah: int
-    harga_satuan: int
-
-    @property
-    def nilai_total(self) -> int:
-        return self.jumlah * self.harga_satuan
-
-class GudangInventaris:
-    def __init__(self):
-        self._stok: dict[str, StokBarang] = {}
-
-    def tambah_barang(self, barang: StokBarang) -> None:
-        self._stok[barang.sku] = barang
-
-    def total_valuasi(self) -> int:
-        return sum(b.nilai_total for b in self._stok.values())
-
-    def ringkasan(self) -> str:
-        return f"Gudang: {len(self._stok)} SKU | Valuasi: Rp{self.total_valuasi():,}"
-
-gudang = GudangInventaris()
-gudang.tambah_barang(StokBarang("BRG-1", "Beras Ramos 5kg", 10, 75000))
-gudang.tambah_barang(StokBarang("BRG-2", "Minyak Goreng 2L", 25, 34000))
-
-print(gudang.ringkasan())`}
-  tips={[
-    "Gunakan @dataclass untuk class penampung data tanpa perlu menulis __init__ manual.",
-    "Properti kalkulasi turunan seperti nilai_total paling bersih didefinisikan menggunakan dekorator @property.",
-    "Gunakan generator expression sum(...) untuk mengagregasi nilai dari dictionary tanpa alokasi memori list sementara."
-  ]}
-/>
-
----
-
-## 6. COBA SENDIRI: Interactive Playground
-
-Ujilah materi OOP dan Standard Library langsung di browser melalui runtime WebAssembly Pyodide:
-
-### Latihan 6.1: Dunder Equality & Comparison Operator Overloading
-
-<CodePlayground
-  client:load
-  language="python"
-  initialCode={`class NilaiMahasiswa:
-    def __init__(self, nama: str, skor: float):
-        self.nama = nama
-        self.skor = skor
-
-    def __eq__(self, other):
-        if not isinstance(other, NilaiMahasiswa):
-            return False
-        return self.skor == other.skor
-
-    def __lt__(self, other):
-        if not isinstance(other, NilaiMahasiswa):
-            return NotImplemented
-        return self.skor < other.skor
-
-m1 = NilaiMahasiswa("Budi", 85.0)
-m2 = NilaiMahasiswa("Siti", 85.0)
-m3 = NilaiMahasiswa("Andi", 92.5)
-
-print(m1 == m2)
-print(m1 < m3)`}
-  expectedOutput={`True\nTrue`}
-/>
-
-### Latihan 6.2: Enkapsulasi & Proteksi Mutasi Saldo Bank
-
-<CodePlayground
-  client:load
-  language="python"
-  initialCode={`class RekeningBank:
-    def __init__(self, nomor: str, saldo_awal: float = 0.0):
-        self.nomor = nomor
-        self._saldo = max(0.0, float(saldo_awal))
-
-    @property
-    def saldo(self) -> float:
-        return self._saldo
-
-    def setor(self, jumlah: float) -> None:
-        if jumlah <= 0:
-            raise ValueError("Jumlah setor harus positif")
-        self._saldo += jumlah
-
-    def tarik(self, jumlah: float) -> bool:
-        if 0 < jumlah <= self._saldo:
-            self._saldo -= jumlah
-            return True
-        return False
-
-rek = RekeningBank("ACC-001", 500000)
-rek.setor(250000)
-print(f"Saldo setelah setor: Rp{rek.saldo:,.0f}")
-sukses = rek.tarik(100000)
-print(f"Penarikan 100k: {sukses}, Sisa saldo: Rp{rek.saldo:,.0f}")`}
-  expectedOutput={`Saldo setelah setor: Rp750,000\nPenarikan 100k: True, Sisa saldo: Rp650,000`}
-/>
-
-### Latihan 6.3: Pewarisan Bersih & Komputasi Bertingkat dengan super()
-
-<CodePlayground
-  client:load
-  language="python"
-  initialCode={`class Pegawai:
-    def __init__(self, nama: str, gaji_pokok: float):
-        self.nama = nama
-        self.gaji_pokok = gaji_pokok
-
-    def hitung_penghasilan(self) -> float:
-        return self.gaji_pokok
-
-class Manajer(Pegawai):
-    def __init__(self, nama: str, gaji_pokok: float, tunjangan: float):
-        super().__init__(nama, gaji_pokok)
-        self.tunjangan = tunjangan
-
-    def hitung_penghasilan(self) -> float:
-        return super().hitung_penghasilan() + self.tunjangan
-
-tim = [
-    Pegawai("Dewi", 6000000),
-    Manajer("Bambang", 12000000, 4000000),
-]
-
-for p in tim:
-    print(f"{p.nama}: Rp{p.hitung_penghasilan():,.0f}")`}
-  expectedOutput={`Dewi: Rp6,000,000\nBambang: Rp16,000,000`}
-/>
-
-### Latihan 6.4: Pemodelan Data Immutable dengan @dataclass(frozen=True)
-
-<CodePlayground
-  client:load
-  language="python"
-  initialCode={`from dataclasses import dataclass, field
-
-@dataclass(frozen=True)
-class ItemProduk:
-    kode: str
-    nama: str
-    harga: int
-    kategori: str = "Umum"
-    tagar: tuple[str, ...] = field(default_factory=tuple)
-
-p1 = ItemProduk("KB-01", "Kopi Robusta Lampung", 45000, "Minuman", ("organik", "lokal"))
-p2 = ItemProduk("TH-02", "Teh Hitam Walini", 25000, "Minuman")
-
-tag_teks = ", ".join(p1.tagar)
-print(f"Produk 1: {p1.nama} ({p1.kategori}) - Rp{p1.harga}")
-print(f"Tagar p1: {tag_teks}")
-print(f"Produk 2: {p2.nama} - Tagar: {len(p2.tagar)}")`}
-  expectedOutput={`Produk 1: Kopi Robusta Lampung (Minuman) - Rp45000\nTagar p1: organik, lokal\nProduk 2: Teh Hitam Walini - Tagar: 0`}
-/>
-
-### Latihan 6.5: Pengelompokan Data & Frekuensi via collections
-
-<CodePlayground
-  client:load
-  language="python"
-  initialCode={`from collections import Counter, defaultdict
-
-transaksi = [
-    ("Makanan", "Nasi Goreng"),
-    ("Minuman", "Es Teh Manis"),
-    ("Makanan", "Ayam Bakar"),
-    ("Makanan", "Nasi Goreng"),
-    ("Minuman", "Es Jeruk"),
-    ("Camilan", "Kerupuk"),
-]
-
-pesanan_counter = Counter([item[1] for item in transaksi])
-print("Item terlaris:", pesanan_counter.most_common(1)[0])
-
-kategori_map = defaultdict(list)
-for kategori, menu in transaksi:
-    kategori_map[kategori].append(menu)
-
-print("Kategori Makanan:", sorted(set(kategori_map["Makanan"])))
-print("Total Kategori Terdata:", len(kategori_map))`}
-  expectedOutput={`Item terlaris: ('Nasi Goreng', 2)\nKategori Makanan: ['Ayam Bakar', 'Nasi Goreng']\nTotal Kategori Terdata: 3`}
-/>
-
-### Latihan 6.6: Sistem Manajemen Inventaris Gudang Terstruktur
-
-<CodePlayground
-  client:load
-  language="python"
   initialCode={`from dataclasses import dataclass
 
 @dataclass
@@ -418,10 +202,190 @@ print(gudang.ringkasan())`}
 
 ---
 
-## 7. ASISTEN SOKRATIK: Diskusi & Diagnosa Galat OOP
+## 5. LATIHAN MANDIRI (AUTO-GRADED) & TANGGA PETUNJUK
 
-Butuh klarifikasi seputar kapan memakai Dataclass vs Class biasa, atau bagaimana menghindari argumen default mutable? Tanyakan pada Asisten Sokratik:
+Ujilah materi OOP dan Standard Library langsung di browser melalui runtime WebAssembly Pyodide:
 
+<CodePlayground
+  client:load
+  language="python"
+  title="Latihan Mandiri P3.1: Dunder Equality & Comparison Operator Overloading"
+  initialCode={`class NilaiMahasiswa:
+    def __init__(self, nama: str, skor: float):
+        self.nama = nama
+        self.skor = skor
+
+    def __eq__(self, other):
+        if not isinstance(other, NilaiMahasiswa):
+            return False
+        return self.skor == other.skor
+
+    def __lt__(self, other):
+        if not isinstance(other, NilaiMahasiswa):
+            return NotImplemented
+        return self.skor < other.skor
+
+m1 = NilaiMahasiswa("Budi", 85.0)
+m2 = NilaiMahasiswa("Siti", 85.0)
+m3 = NilaiMahasiswa("Andi", 92.5)
+
+print(m1 == m2)
+print(m1 < m3)`}
+  expectedOutput={`True\nTrue`}
+/>
+
+<CodePlayground
+  client:load
+  language="python"
+  title="Latihan Mandiri P3.2: Enkapsulasi & Proteksi Mutasi Saldo Bank"
+  initialCode={`class RekeningBank:
+    def __init__(self, nomor: str, saldo_awal: float = 0.0):
+        self.nomor = nomor
+        self._saldo = max(0.0, float(saldo_awal))
+
+    @property
+    def saldo(self) -> float:
+        return self._saldo
+
+    def setor(self, jumlah: float) -> None:
+        if jumlah <= 0:
+            raise ValueError("Jumlah setor harus positif")
+        self._saldo += jumlah
+
+    def tarik(self, jumlah: float) -> bool:
+        if 0 < jumlah <= self._saldo:
+            self._saldo -= jumlah
+            return True
+        return False
+
+rek = RekeningBank("ACC-001", 500000)
+rek.setor(250000)
+print(f"Saldo setelah setor: Rp{rek.saldo:,.0f}")
+sukses = rek.tarik(100000)
+print(f"Penarikan 100k: {sukses}, Sisa saldo: Rp{rek.saldo:,.0f}")`}
+  expectedOutput={`Saldo setelah setor: Rp750,000\nPenarikan 100k: True, Sisa saldo: Rp650,000`}
+/>
+
+<CodePlayground
+  client:load
+  language="python"
+  title="Latihan Mandiri P3.3: Pewarisan Bersih & Komputasi Bertingkat dengan super()"
+  initialCode={`class Pegawai:
+    def __init__(self, nama: str, gaji_pokok: float):
+        self.nama = nama
+        self.gaji_pokok = gaji_pokok
+
+    def hitung_penghasilan(self) -> float:
+        return self.gaji_pokok
+
+class Manajer(Pegawai):
+    def __init__(self, nama: str, gaji_pokok: float, tunjangan: float):
+        super().__init__(nama, gaji_pokok)
+        self.tunjangan = tunjangan
+
+    def hitung_penghasilan(self) -> float:
+        return super().hitung_penghasilan() + self.tunjangan
+
+tim = [
+    Pegawai("Dewi", 6000000),
+    Manajer("Bambang", 12000000, 4000000),
+]
+
+for p in tim:
+    print(f"{p.nama}: Rp{p.hitung_penghasilan():,.0f}")`}
+  expectedOutput={`Dewi: Rp6,000,000\nBambang: Rp16,000,000`}
+/>
+
+<CodePlayground
+  client:load
+  language="python"
+  title="Latihan Mandiri P3.4: Pemodelan Data Immutable dengan @dataclass(frozen=True)"
+  initialCode={`from dataclasses import dataclass, field
+
+@dataclass(frozen=True)
+class ItemProduk:
+    kode: str
+    nama: str
+    harga: int
+    kategori: str = "Umum"
+    tagar: tuple[str, ...] = field(default_factory=tuple)
+
+p1 = ItemProduk("KB-01", "Kopi Robusta Lampung", 45000, "Minuman", ("organik", "lokal"))
+p2 = ItemProduk("TH-02", "Teh Hitam Walini", 25000, "Minuman")
+
+tag_teks = ", ".join(p1.tagar)
+print(f"Produk 1: {p1.nama} ({p1.kategori}) - Rp{p1.harga}")
+print(f"Tagar p1: {tag_teks}")
+print(f"Produk 2: {p2.nama} - Tagar: {len(p2.tagar)}")`}
+  expectedOutput={`Produk 1: Kopi Robusta Lampung (Minuman) - Rp45000\nTagar p1: organik, lokal\nProduk 2: Teh Hitam Walini - Tagar: 0`}
+/>
+
+<CodePlayground
+  client:load
+  language="python"
+  title="Latihan Mandiri P3.5: Pengelompokan Data & Frekuensi via collections"
+  initialCode={`from collections import Counter, defaultdict
+
+transaksi = [
+    ("Makanan", "Nasi Goreng"),
+    ("Minuman", "Es Teh Manis"),
+    ("Makanan", "Ayam Bakar"),
+    ("Makanan", "Nasi Goreng"),
+    ("Minuman", "Es Jeruk"),
+    ("Camilan", "Kerupuk"),
+]
+
+pesanan_counter = Counter([item[1] for item in transaksi])
+print("Item terlaris:", pesanan_counter.most_common(1)[0])
+
+kategori_map = defaultdict(list)
+for kategori, menu in transaksi:
+    kategori_map[kategori].append(menu)
+
+print("Kategori Makanan:", sorted(set(kategori_map["Makanan"])))
+print("Total Kategori Terdata:", len(kategori_map))`}
+  expectedOutput={`Item terlaris: ('Nasi Goreng', 2)\nKategori Makanan: ['Ayam Bakar', 'Nasi Goreng']\nTotal Kategori Terdata: 3`}
+/>
+
+<CodePlayground
+  client:load
+  language="python"
+  title="Latihan Mandiri P3.6: Sistem Manajemen Inventaris Gudang Terstruktur"
+  initialCode={`from dataclasses import dataclass
+
+@dataclass
+class StokBarang:
+    sku: str
+    nama: str
+    jumlah: int
+    harga_satuan: int
+
+    @property
+    def nilai_total(self) -> int:
+        return self.jumlah * self.harga_satuan
+
+class GudangInventaris:
+    def __init__(self):
+        self._stok: dict[str, StokBarang] = {}
+
+    def tambah_barang(self, barang: StokBarang) -> None:
+        self._stok[barang.sku] = barang
+
+    def total_valuasi(self) -> int:
+        return sum(b.nilai_total for b in self._stok.values())
+
+    def ringkasan(self) -> str:
+        return f"Gudang: {len(self._stok)} SKU | Valuasi: Rp{self.total_valuasi():,}"
+
+gudang = GudangInventaris()
+gudang.tambah_barang(StokBarang("BRG-1", "Beras Ramos 5kg", 10, 75000))
+gudang.tambah_barang(StokBarang("BRG-2", "Minyak Goreng 2L", 25, 34000))
+
+print(gudang.ringkasan())`}
+  expectedOutput={`Gudang: 2 SKU | Valuasi: Rp1,600,000`}
+/>
+
+{/* Socratic AI Tutor Assistant */}
 <SocraticTutorPanel
   client:load
   conceptTitle="OOP, Dataclass & Standard Library (P3)"
@@ -430,9 +394,16 @@ Butuh klarifikasi seputar kapan memakai Dataclass vs Class biasa, atau bagaimana
 
 ---
 
-## 8. CEK KONSEPTUAL & MINI-PROYEK P3
+## 6. KESALAHAN UMUM (COMMON MISCONCEPTIONS)
 
-Selesaikan kuis evaluasi pemahaman konseptual Level P3:
+1. **Jebakan Argumen Bawaan Mutable (*Mutable Default Argument*):** Menulis fungsi `def tambah(item, keranjang=[])`. Di Python, nilai parameter bawaan dievaluasi **hanya sekali** saat definisi fungsi dimuat ke memori (waktu kompilasi modul). Akibatnya, setiap pemanggilan fungsi tanpa argumen kedua akan memanipulasi objek list yang sama persis di memori. Solusinya: gunakan `keranjang=None` dan inisialisasi `if keranjang is None: keranjang = []` di dalam tubuh fungsi.
+2. **Lupa Parameter `self` pada Instance Method:** Menulis `def ambil_nama(): return self.nama`. Saat fungsi dipanggil via objek `m.ambil_nama()`, Python secara implisit meneruskan objek `m` sebagai argumen pertama. Jika method tidak memiliki parameter `self`, interpreter akan melempar `TypeError: takes 0 positional arguments but 1 was given`.
+3. **Mengabaikan `super().__init__()`:** Pada class turunan yang meng-override `__init__`, melupakan pemanggilan `super().__init__(...)` akan menyebabkan inisialisasi class induk terlewati. Hal ini menyebabkan error atribut tidak ditemukan (*AttributeError*) saat method turunan dijalankan.
+4. **Ilusi Immutability Struktur Bersarang pada `@dataclass(frozen=True)`:** Mengira bahwa `frozen=True` melindungi seluruh data secara mendalam (*deep immutable*). Jika salah satu atribut dataclass adalah `list` atau `dict`, item di dalam list tersebut masih dapat diubah via `append()` atau mutasi indeks! Gunakan tipe `tuple` atau `frozenset` untuk data koleksi pada dataclass beku.
+
+---
+
+## 7. RANGKUMAN & KUIS MINI (RETRIEVAL PRACTICE)
 
 <MiniQuiz
   client:load
@@ -486,7 +457,7 @@ Bangunlah sistem inventaris toko menggunakan OOP dan Dataclass:
 4. Terapkan penanganan validasi agar penambahan kuantitas negatif otomatis ditolak dengan pesan error yang bermakna.
 
 **Gerbang Kelulusan (Mastery Gate Level P3):**
-- [x] Lulus 6 Latihan Kode Interaktif di atas dengan status 100% hijau.
+- [x] Lulus seluruh Latihan Kode Interaktif di atas dengan status 100% hijau.
 - [x] Skor Kuis Evaluasi Konseptual minimal 80%.
 - [x] Nilai probabilitas penguasaan BKT untuk konsep OOP & Dataclass $P(L) \ge 0.85$.
 
@@ -494,8 +465,8 @@ Bangunlah sistem inventaris toko menggunakan OOP dan Dataclass:
 
 ## 8. SELAMI LEBIH DALAM (DIVE DEEPER)
 
-- **Dokumentasi Resmi Python:** Telusuri panduan [docs.python.org: Classes & Inheritance](https://docs.python.org/3/tutorial/classes.html) dan [docs.python.org: Dataclasses (PEP 557)](https://docs.python.org/3/library/dataclasses.html).
+- **Dokumentasi Resmi Python:** Telusuri panduan komprehensif [docs.python.org: Classes & Inheritance](https://docs.python.org/3/tutorial/classes.html) dan [docs.python.org: Dataclasses (PEP 557)](https://docs.python.org/3/library/dataclasses.html).
 - **W3Schools Python OOP Guide:** Pelajari latihan interaktif [W3Schools Python Classes and Objects](https://www.w3schools.com/python/python_classes.asp).
-- **PEP 484 & Typing Standard:** Telusuri standar type hints [PEP 484 – Type Hints](https://peps.python.org/pep-0484/).
-- **C3 MRO Linearization:** Cara CPython menyelesaikan Method Resolution Order pada pewarisan multipel tanpa ambiguitas (Diamond Problem).
-
+- **Video YouTube Rekomendasi:** Saksikan playlist tutorial mendalam Corey Schafer *"Python OOP Tutorials - Working with Classes and Object Oriented Programming"* yang membahas `__repr__`, `@property`, dan class inheritance dengan jelas.
+- **Standar PEP Resmi:** Telusuri standar [PEP 484 – Type Hints](https://peps.python.org/pep-0484/) dan [PEP 557 – Data Classes](https://peps.python.org/pep-0557/).
+- **C3 MRO Linearization:** Cara CPython menyelesaikan Method Resolution Order pada pewarisan multipel tanpa ambiguitas (*Diamond Problem*).

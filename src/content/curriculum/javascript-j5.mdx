@@ -1,0 +1,418 @@
+---
+id: "J5"
+track: "javascript"
+level: "J5"
+title: "Advanced JavaScript: Metaprogramming, Generator & Sistem Reaktivitas"
+slug: "curriculum/javascript/j5"
+estimatedMinutes: 150
+prerequisites:
+  - "J1"
+  - "J2"
+  - "J3"
+  - "J4"
+learningObjectives:
+  - "Menguasai Metaprogramming menggunakan Proxy dan Reflect untuk mengintercept operasi objek"
+  - "Mengimplementasikan kustom Iterator dan Generator function* (yield) untuk streaming data terpaginasi"
+  - "Memahami model alokasi memori heap V8, WeakMap, dan teknik isolasi metadata privat bebas kebocoran memori"
+  - "Menerapkan Higher-Order Functions, Currying, dan Function Composition (pipe/compose)"
+  - "Membangun sistem Reactive Signal Store mandiri (mirip arsitektur Preact Signals / Vue Reactivity) dengan dependency tracking otomatis"
+relatedConcepts:
+  - "Proxy & Reflect API"
+  - "Symbol.iterator & Generator Functions"
+  - "WeakMap & V8 Garbage Collection"
+  - "Functional Composition & Currying"
+  - "Reactive Signals Architecture"
+languageVersion: "ES2024"
+summary: "Jelajahi kedalaman internal JavaScript: buat sistem reaktivitas berbasis Proxy, kelola memori heap dengan WeakMap, bangun generator pagination data, dan rancang arsitektur reactive signals."
+---
+
+import { CodePlayground } from '../../components/CodePlayground';
+import { DualTrackView } from '../../components/DualTrackView';
+import { PredictOutput } from '../../components/PredictOutput';
+import { FadedExample } from '../../components/FadedExample';
+import { SocraticTutorPanel } from '../../components/SocraticTutorPanel';
+import { MiniQuiz } from '../../components/MiniQuiz';
+
+# Level J5: Advanced JavaScript & Arsitektur Sistem
+
+Selamat datang di Level J5. Pada level ini, kamu melangkah dari pengembang aplikasi biasa menjadi **arsitek sistem perangkat lunak JavaScript**. Kita akan membongkar mekanisme internal engine: mengintersep operasi objek via `Proxy`, mengontrol alur iterasi via `Generator`, melindungi memori dengan `WeakMap`, dan membangun **Reactive State Engine** dari nol.
+
+---
+
+## 1. HOOK: Masalah Nyata & Analogi Keseharian
+
+<DualTrackView
+  client:load
+  santaiTitle="Jalur Santai: Sensor Gerbang Cerdas & Resep Masakan Mengalir"
+  santaiParagraphs={[
+    "Bayangkan rumah pintarmu dilengkapi sistem sensor gerbang. Setiap kali ada tamu yang hendak menyentuh gagang pintu (operasi read properti) atau menaruh paket di teras (operasi write), sistem secara otomatis membunyikan bel, mencatat log waktu di kamera pengawas, dan memverifikasi isi paket. Itulah Proxy di JavaScript: penjaga cerdas di depan objek aslimu.",
+    "Sedangkan Generator seperti dispenser air minum otomatis: ia tidak membanjiri kamarmu dengan 100 liter air sekaligus, melainkan hanya mengalirkan satu cangkir air (yield) setiap kali kamu menekan tuas tombolnya (next()). Hemat ruang, efisien, dan terkontrol."
+  ]}
+  cepatTitle="Jalur Cepat: V8 Trap Handlers, Heap Lifecycle & Reactive Dependency DAG"
+  cepatParagraphs={[
+    "Proxy mengimplementasikan internal methods spesifikasi TC39 ECMA-262 (§10.5) seperti [[Get]], [[Set]], dan [[Has]] secara transparan. Melalui objek pendamping Reflect, setiap trap mempertahankan invokasi native tanpa merusak prototype chain.",
+    "Framework UI modern (Vue 3 Reactivity, Preact Signals, SolidJS) tidak lagi mengandalkan diffing Virtual DOM yang mahal, melainkan Directed Acyclic Graph (DAG) reaktif. Sinyal melacak efek aktif saat trap [[Get]] terpicu dan memancarkan notifikasi pembaruan saat trap [[Set]] dieksekusi."
+  ]}
+/>
+
+---
+
+## 2. KONSEP INTI: Metaprogramming, Generator & Reaktivitas
+
+Berdasarkan dokumentasi resmi [MDN Web Docs: Proxy](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy) dan tutorial komprehensif [W3Schools JavaScript Advanced](https://www.w3schools.com/js/), lima pilar utama Level J5 mencakup:
+
+1. **Proxy & Reflect API:**
+   - Objek `Proxy` membungkus target dan menyediakan *traps* untuk mengintersep operasi dasar seperti pembacaan properti (`get`), penugasan nilai (`set`), dan penghapusan (`deleteProperty`).
+   - `Reflect` menyediakan method cermin dengan nama yang sama untuk meneruskan operasi ke objek asli secara aman dan mengembalikan status boolean baku.
+2. **Generator Functions (`function*` & `yield`):**
+   - Fungsi khusus yang dapat dihentikan sementara (*paused*) dan dilanjutkan kembali (*resumed*) saat runtime. Mengembalikan objek iterator yang mematuhi protokol iterasi (`{ value, done }`).
+3. **Weak Collections & Siklus Hidup Memori V8:**
+   - `WeakMap` dan `WeakSet` memegang referensi lemah (*weak reference*) terhadap objek. Kunci objek yang disimpan di `WeakMap` dapat dibersihkan otomatis oleh Garbage Collector V8 saat tidak ada lagi referensi kuat lain, mencegah kebocoran memori (*memory leak*).
+4. **Functional Composition (Pipe & Currying):**
+   - Mengubah fungsi multi-argumen menjadi rantai fungsi berargumen tunggal (*currying*), dan menggabungkan fungsi-fungsi murni menjadi satu alur pipa data yang elegan (*pipe*).
+5. **Reactive Signal Architecture:**
+   - Pola reaktivitas modern di mana state membungkus nilai dengan getter (untuk mencatat fungsi efek mana saja yang membaca nilai tersebut) dan setter (untuk mengeksekusi ulang seluruh subscriber yang bergantung padanya).
+
+---
+
+## 3. CONTOH HIDUP + PREDIKSI OUTPUT
+
+Uji intuisimu mengenai bagaimana trap `get` dan `set` pada `Proxy` mengintersep akses properti objek:
+
+<PredictOutput
+  client:load
+  language="javascript"
+  title="Prediksi Output J5.1: Proxy Traps Interception"
+  code={`const target = { nama: "belajar.in", rating: 5 };
+const proxy = new Proxy(target, {
+  get(obj, prop) {
+    if (prop in obj) {
+      return Reflect.get(obj, prop);
+    }
+    return "[Properti " + String(prop) + " tidak ditemukan]";
+  },
+  set(obj, prop, value) {
+    if (prop === "rating" && (value < 1 || value > 5)) {
+      throw new RangeError("Rating harus antara 1 sampai 5");
+    }
+    return Reflect.set(obj, prop, value);
+  }
+});
+
+console.log(proxy.nama);
+console.log(proxy.versi);
+proxy.rating = 4;
+console.log(proxy.rating);`}
+  options={[
+    {
+      text: "belajar.in\\n[Properti versi tidak ditemukan]\\n4",
+      isCorrect: true,
+      explanation: "Tepat! Properti 'nama' ada di objek target sehingga Reflect.get mengembalikan nilainya. Properti 'versi' tidak ada sehingga mengembalikan fallback string. Penugasan rating = 4 valid dan tercetak 4."
+    },
+    {
+      text: "belajar.in\\nundefined\\n4",
+      isCorrect: false,
+      explanation: "Salah. Trap get telah disesuaikan untuk mengembalikan pesan fallback khusus ketika properti tidak ada di objek target."
+    },
+    {
+      text: "belajar.in\\n[Properti versi tidak ditemukan]\\n5",
+      isCorrect: false,
+      explanation: "Salah. Penugasan proxy.rating = 4 berhasil disimpan ke objek target melalui Reflect.set sehingga nilai terkini adalah 4."
+    }
+  ]}
+/>
+
+---
+
+## 4. LATIHAN TERPANDU (FADED EXAMPLE)
+
+Pelajari teknik *Function Composition* (pola `pipe`) untuk membersihkan input string dan menghasilkan slug URL artikel secara deterministik:
+
+<FadedExample
+  client:load
+  title="Pola Pipe Function Composition untuk Pembuat Slug URL"
+  language="javascript"
+  missingTaskDescription="Lengkapi fungsi pipe menggunakan reduce() untuk mengeksekusi rantai fungsi dari kiri ke kanan secara berurutan."
+  fadedHint="Gunakan fns.reduce((acc, fn) => fn(acc), nilaiAwal) untuk mengalirkan hasil transformasi setiap fungsi ke fungsi berikutnya."
+  starterCode={`const pipe = (...fns) => (nilaiAwal) => {
+  // TODO: Gunakan fns.reduce untuk mengalirkan nilaiAwal melewati setiap fn
+  return fns.reduce((acc, fn) => acc, nilaiAwal);
+};
+
+const trim = (str) => str.trim();
+const hurufKecil = (str) => str.toLowerCase();
+const gantiSpasi = (str) => str.replaceAll(" ", "-");
+const tambahAwalan = (awalan) => (str) => awalan + "/" + str;
+
+const buatSlug = pipe(
+  trim,
+  hurufKecil,
+  gantiSpasi,
+  tambahAwalan("artikel")
+);
+
+console.log(buatSlug("  Belajar JavaScript Tingkat Lanjut  "));`}
+  initialCode={`const pipe = (...fns) => (nilaiAwal) => fns.reduce((acc, fn) => fn(acc), nilaiAwal);
+
+const trim = (str) => str.trim();
+const hurufKecil = (str) => str.toLowerCase();
+const gantiSpasi = (str) => str.replaceAll(" ", "-");
+const tambahAwalan = (awalan) => (str) => awalan + "/" + str;
+
+const buatSlug = pipe(
+  trim,
+  hurufKecil,
+  gantiSpasi,
+  tambahAwalan("artikel")
+);
+
+console.log(buatSlug("  Belajar JavaScript Tingkat Lanjut  "));`}
+  expectedOutput={`artikel/belajar-javascript-tingkat-lanjut`}
+/>
+
+---
+
+## 5. LATIHAN MANDIRI (AUTO-GRADED) & TANGGA PETUNJUK
+
+Selesaikan lima tantangan rekayasa tingkat lanjut di bawah ini langsung di browser:
+
+<CodePlayground
+  client:load
+  language="javascript"
+  title="Latihan Mandiri J5.1: Proxy Audit Logger & State Mutator Guard"
+  initialCode={`function createAuditProxy(target) {
+  const logPerubahan = [];
+  const proxy = new Proxy(target, {
+    set(obj, prop, val) {
+      const nilaiLama = obj[prop];
+      Reflect.set(obj, prop, val);
+      logPerubahan.push("[UBAH] " + String(prop) + ": " + nilaiLama + " -> " + val);
+      return true;
+    }
+  });
+  return { proxy, logPerubahan };
+}
+
+const { proxy, logPerubahan } = createAuditProxy({ status: "draft", revisi: 1 });
+proxy.status = "review";
+proxy.revisi = 2;
+
+console.log("Status Akhir:", proxy.status);
+for (const entri of logPerubahan) {
+  console.log(entri);
+}`}
+  expectedOutput={`Status Akhir: review\n[UBAH] status: draft -> review\n[UBAH] revisi: 1 -> 2`}
+/>
+
+<CodePlayground
+  client:load
+  language="javascript"
+  title="Latihan Mandiri J5.2: Generator Paginasi Data Koleksi"
+  initialCode={`function* paginasiGenerator(items, ukuranHalaman = 2) {
+  for (let i = 0; i < items.length; i += ukuranHalaman) {
+    yield items.slice(i, i + ukuranHalaman);
+  }
+}
+
+const dataModul = ["J1-Dasar", "J2-Struktur", "J3-Async", "J4-Tooling", "J5-Advanced"];
+const generator = paginasiGenerator(dataModul, 2);
+
+let halaman = 1;
+for (const kumpulan of generator) {
+  console.log("Halaman " + halaman + ": " + kumpulan.join(", "));
+  halaman++;
+}`}
+  expectedOutput={`Halaman 1: J1-Dasar, J2-Struktur\nHalaman 2: J3-Async, J4-Tooling\nHalaman 3: J5-Advanced`}
+/>
+
+<CodePlayground
+  client:load
+  language="javascript"
+  title="Latihan Mandiri J5.3: Manajemen Memori Aman dengan WeakMap"
+  initialCode={`const metadataCache = new WeakMap();
+
+class SesiBelajar {
+  constructor(nama, idRahasia) {
+    this.nama = nama;
+    metadataCache.set(this, { idRahasia, tahun: 2026 });
+  }
+
+  ambilTahun() {
+    return metadataCache.get(this)?.tahun;
+  }
+
+  ambilIdRahasia() {
+    return metadataCache.get(this)?.idRahasia;
+  }
+}
+
+const sesi = new SesiBelajar("Budi", "TOKEN-XYZ-99");
+console.log("Nama Sesi:", sesi.nama);
+console.log("Tahun:", sesi.ambilTahun());
+console.log("Kunci Publik Objek:", Object.keys(sesi).join(", "));
+console.log("ID Rahasia via WeakMap:", sesi.ambilIdRahasia());`}
+  expectedOutput={`Nama Sesi: Budi\nTahun: 2026\nKunci Publik Objek: nama\nID Rahasia via WeakMap: TOKEN-XYZ-99`}
+/>
+
+<CodePlayground
+  client:load
+  language="javascript"
+  title="Latihan Mandiri J5.4: Currying Fungsional Multi-Argumen"
+  initialCode={`const curry = (fn) => {
+  return function curried(...args) {
+    if (args.length >= fn.length) {
+      return fn.apply(this, args);
+    }
+    return (...nextArgs) => curried.apply(this, args.concat(nextArgs));
+  };
+};
+
+const hitungTotal = (harga, pajakPersen, diskonNominal) => {
+  const setelahPajak = harga + (harga * pajakPersen / 100);
+  return setelahPajak - diskonNominal;
+};
+
+const curriedHitung = curry(hitungTotal);
+const hitungDenganPajakPPN = curriedHitung(100000)(11);
+
+console.log("Total (Diskon Rp10.000): Rp" + hitungDenganPajakPPN(10000));
+console.log("Total (Diskon Rp5.000): Rp" + hitungDenganPajakPPN(5000));`}
+  expectedOutput={`Total (Diskon Rp10.000): Rp101000\nTotal (Diskon Rp5.000): Rp106000`}
+/>
+
+<CodePlayground
+  client:load
+  language="javascript"
+  title="Mini Proyek J5: Mini Reactive Signal Store dengan Auto-Tracking"
+  initialCode={`let efekAktif = null;
+
+class Signal {
+  constructor(nilaiAwal) {
+    this._nilai = nilaiAwal;
+    this.subscribers = new Set();
+  }
+
+  get value() {
+    if (efekAktif) {
+      this.subscribers.add(efekAktif);
+    }
+    return this._nilai;
+  }
+
+  set value(nilaiBaru) {
+    if (this._nilai !== nilaiBaru) {
+      this._nilai = nilaiBaru;
+      for (const sub of this.subscribers) {
+        sub();
+      }
+    }
+  }
+}
+
+function createEffect(fn) {
+  efekAktif = fn;
+  fn();
+  efekAktif = null;
+}
+
+const hitungan = new Signal(10);
+const riwayat = [];
+
+createEffect(() => {
+  riwayat.push("Nilai sekarang: " + hitungan.value);
+});
+
+hitungan.value = 20;
+hitungan.value = 35;
+
+for (const baris of riwayat) {
+  console.log(baris);
+}`}
+  expectedOutput={`Nilai sekarang: 10\nNilai sekarang: 20\nNilai sekarang: 35`}
+/>
+
+{/* Socratic AI Tutor Assistant */}
+<SocraticTutorPanel
+  client:load
+  conceptTitle="Metaprogramming, Proxy, Generators & Reactive Signals (J5)"
+  contextDescription="Diskusikan arsitektur Proxy traps, perbedaan Generator vs Async Generator, dan siklus garbage collection V8."
+/>
+
+---
+
+## 6. KESALAHAN UMUM (COMMON MISCONCEPTIONS)
+
+1. **Ketidakcocokan Identitas Proxy (`proxy !== target`):** Mengira bahwa instance `Proxy` identik secara referensi dengan objek yang dibungkusnya. Operator `===` membandingkan identitas pointer memori sehingga `proxy === target` selalu menghasilkan `false`. Jika kamu menyimpan objek ke dalam `Set` atau kunci `Map`, simpanlah salah satunya secara konsisten.
+2. **Generator yang Telah Habis Dieksekusi (*Exhausted Generators*):** Objek generator hanya dapat diiterasi satu kali dari awal hingga akhir. Setelah `done === true`, memanggil `next()` kembali tidak akan mengulang iterasi dari awal. Untuk melakukan iterasi ulang, fungsi generator harus dipanggil kembali untuk membuat iterator baru.
+3. **Keterbatasan Kunci WeakMap:** Mencoba menggunakan nilai primitif (seperti string `"id"` atau number `123`) sebagai kunci `WeakMap`. `WeakMap` hanya menerima referensi objek atau Symbol unik non-terdaftar sebagai kunci agar Garbage Collector dapat melacak siklus hidupnya.
+4. **Siklus Loop Tak Berhingga pada Reaktivitas Efek:** Memutasi nilai sinyal di dalam fungsi efek yang sama yang sedang membaca sinyal tersebut tanpa batas penghenti (*infinite reactive cycle*). Di framework skala industri, engine reaktivitas dilengkapi pelacak kedalaman siklus rekursi maksimum untuk mencegah tabrakan call stack (*maximum call stack size exceeded*).
+
+---
+
+## 7. RANGKUMAN & KUIS MINI (RETRIEVAL PRACTICE)
+
+<MiniQuiz
+  client:load
+  title="Kuis Evaluasi Konseptual: Level J5"
+  questions={[
+    {
+      question: "Mengapa disarankan memanggil method dari objek Reflect (misal Reflect.get atau Reflect.set) di dalam trap Proxy?",
+      options: [
+        "Karena Reflect menjamin perilaku standar objek tetap terpelihara, meneruskan nilai kembalian boolean yang sesuai spesifikasi, dan mempertahankan konteks receiver objek asli.",
+        "Karena tanpa Reflect, JavaScript runtime akan mematikan proses node secara paksa.",
+        "Karena Reflect otomatis mengompilasi kode JavaScript menjadi WebAssembly.",
+        "Karena Reflect menghapus kebutuhan kata kunci const dan let."
+      ],
+      correctAnswerIndex: 0,
+      explanation: "Tepat! Method Reflect dirancang sebagai padanan 1:1 terhadap trap Proxy untuk memicu operasi default JavaScript secara bersih dan menjaga integritas delegasi prototype."
+    },
+    {
+      question: "Apa perbedaan paling mendasar antara Map biasa dan WeakMap dalam pengelolaan memori heap JavaScript?",
+      options: [
+        "WeakMap hanya menerima objek sebagai kunci dan memegang referensi lemah, sehingga tidak menghalangi Garbage Collector membersihkan memori saat objek tersebut sudah tidak digunakan di tempat lain.",
+        "WeakMap dapat menyimpan data hingga 100 gigabyte di hard drive.",
+        "Map biasa hanya mendukung tipe data string dan number.",
+        "WeakMap mengeksekusi operasi get dan set secara multi-threaded."
+      ],
+      correctAnswerIndex: 0,
+      explanation: "Tepat! Referensi kunci di WeakMap tidak mencegah siklus Garbage Collection (GC). Sangat ideal untuk menyimpan data privat atau cache yang terikat pada umur objek."
+    },
+    {
+      question: "Bagaimana mekanisme pelacakan dependensi otomatis (dependency tracking) bekerja pada Reactive Signals?",
+      options: [
+        "Getter sinyal mencatat efek aktif yang sedang dieksekusi saat membaca nilainya, dan setter sinyal memicu pemanggilan ulang efek-efek yang tersimpan di daftar subscriber.",
+        "Compiler Vite memindai seluruh kode file dan menulis ulang variabel secara otomatis.",
+        "Browser mendengarkan event click mouse pengguna untuk menduga variabel mana yang berubah.",
+        "Sinyal menggunakan Web Worker latar belakang untuk polling memori setiap 1 milidetik."
+      ],
+      correctAnswerIndex: 0,
+      explanation: "Tepat! Saat sebuah effect berjalan, variabel pointer global (efekAktif) diarahkan ke effect tersebut. Ketika sinyal dibaca, ia meregistrasikan efekAktif ke dalam Set subscribers miliknya."
+    }
+  ]}
+/>
+
+---
+
+### Mini Proyek J5: Arsitektur Library Sinyal Reaktif Bergaya Preact/Vue (Reactive State Engine)
+
+**Deskripsi Tugas Mandiri:**
+Rancang sistem manajemen state reaktif modern dari nol:
+1. Buat kelas `Signal<T>` dengan method `get value()` dan `set value(newVal)`.
+2. Pasang fungsi `createEffect(callback)` yang secara otomatis mengeksekusi callback dan melacak seluruh dependency sinyal yang diakses di dalamnya.
+3. Buat pembantu `createComputed(computeFn)` yang menghasilkan sinyal turunan (*derived signal*) hanya-baca yang nilainya diperbarui secara otomatis jika sinyal sumbernya berubah.
+4. Pastikan sistem tahan terhadap pembacaan berulang tanpa memicu re-running berlebih (*subscription deduplication* menggunakan `Set`).
+
+**Gerbang Kelulusan (Mastery Gate Level J5):**
+- [x] Lulus seluruh 6 Latihan Kode Interaktif di atas dengan status 100% hijau.
+- [x] Skor Kuis Evaluasi Konseptual minimal 80%.
+- [x] Nilai probabilitas penguasaan BKT untuk konsep Metaprogramming & Reaktivitas $P(L) \ge 0.85$.
+
+---
+
+## 8. SELAMI LEBIH DALAM (DIVE DEEPER)
+
+- **Dokumentasi Resmi MDN:** Telusuri panduan komprehensif [MDN Web Docs: Metaprogramming with Proxy & Reflect](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Meta_programming) dan [MDN Iterators and generators](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Iterators_and_generators).
+- **W3Schools JavaScript Advanced:** Pelajari tutorial [W3Schools JavaScript Function Closures & Currying](https://www.w3schools.com/js/js_function_closures.asp).
+- **Video YouTube Rekomendasi:** Saksikan visualisasi arsitektur oleh Fireship: *"JavaScript Proxy Explained in 100 Seconds"* dan pembedahan reaktivitas oleh Evan You (kreator Vue): *"Reactivity in Depth"*.
+- **V8 Engine Garbage Collection:** Telusuri arsitektur [V8 Blog: Trash talk - The Orinoco garbage collector](https://v8.dev/blog/trash-talk) mengenai penanganan alokasi Generational GC, Scavenge, dan Mark-Sweep.
+- **Spesifikasi Formal TC39:** Telusuri spesifikasi [ECMA-262 §10.5 Proxy Object Internal Methods](https://tc39.es/ecma262/#sec-proxy-object-internal-methods-and-internal-slots).
