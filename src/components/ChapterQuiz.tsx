@@ -97,10 +97,10 @@ function sampleMixedQuestions(
     codingTarget = Math.min(codingPool.length, 2);
     mcqTarget = Math.max(1, targetCount - codingTarget);
   } else if (chosenMode === 'mostly-coding') {
-    codingTarget = Math.min(codingPool.length, 3);
-    mcqTarget = 1;
+    codingTarget = Math.min(codingPool.length, Math.max(2, targetCount - 2));
+    mcqTarget = Math.max(1, targetCount - codingTarget);
   } else if (chosenMode === 'full-coding') {
-    codingTarget = Math.min(codingPool.length, 3);
+    codingTarget = Math.min(codingPool.length, targetCount);
     mcqTarget = 0;
   }
 

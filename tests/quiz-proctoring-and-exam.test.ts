@@ -14,6 +14,7 @@ import {
   getSavedSession,
 } from '../src/lib/userStore';
 import { PythonRunner } from '../src/lib/runner/python';
+import { isSplitScreenDetected } from '../src/lib/useProctoring';
 
 describe('Python Chapter Live Coding Challenges & Syllabus Integrity', () => {
   it('defines live coding challenges for every sequential Bab (Bab 1 to 5)', () => {
@@ -185,33 +186,88 @@ describe('Comprehensive Final Exam Scoring & Official Certification Award', () =
 
     LocalAuthManager.logout();
   });
+
+  it('allows guest to complete Final Exam and retains certification badge upon subsequent login', () => {
+    LocalAuthManager.logout();
+    expect(getSavedSession()).toBeNull();
+
+    const guestAward = awardFinalExamCompletion('exam_python_final', 150, 50, 2);
+    expect(guestAward.awarded).toBe(false);
+
+    // Guest logs in (instead of registering)
+    const loggedInUser = LocalAuthManager.login('returning_guest');
+    expect(loggedInUser.completedExercises).toContain('exam_python_final');
+    expect(loggedInUser.completedExercises).toContain('cert_python_graduate');
+
+    LocalAuthManager.logout();
+  });
 });
 
-describe('Pyodide WASM Live Coding Execution Verification', () => {
-  it('executes Bab 1 challenge starter code and produces expected output', async () => {
+describe('Live Coding Scaffolding & Pyodide Execution Verification', () => {
+  it('provides authentic scaffolding (TODOs) in starterCode for learners to write code', () => {
+    PYTHON_CHAPTERS.forEach((chap) => {
+      chap.codingChallenges?.forEach((challenge) => {
+        expect(challenge.starterCode).toMatch(/TODO/i);
+        expect(challenge.solutionCode).toBeDefined();
+        expect(challenge.solutionCode!.length).toBeGreaterThan(10);
+      });
+    });
+
+    PYTHON_FINAL_EXAM.codingChallenges.forEach((challenge) => {
+      expect(challenge.starterCode).toMatch(/TODO/i);
+      expect(challenge.solutionCode).toBeDefined();
+      expect(challenge.solutionCode!.length).toBeGreaterThan(10);
+    });
+  });
+
+  it('executes Bab 1 challenge reference solution and produces expected output', async () => {
     const runner = new PythonRunner();
     const challenge1 = PYTHON_CHAPTERS[0].codingChallenges![0];
 
-    const res = await runner.run(challenge1.starterCode);
+    const res = await runner.run(challenge1.solutionCode!);
     expect(res.success).toBe(true);
     expect(res.stdout.join('\n').trim()).toBe(challenge1.expectedOutput.trim());
   }, 25000);
 
-  it('executes Bab 5 challenge starter code and verifies OOP class method output', async () => {
+  it('executes Bab 5 challenge reference solution and verifies OOP class method output', async () => {
     const runner = new PythonRunner();
     const challenge5 = PYTHON_CHAPTERS[4].codingChallenges![0];
 
-    const res = await runner.run(challenge5.starterCode);
+    const res = await runner.run(challenge5.solutionCode!);
     expect(res.success).toBe(true);
     expect(res.stdout.join('\n').trim()).toBe(challenge5.expectedOutput.trim());
   }, 25000);
 
-  it('executes Final Exam coding challenge starter code and verifies output', async () => {
+  it('executes Final Exam coding challenge reference solution and verifies output', async () => {
     const runner = new PythonRunner();
     const finalCoding1 = PYTHON_FINAL_EXAM.codingChallenges[0];
 
-    const res = await runner.run(finalCoding1.starterCode);
+    const res = await runner.run(finalCoding1.solutionCode!);
     expect(res.success).toBe(true);
     expect(res.stdout.join('\n').trim()).toBe(finalCoding1.expectedOutput.trim());
   }, 25000);
+});
+
+describe('Anti-Cheat & Split-Screen Proctoring Verification', () => {
+  it('detects desktop window resizing / side-by-side tiling multitasking', () => {
+    // Normal desktop window (1200x800)
+    expect(isSplitScreenDetected(1200, 800, 1200, 800, 1440, 900)).toBe(false);
+
+    // Desktop split horizontally (tiled to left half, width drops from 1200 to 500)
+    expect(isSplitScreenDetected(500, 800, 1200, 800, 1440, 900)).toBe(true);
+
+    // Desktop narrow screen ratio (< 60% of available screen on >= 800px monitor)
+    expect(isSplitScreenDetected(700, 900, 1200, 900, 1440, 900)).toBe(true);
+  });
+
+  it('detects mobile portrait vertical split-screen multitasking', () => {
+    // Standard phone in portrait (e.g. 390x844)
+    expect(isSplitScreenDetected(390, 750, 390, 750, 390, 844)).toBe(false);
+
+    // Mobile split screen (Android / iOS multitasking: browser runs in top half, height shrinks to 320px)
+    expect(isSplitScreenDetected(390, 320, 390, 750, 390, 844)).toBe(true);
+
+    // Mobile screen height ratio < 62% in portrait
+    expect(isSplitScreenDetected(390, 380, 390, 750, 390, 844)).toBe(true);
+  });
 });

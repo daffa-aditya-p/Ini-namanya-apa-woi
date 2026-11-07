@@ -20,6 +20,7 @@ export interface LiveCodingChallenge {
   title: string;
   question: string;
   starterCode: string;
+  solutionCode?: string;
   expectedOutput: string;
   testCases?: {
     description: string;
@@ -393,7 +394,8 @@ export const PYTHON_CHAPTERS: ChapterData[] = [
         subBab: '1.1',
         title: 'Cetak Teks dengan sep & end',
         question: 'Gunakan fungsi print() dengan argumen "Halo", "Python", "3.12" serta parameter sep="-" dan end="!\\n" untuk menghasilkan output: Halo-Python-3.12!',
-        starterCode: '# Tulis kode print dengan parameter sep dan end\nprint("Halo", "Python", "3.12", sep="-", end="!\\n")',
+        starterCode: '# Cetak "Halo", "Python", "3.12" dipisahkan "-" dan diakhiri "!\\n"\n# TODO: Lengkapi pemanggilan fungsi print di bawah ini:\nprint("Halo", ...)',
+        solutionCode: 'print("Halo", "Python", "3.12", sep="-", end="!\\n")',
         expectedOutput: 'Halo-Python-3.12!',
         testCases: [
           {
@@ -409,7 +411,8 @@ export const PYTHON_CHAPTERS: ChapterData[] = [
         subBab: '1.4',
         title: 'Aritmatika & Format String Modern',
         question: 'Diberikan panjang = 8 dan lebar = 5. Hitung luasnya dan cetak menggunakan f-string dengan format persis: Luas persegi panjang: 40',
-        starterCode: 'panjang = 8\nlebar = 5\n# Hitung luas dan cetak format f-string\nluas = panjang * lebar\nprint(f"Luas persegi panjang: {luas}")',
+        starterCode: 'panjang = 8\nlebar = 5\n# TODO: Hitung luas (panjang * lebar) dan cetak dengan f-string:\n# "Luas persegi panjang: <luas>"\n',
+        solutionCode: 'panjang = 8\nlebar = 5\nluas = panjang * lebar\nprint(f"Luas persegi panjang: {luas}")',
         expectedOutput: 'Luas persegi panjang: 40',
         testCases: [
           {
@@ -425,7 +428,8 @@ export const PYTHON_CHAPTERS: ChapterData[] = [
         subBab: '1.3',
         title: 'Konversi Suhu Celsius ke Fahrenheit',
         question: 'Diberikan celsius = 30. Hitung fahrenheit = (celsius * 9/5) + 32 lalu cetak: Suhu Fahrenheit: 86.0',
-        starterCode: 'celsius = 30\n# Konversi celsius ke fahrenheit\nfahrenheit = (celsius * 9 / 5) + 32\nprint(f"Suhu Fahrenheit: {fahrenheit}")',
+        starterCode: 'celsius = 30\n# TODO: Hitung fahrenheit = (celsius * 9 / 5) + 32\n# dan cetak f"Suhu Fahrenheit: {fahrenheit}"\n',
+        solutionCode: 'celsius = 30\nfahrenheit = (celsius * 9 / 5) + 32\nprint(f"Suhu Fahrenheit: {fahrenheit}")',
         expectedOutput: 'Suhu Fahrenheit: 86.0',
         testCases: [
           {
@@ -781,7 +785,8 @@ print(hasil)`,
         subBab: '2.1',
         title: 'Percabangan Evaluasi Nilai if-elif-else',
         question: 'Diberikan skor = 85. Tulis blok percabangan: jika skor >= 90 cetak "A", jika skor >= 80 cetak "B", jika skor >= 70 cetak "C", selain itu cetak "D".',
-        starterCode: 'skor = 85\n# Tulis percabangan logika\nif skor >= 90:\n    print("A")\nelif skor >= 80:\n    print("B")\nelif skor >= 70:\n    print("C")\nelse:\n    print("D")',
+        starterCode: 'skor = 85\n# TODO: Tulis percabangan logika if/elif/else:\n# >= 90: "A", >= 80: "B", >= 70: "C", lainnya: "D"\n',
+        solutionCode: 'skor = 85\nif skor >= 90:\n    print("A")\nelif skor >= 80:\n    print("B")\nelif skor >= 70:\n    print("C")\nelse:\n    print("D")',
         expectedOutput: 'B',
         testCases: [
           {
@@ -797,7 +802,8 @@ print(hasil)`,
         subBab: '2.2',
         title: 'Perulangan Rentang Angka Kelipatan Tiga',
         question: 'Gunakan loop for dan range() dengan step 3 untuk mencetak angka kelipatan 3 dari 3 sampai 15 dipisahkan spasi (3 6 9 12 15).',
-        starterCode: '# Cetak rentang angka kelipatan 3\nfor i in range(3, 16, 3):\n    print(i, end=" ")\nprint()',
+        starterCode: '# TODO: Gunakan for loop dan range(..., step) untuk mencetak kelipatan 3 (3 sampai 15)\n# Gunakan end=" " lalu diakhiri print()\n',
+        solutionCode: 'for i in range(3, 16, 3):\n    print(i, end=" ")\nprint()',
         expectedOutput: '3 6 9 12 15',
         testCases: [
           {
@@ -813,7 +819,8 @@ print(hasil)`,
         subBab: '2.3',
         title: 'Akumulasi Penjumlahan dengan Loop while',
         question: 'Gunakan perulangan while untuk menjumlahkan angka dari 1 hingga 5 ke dalam variabel total. Cetak f-string: Total: 15',
-        starterCode: 'n = 1\ntotal = 0\n# Loop while untuk akumulasi\nwhile n <= 5:\n    total += n\n    n += 1\nprint(f"Total: {total}")',
+        starterCode: 'n = 1\ntotal = 0\n# TODO: Gunakan loop while untuk akumulasi n (1 s.d. 5) ke dalam total\n# lalu cetak f"Total: {total}"\n',
+        solutionCode: 'n = 1\ntotal = 0\nwhile n <= 5:\n    total += n\n    n += 1\nprint(f"Total: {total}")',
         expectedOutput: 'Total: 15',
         testCases: [
           {
@@ -1155,7 +1162,8 @@ gabung = profil | kontak`,
         subBab: '3.1',
         title: 'Pembalik Urutan List dengan Slicing [::-1]',
         question: 'Diberikan list huruf = ["a", "b", "c", "d", "e"]. Buat list terbalik menggunakan slicing step -1 lalu cetak hasilnya.',
-        starterCode: 'huruf = ["a", "b", "c", "d", "e"]\n# Balikkan urutan list\nterbalik = huruf[::-1]\nprint(terbalik)',
+        starterCode: 'huruf = ["a", "b", "c", "d", "e"]\n# TODO: Balikkan urutan list huruf menggunakan slicing dan cetak hasilnya:\n',
+        solutionCode: 'huruf = ["a", "b", "c", "d", "e"]\nterbalik = huruf[::-1]\nprint(terbalik)',
         expectedOutput: "['e', 'd', 'c', 'b', 'a']",
         testCases: [
           {
@@ -1171,7 +1179,8 @@ gabung = profil | kontak`,
         subBab: '3.3',
         title: 'Penggabungan Dictionary Modern (|)',
         question: 'Diberikan profil = {"nama": "Ahmad"} dan nilai = {"skor": 95}. Gabungkan dengan operator | dan cetak dictionary hasilnya.',
-        starterCode: 'profil = {"nama": "Ahmad"}\nnilai = {"skor": 95}\n# Gabungkan dengan operator |\nhasil = profil | nilai\nprint(hasil)',
+        starterCode: 'profil = {"nama": "Ahmad"}\nnilai = {"skor": 95}\n# TODO: Gabungkan kedua dictionary menggunakan operator | dan cetak:\n',
+        solutionCode: 'profil = {"nama": "Ahmad"}\nnilai = {"skor": 95}\nhasil = profil | nilai\nprint(hasil)',
         expectedOutput: "{'nama': 'Ahmad', 'skor': 95}",
         testCases: [
           {
@@ -1187,7 +1196,8 @@ gabung = profil | kontak`,
         subBab: '3.4',
         title: 'Operasi Irisan Himpunan (Set Intersection &)',
         question: 'Diberikan set_a = {1, 2, 3, 4} dan set_b = {3, 4, 5, 6}. Ambil irisan keduanya menggunakan operator &, ubah ke sorted list, dan cetak.',
-        starterCode: 'set_a = {1, 2, 3, 4}\nset_b = {3, 4, 5, 6}\n# Dapatkan irisan dan cetak sorted list\nirisan = sorted(list(set_a & set_b))\nprint(irisan)',
+        starterCode: 'set_a = {1, 2, 3, 4}\nset_b = {3, 4, 5, 6}\n# TODO: Dapatkan irisan (&) set_a dan set_b, konversi ke sorted list, lalu cetak:\n',
+        solutionCode: 'set_a = {1, 2, 3, 4}\nset_b = {3, 4, 5, 6}\nirisan = sorted(list(set_a & set_b))\nprint(irisan)',
         expectedOutput: '[3, 4]',
         testCases: [
           {
@@ -1532,7 +1542,8 @@ print([p[0] for p in produk_urut])`,
         subBab: '4.1',
         title: 'Fungsi Modular Menghitung Kuadrat',
         question: 'Definisikan fungsi kuadrat(n) yang mengembalikan hasil n ** 2. Panggil fungsi dengan print(kuadrat(7)).',
-        starterCode: '# Buat fungsi kuadrat\ndef kuadrat(n):\n    return n ** 2\n\nprint(kuadrat(7))',
+        starterCode: '# TODO: Definisikan fungsi kuadrat(n) yang mengembalikan n ** 2:\ndef kuadrat(n):\n    pass\n\nprint(kuadrat(7))',
+        solutionCode: 'def kuadrat(n):\n    return n ** 2\n\nprint(kuadrat(7))',
         expectedOutput: '49',
         testCases: [
           {
@@ -1548,7 +1559,8 @@ print([p[0] for p in produk_urut])`,
         subBab: '4.1',
         title: 'Fungsi dengan Parameter Default',
         question: 'Definisikan fungsi hitung_diskon(harga, diskon=10) yang mengembalikan int(harga * (1 - diskon / 100)). Panggil print(hitung_diskon(100000)).',
-        starterCode: '# Definisikan fungsi dengan default parameter diskon\ndef hitung_diskon(harga, diskon=10):\n    return int(harga * (1 - diskon / 100))\n\nprint(hitung_diskon(100000))',
+        starterCode: '# TODO: Definisikan fungsi hitung_diskon(harga, diskon=10)\n# Kembalikan int(harga * (1 - diskon / 100))\ndef hitung_diskon(harga, diskon=10):\n    pass\n\nprint(hitung_diskon(100000))',
+        solutionCode: 'def hitung_diskon(harga, diskon=10):\n    return int(harga * (1 - diskon / 100))\n\nprint(hitung_diskon(100000))',
         expectedOutput: '90000',
         testCases: [
           {
@@ -1564,7 +1576,8 @@ print([p[0] for p in produk_urut])`,
         subBab: '4.3',
         title: 'List Comprehension Kuadrat Ganjil',
         question: 'Diberikan angka = [1, 2, 3, 4, 5]. Buatlah list baru kuadrat angka ganjil menggunakan comprehension [x**2 for x in angka if x % 2 != 0] dan cetak hasilnya.',
-        starterCode: 'angka = [1, 2, 3, 4, 5]\n# Buat list comprehension untuk angka ganjil\nhasil = [x ** 2 for x in angka if x % 2 != 0]\nprint(hasil)',
+        starterCode: 'angka = [1, 2, 3, 4, 5]\n# TODO: Buat list comprehension untuk kuadrat hanya angka ganjil:\nhasil = []\nprint(hasil)',
+        solutionCode: 'angka = [1, 2, 3, 4, 5]\nhasil = [x ** 2 for x in angka if x % 2 != 0]\nprint(hasil)',
         expectedOutput: '[1, 9, 25]',
         testCases: [
           {
@@ -2022,7 +2035,8 @@ print([p[0] for p in produk_urut])`,
         subBab: '5.1',
         title: 'Perancangan Class Sederhana & Method Instance',
         question: 'Buatlah class Kucing dengan __init__(self, nama) dan method suara(self) yang mengembalikan f"{self.nama} bersuara: Meong!". Buat objek k = Kucing("Oyen") dan cetak k.suara().',
-        starterCode: 'class Kucing:\n    def __init__(self, nama):\n        self.nama = nama\n\n    def suara(self):\n        return f"{self.nama} bersuara: Meong!"\n\nk = Kucing("Oyen")\nprint(k.suara())',
+        starterCode: 'class Kucing:\n    # TODO: Buat konstruktor __init__(self, nama) dan method suara(self)\n    # suara(self) mengembalikan f"{self.nama} bersuara: Meong!"\n    pass\n\nk = Kucing("Oyen")\nprint(k.suara())',
+        solutionCode: 'class Kucing:\n    def __init__(self, nama):\n        self.nama = nama\n\n    def suara(self):\n        return f"{self.nama} bersuara: Meong!"\n\nk = Kucing("Oyen")\nprint(k.suara())',
         expectedOutput: 'Oyen bersuara: Meong!',
         testCases: [
           {
@@ -2038,7 +2052,8 @@ print([p[0] for p in produk_urut])`,
         subBab: '5.2',
         title: 'Enkapsulasi Data dengan Dekorator @property',
         question: 'Buatlah class Dompet dengan self._saldo = saldo di __init__. Sediakan getter @property def saldo(self): return self._saldo. Buat d = Dompet(50000) dan cetak d.saldo.',
-        starterCode: 'class Dompet:\n    def __init__(self, saldo):\n        self._saldo = saldo\n\n    @property\n    def saldo(self):\n        return self._saldo\n\nd = Dompet(50000)\nprint(d.saldo)',
+        starterCode: 'class Dompet:\n    def __init__(self, saldo):\n        self._saldo = saldo\n\n    # TODO: Gunakan dekorator @property untuk getter saldo yang mengembalikan self._saldo\n\nd = Dompet(50000)\nprint(d.saldo)',
+        solutionCode: 'class Dompet:\n    def __init__(self, saldo):\n        self._saldo = saldo\n\n    @property\n    def saldo(self):\n        return self._saldo\n\nd = Dompet(50000)\nprint(d.saldo)',
         expectedOutput: '50000',
         testCases: [
           {
@@ -2054,7 +2069,8 @@ print([p[0] for p in produk_urut])`,
         subBab: '5.3',
         title: 'Pewarisan Hierarkis & Delegasi super()',
         question: 'Buat class Kendaraan dengan __init__(self, merk), dan subclass Mobil(Kendaraan) dengan __init__(self, merk, roda=4) yang memanggil super().__init__(merk). Cetak f"{m.merk} - {m.roda} roda" untuk Mobil("Toyota").',
-        starterCode: 'class Kendaraan:\n    def __init__(self, merk):\n        self.merk = merk\n\nclass Mobil(Kendaraan):\n    def __init__(self, merk, roda=4):\n        super().__init__(merk)\n        self.roda = roda\n\nm = Mobil("Toyota")\nprint(f"{m.merk} - {m.roda} roda")',
+        starterCode: 'class Kendaraan:\n    def __init__(self, merk):\n        self.merk = merk\n\nclass Mobil(Kendaraan):\n    # TODO: Definisikan __init__(self, merk, roda=4), panggil super().__init__(merk), dan simpan self.roda = roda\n    pass\n\nm = Mobil("Toyota")\nprint(f"{m.merk} - {m.roda} roda")',
+        solutionCode: 'class Kendaraan:\n    def __init__(self, merk):\n        self.merk = merk\n\nclass Mobil(Kendaraan):\n    def __init__(self, merk, roda=4):\n        super().__init__(merk)\n        self.roda = roda\n\nm = Mobil("Toyota")\nprint(f"{m.merk} - {m.roda} roda")',
         expectedOutput: 'Toyota - 4 roda',
         testCases: [
           {
@@ -2365,7 +2381,8 @@ export const PYTHON_FINAL_EXAM: FinalExamData = {
       subBab: '1.4',
       title: 'Tantangan 1 (Bab 1): Pemformatan Nota Tagihan',
       question: 'Diberikan item = "Laptop", harga = 8500000, dan diskon = 15. Hitung harga_akhir = int(harga * (1 - diskon / 100)) lalu cetak f-string: Nota: Laptop - Total: Rp 7225000',
-      starterCode: 'item = "Laptop"\nharga = 8500000\ndiskon = 15\n# Hitung harga akhir dan cetak nota\nharga_akhir = int(harga * (1 - diskon / 100))\nprint(f"Nota: {item} - Total: Rp {harga_akhir}")',
+      starterCode: 'item = "Laptop"\nharga = 8500000\ndiskon = 15\n# TODO: Hitung harga_akhir (int) dan cetak nota:\n# f"Nota: {item} - Total: Rp {harga_akhir}"\n',
+      solutionCode: 'item = "Laptop"\nharga = 8500000\ndiskon = 15\nharga_akhir = int(harga * (1 - diskon / 100))\nprint(f"Nota: {item} - Total: Rp {harga_akhir}")',
       expectedOutput: 'Nota: Laptop - Total: Rp 7225000',
       testCases: [
         {
@@ -2380,7 +2397,8 @@ export const PYTHON_FINAL_EXAM: FinalExamData = {
       conceptId: 'python.control.loop_accumulator',
       subBab: '2.2',
       question: 'Tantangan 2 (Bab 2): Penjumlahan Angka Genap 1-10. Gunakan for loop dan range(1, 11) untuk menjumlahkan semua angka genap (i % 2 == 0) ke dalam variabel total_genap, lalu cetak Total Genap: 30.',
-      starterCode: 'total_genap = 0\n# Loop angka 1 sampai 10 dan jumlahkan angka genap\nfor i in range(1, 11):\n    if i % 2 == 0:\n        total_genap += i\nprint(f"Total Genap: {total_genap}")',
+      starterCode: 'total_genap = 0\n# TODO: Loop angka 1 sampai 10 dan akumulasi hanya angka genap\n# lalu cetak f"Total Genap: {total_genap}"\n',
+      solutionCode: 'total_genap = 0\nfor i in range(1, 11):\n    if i % 2 == 0:\n        total_genap += i\nprint(f"Total Genap: {total_genap}")',
       expectedOutput: 'Total Genap: 30',
       testCases: [
         {
@@ -2395,7 +2413,8 @@ export const PYTHON_FINAL_EXAM: FinalExamData = {
       conceptId: 'python.collections.dict_frequency',
       subBab: '3.3',
       question: 'Tantangan 3 (Bab 3): Hitung Frekuensi Kata. Diberikan kata_list = ["apel", "jeruk", "apel", "mangga", "apel", "jeruk"]. Buat dictionary frekuensi yang menghitung kemunculan setiap kata, lalu cetak frekuensi["apel"] dan frekuensi["jeruk"] dalam f-string: Apel: 3, Jeruk: 2',
-      starterCode: 'kata_list = ["apel", "jeruk", "apel", "mangga", "apel", "jeruk"]\nfrekuensi = {}\nfor k in kata_list:\n    frekuensi[k] = frekuensi.get(k, 0) + 1\nprint(f"Apel: {frekuensi[\'apel\']}, Jeruk: {frekuensi[\'jeruk\']}")',
+      starterCode: 'kata_list = ["apel", "jeruk", "apel", "mangga", "apel", "jeruk"]\nfrekuensi = {}\n# TODO: Hitung frekuensi tiap elemen dalam kata_list ke dictionary frekuensi\n# Cetak f"Apel: {frekuensi[\'apel\']}, Jeruk: {frekuensi[\'jeruk\']}"\n',
+      solutionCode: 'kata_list = ["apel", "jeruk", "apel", "mangga", "apel", "jeruk"]\nfrekuensi = {}\nfor k in kata_list:\n    frekuensi[k] = frekuensi.get(k, 0) + 1\nprint(f"Apel: {frekuensi[\'apel\']}, Jeruk: {frekuensi[\'jeruk\']}")',
       expectedOutput: 'Apel: 3, Jeruk: 2',
       testCases: [
         {
@@ -2410,7 +2429,8 @@ export const PYTHON_FINAL_EXAM: FinalExamData = {
       conceptId: 'python.functions.variadic',
       subBab: '4.1',
       question: 'Tantangan 4 (Bab 4): Fungsi Rata-Rata Variadik (*angka). Definisikan fungsi hitung_rerata(*angka) yang mengembalikan sum(angka) / len(angka). Panggil print(f"Rerata: {hitung_rerata(10, 20, 30, 40):.1f}").',
-      starterCode: 'def hitung_rerata(*angka):\n    return sum(angka) / len(angka)\n\nprint(f"Rerata: {hitung_rerata(10, 20, 30, 40):.1f}")',
+      starterCode: '# TODO: Definisikan fungsi hitung_rerata(*angka) yang mengembalikan sum(angka) / len(angka)\ndef hitung_rerata(*angka):\n    pass\n\nprint(f"Rerata: {hitung_rerata(10, 20, 30, 40):.1f}")',
+      solutionCode: 'def hitung_rerata(*angka):\n    return sum(angka) / len(angka)\n\nprint(f"Rerata: {hitung_rerata(10, 20, 30, 40):.1f}")',
       expectedOutput: 'Rerata: 25.0',
       testCases: [
         {
@@ -2425,7 +2445,8 @@ export const PYTHON_FINAL_EXAM: FinalExamData = {
       conceptId: 'python.oop.full_hierarchy',
       subBab: '5.3',
       question: 'Tantangan 5 (Bab 5): Sistem Akun Perbankan OOP. Buat class Akun dengan self.pemilik dan self._saldo. Berikan property saldo dan method setor(nominal). Cetak f"Akun {a.pemilik} Saldo: {a.saldo}" setelah menyetor 25000 pada saldo awal 50000.',
-      starterCode: 'class Akun:\n    def __init__(self, pemilik, saldo_awal):\n        self.pemilik = pemilik\n        self._saldo = saldo_awal\n\n    @property\n    def saldo(self):\n        return self._saldo\n\n    def setor(self, nominal):\n        self._saldo += nominal\n\na = Akun("Budi", 50000)\na.setor(25000)\nprint(f"Akun {a.pemilik} Saldo: {a.saldo}")',
+      starterCode: 'class Akun:\n    def __init__(self, pemilik, saldo_awal):\n        self.pemilik = pemilik\n        self._saldo = saldo_awal\n\n    @property\n    def saldo(self):\n        return self._saldo\n\n    # TODO: Buat method setor(self, nominal) yang menambahkan nominal ke self._saldo\n    def setor(self, nominal):\n        pass\n\na = Akun("Budi", 50000)\na.setor(25000)\nprint(f"Akun {a.pemilik} Saldo: {a.saldo}")',
+      solutionCode: 'class Akun:\n    def __init__(self, pemilik, saldo_awal):\n        self.pemilik = pemilik\n        self._saldo = saldo_awal\n\n    @property\n    def saldo(self):\n        return self._saldo\n\n    def setor(self, nominal):\n        self._saldo += nominal\n\na = Akun("Budi", 50000)\na.setor(25000)\nprint(f"Akun {a.pemilik} Saldo: {a.saldo}")',
       expectedOutput: 'Akun Budi Saldo: 75000',
       testCases: [
         {

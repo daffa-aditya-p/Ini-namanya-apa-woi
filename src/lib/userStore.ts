@@ -430,6 +430,8 @@ export const LocalAuthManager = {
     const lowerKey = cleanUsername.toLowerCase();
     const lowerEmail = cleanHandle.toLowerCase();
 
+    const guestCompleted = getGuestCompletedExercises();
+
     // Check active session first
     const existing = getSavedSession();
     if (
@@ -439,6 +441,11 @@ export const LocalAuthManager = {
     ) {
       if (!existing.completedExercises) {
         existing.completedExercises = [];
+      }
+      if (guestCompleted.length > 0) {
+        existing.completedExercises = Array.from(
+          new Set([...existing.completedExercises, ...guestCompleted])
+        );
       }
       saveSession(existing);
       return existing;
@@ -450,6 +457,11 @@ export const LocalAuthManager = {
     if (storedUser) {
       if (!storedUser.completedExercises) {
         storedUser.completedExercises = [];
+      }
+      if (guestCompleted.length > 0) {
+        storedUser.completedExercises = Array.from(
+          new Set([...storedUser.completedExercises, ...guestCompleted])
+        );
       }
       saveSession(storedUser);
       return storedUser;
@@ -469,7 +481,13 @@ export const LocalAuthManager = {
         xp: 750, // Master rank (501 - 1000 XP)
         coins: 140,
         registeredEvents: ['event-sieve'],
-        completedExercises: ['Latihan J1.1: Mencetak Nilai Pertama', 'Latihan P1.1: Mencetak Output di Python'],
+        completedExercises: Array.from(
+          new Set([
+            'Latihan J1.1: Mencetak Nilai Pertama',
+            'Latihan P1.1: Mencetak Output di Python',
+            ...guestCompleted,
+          ])
+        ),
       };
       saveSession(demoProfile);
       return demoProfile;
@@ -488,7 +506,7 @@ export const LocalAuthManager = {
       xp: 245, // Gold II rank default
       coins: 80,
       registeredEvents: [],
-      completedExercises: [],
+      completedExercises: [...guestCompleted],
     };
 
     saveSession(profile);
