@@ -198,13 +198,48 @@ export function saveSession(user: UserProfile | null): void {
   }
 }
 
+const GUEST_COMPLETED_KEY = 'belajar_guest_completed';
+let inMemoryGuestCompleted: string[] = [];
+
+export function getGuestCompletedExercises(): string[] {
+  if (typeof window === 'undefined') {
+    return [...inMemoryGuestCompleted];
+  }
+  try {
+    const raw = localStorage.getItem(GUEST_COMPLETED_KEY);
+    if (!raw) return [...inMemoryGuestCompleted];
+    return JSON.parse(raw);
+  } catch {
+    return [...inMemoryGuestCompleted];
+  }
+}
+
+export function saveGuestCompletion(exerciseId: string): void {
+  const current = getGuestCompletedExercises();
+  if (!current.includes(exerciseId)) {
+    const updated = [...current, exerciseId];
+    inMemoryGuestCompleted = updated;
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem(GUEST_COMPLETED_KEY, JSON.stringify(updated));
+        window.dispatchEvent(new CustomEvent('belajar:user-updated'));
+      } catch {
+        // ignore local storage error
+      }
+    }
+  }
+}
+
 /**
- * Checks whether an exercise has already been completed by the current session.
+ * Checks whether an exercise has already been completed by the current session or guest storage.
  */
 export function isExerciseCompleted(exerciseId: string): boolean {
   const user = getSavedSession();
-  if (!user || !user.completedExercises) return false;
-  return user.completedExercises.includes(exerciseId);
+  if (user && user.completedExercises && user.completedExercises.includes(exerciseId)) {
+    return true;
+  }
+  const guestList = getGuestCompletedExercises();
+  return guestList.includes(exerciseId);
 }
 
 /**
@@ -279,6 +314,7 @@ export function awardChapterQuizCompletion(
 ): ChapterAwardResult {
   const user = getSavedSession();
   if (!user) {
+    saveGuestCompletion(chapterQuizId);
     return {
       awarded: false,
       xpEarned: 0,
@@ -399,6 +435,7 @@ export const LocalAuthManager = {
 
   register(username: string, email: string, _password?: string): UserProfile {
     const cleanUsername = username.trim().toLowerCase().replace(/[^a-z0-9_]/g, '') || 'pengguna';
+    const guestCompleted = getGuestCompletedExercises();
     const profile: UserProfile = {
       id: `usr_${Date.now()}`,
       username: cleanUsername,
@@ -411,7 +448,7 @@ export const LocalAuthManager = {
       xp: 25, // Bronze I
       coins: 20,
       registeredEvents: [],
-      completedExercises: [],
+      completedExercises: [...guestCompleted],
     };
 
     saveSession(profile);
@@ -433,5 +470,13 @@ export const LocalAuthManager = {
 
   logout(): void {
     saveSession(null);
+    inMemoryGuestCompleted = [];
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.removeItem(GUEST_COMPLETED_KEY);
+      } catch {
+        // ignore local storage error
+      }
+    }
   },
 };

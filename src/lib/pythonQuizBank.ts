@@ -1,3 +1,5 @@
+import { isExerciseCompleted } from './userStore';
+
 export interface BankQuestion {
   id: string;
   conceptId: string;
@@ -466,7 +468,7 @@ while n <= 10:
 print(f"n={n}, total={total}")`,
         options: [
           {
-            text: 'n=4, total=10 salah, yang benar n=5, total=15',
+            text: 'n=5, total=15',
             isCorrect: true,
             explanation: 'Iterasi 1: total=1, n=2. Iterasi 2: total=3, n=3. Iterasi 3: total=6, n=4. Iterasi 4: total=10, n=5. Iterasi 5: total=15 (>10) -> break langsung aktif saat n=5.',
           },
@@ -1679,3 +1681,30 @@ print([p[0] for p in produk_urut])`,
     ],
   },
 ];
+
+/**
+ * Returns previous Python chapter data if any.
+ */
+export function getPreviousPythonChapter(chapterId: string): ChapterData | null {
+  const idx = PYTHON_CHAPTERS.findIndex((c) => c.chapterId === chapterId);
+  if (idx <= 0) return null;
+  return PYTHON_CHAPTERS[idx - 1];
+}
+
+/**
+ * Checks whether a given Python chapter is unlocked.
+ * Bab 1 is always unlocked.
+ * Subsequent chapters require passing the previous chapter's quiz (>=80%).
+ */
+export function isPythonChapterUnlocked(
+  chapterId: string,
+  completedMap?: Record<string, boolean>
+): boolean {
+  if (chapterId === 'python-bab1') return true;
+  const prev = getPreviousPythonChapter(chapterId);
+  if (!prev) return true;
+  if (completedMap && completedMap[prev.chapterId] !== undefined) {
+    return Boolean(completedMap[prev.chapterId]);
+  }
+  return isExerciseCompleted(`quiz_${prev.chapterId}`);
+}

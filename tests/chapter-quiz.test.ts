@@ -1,13 +1,27 @@
-import { describe, it, expect } from 'vitest';
-import { PYTHON_CHAPTERS } from '../src/lib/pythonQuizBank';
+import { describe, it, expect, beforeEach } from 'vitest';
+import {
+  PYTHON_CHAPTERS,
+  isPythonChapterUnlocked,
+  getPreviousPythonChapter,
+} from '../src/lib/pythonQuizBank';
 import {
   awardChapterQuizCompletion,
   isExerciseCompleted,
   LocalAuthManager,
   getSavedSession,
 } from '../src/lib/userStore';
+import {
+  applyTestOutMastery,
+  getConceptMastery,
+  resetInMemoryMasteryForTesting,
+} from '../src/lib/bkt';
 
 describe('Python Chapter Structure & Syllabus Hierarchy', () => {
+  beforeEach(() => {
+    LocalAuthManager.logout();
+    resetInMemoryMasteryForTesting();
+  });
+
   it('defines all 5 sequential Bab with required Sub-babs and slugs', () => {
     expect(PYTHON_CHAPTERS.length).toBe(5);
 
@@ -69,6 +83,26 @@ describe('Python Chapter Structure & Syllabus Hierarchy', () => {
       });
     });
   });
+
+  it('provides correct previous chapter relationships and sequential unlock state', () => {
+    // Bab 1 has no previous chapter and is unlocked by default
+    expect(getPreviousPythonChapter('python-bab1')).toBeNull();
+    expect(isPythonChapterUnlocked('python-bab1')).toBe(true);
+
+    // Bab 2 through Bab 5 have previous chapters
+    const prev2 = getPreviousPythonChapter('python-bab2');
+    expect(prev2?.chapterId).toBe('python-bab1');
+
+    const prev3 = getPreviousPythonChapter('python-bab3');
+    expect(prev3?.chapterId).toBe('python-bab2');
+
+    // Without passing Bab 1 quiz, Bab 2 is locked
+    expect(isPythonChapterUnlocked('python-bab2')).toBe(false);
+
+    // With Bab 1 passed in completedMap override
+    expect(isPythonChapterUnlocked('python-bab2', { 'python-bab1': true })).toBe(true);
+    expect(isPythonChapterUnlocked('python-bab3', { 'python-bab1': true, 'python-bab2': false })).toBe(false);
+  });
 });
 
 describe('Dynamic Randomization & Question Bank Verification', () => {
@@ -91,6 +125,22 @@ describe('Dynamic Randomization & Question Bank Verification', () => {
     });
   });
 
+  it('verifies question bank hygiene (no author draft markers or placeholder debug notes)', () => {
+    const forbiddenPatterns = [/salah,\s*yang benar/i, /TODO/i, /FIXME/i, /DRAFT NOTE/i];
+
+    PYTHON_CHAPTERS.forEach((chap) => {
+      chap.questions.forEach((q) => {
+        forbiddenPatterns.forEach((pattern) => {
+          expect(q.question).not.toMatch(pattern);
+          q.options.forEach((opt) => {
+            expect(opt.text).not.toMatch(pattern);
+            expect(opt.explanation).not.toMatch(pattern);
+          });
+        });
+      });
+    });
+  });
+
   it('randomizes question subsets without losing question integrity', () => {
     const bab1 = PYTHON_CHAPTERS[0];
     const pool = bab1.questions;
@@ -105,6 +155,11 @@ describe('Dynamic Randomization & Question Bank Verification', () => {
 });
 
 describe('Strict Passing Standard & Reward Execution', () => {
+  beforeEach(() => {
+    LocalAuthManager.logout();
+    resetInMemoryMasteryForTesting();
+  });
+
   it('enforces >= 80% passing standard (max 1 mistake out of 5)', () => {
     const totalQuestions = 5;
     const passingScore = 80;
@@ -145,6 +200,9 @@ describe('Strict Passing Standard & Reward Execution', () => {
     expect(res.user?.hoursSpent).toBe(2);
     expect(isExerciseCompleted('quiz_python-bab1')).toBe(true);
 
+    // Now Bab 2 is unlocked
+    expect(isPythonChapterUnlocked('python-bab2')).toBe(true);
+
     // Retrying quiz (practice) must NOT award duplicate XP or coins
     const duplicate = awardChapterQuizCompletion('quiz_python-bab1', 50, 20, 1);
     expect(duplicate.awarded).toBe(false);
@@ -158,13 +216,47 @@ describe('Strict Passing Standard & Reward Execution', () => {
     LocalAuthManager.logout();
   });
 
-  it('prevents guest users from claiming chapter rewards without an account', () => {
+  it('allows guest users to complete chapter quiz, unlocks next chapter, and migrates upon registration', () => {
     LocalAuthManager.logout();
     expect(getSavedSession()).toBeNull();
 
+    // Guest completes Bab 1 quiz
     const guestAward = awardChapterQuizCompletion('quiz_python-bab1', 50, 20, 1);
     expect(guestAward.awarded).toBe(false);
     expect(guestAward.user).toBeNull();
     expect(guestAward.message).toContain('Masuk atau daftar');
+
+    // Guest completion should still be recorded so progression isn't blocked
+    expect(isExerciseCompleted('quiz_python-bab1')).toBe(true);
+    expect(isPythonChapterUnlocked('python-bab2')).toBe(true);
+
+    // Later guest decides to register
+    const newUser = LocalAuthManager.register('belajar_guest_migrated', 'migrated@belajar.in');
+    expect(newUser.completedExercises).toContain('quiz_python-bab1');
+    expect(isExerciseCompleted('quiz_python-bab1')).toBe(true);
+
+    LocalAuthManager.logout();
+  });
+
+  it('updates Bayesian Knowledge Tracing (BKT) concept mastery when chapter testout applies', () => {
+    const bab1Concepts = [
+      'python.basics.print',
+      'python.basics.variables',
+      'python.basics.operators',
+      'python.basics.input',
+    ];
+
+    bab1Concepts.forEach((cid) => {
+      expect(getConceptMastery(cid).isMastered).toBe(false);
+    });
+
+    // Simulate quiz pass triggering BKT mastery
+    applyTestOutMastery(bab1Concepts);
+
+    bab1Concepts.forEach((cid) => {
+      const mastery = getConceptMastery(cid);
+      expect(mastery.isMastered).toBe(true);
+      expect(mastery.pL).toBeGreaterThanOrEqual(0.90);
+    });
   });
 });

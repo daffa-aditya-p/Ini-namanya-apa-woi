@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useId } from 'react';
-import { recordConceptObservation } from '../lib/bkt';
+import { recordConceptObservation, applyTestOutMastery } from '../lib/bkt';
 import {
   awardChapterQuizCompletion,
   isExerciseCompleted,
@@ -131,6 +131,12 @@ export const ChapterQuiz: React.FC<ChapterQuizProps> = ({
       const result = awardChapterQuizCompletion(`quiz_${chapterId}`, 50, 20, 1);
       setAwardFeedback(result.message);
       setIsPreviouslyMastered(true);
+
+      // Cognitive BKT: Mark all concepts of this Bab as mastered (P(L) >= 0.90)
+      if (chapterData && chapterData.questions.length > 0) {
+        const uniqueConcepts = Array.from(new Set(chapterData.questions.map((q) => q.conceptId)));
+        applyTestOutMastery(uniqueConcepts);
+      }
     }
   };
 
@@ -145,6 +151,13 @@ export const ChapterQuiz: React.FC<ChapterQuizProps> = ({
     if (rawPool.length > 0) {
       setActiveQuestions(sampleAndShuffleQuestions(rawPool, questionsPerAttempt));
     }
+    // Smooth scroll back to top of quiz
+    if (typeof window !== 'undefined') {
+      const quizElement = document.getElementById(`kuis-${chapterId}`);
+      if (quizElement) {
+        quizElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
   };
 
   const allAnswered =
@@ -154,7 +167,22 @@ export const ChapterQuiz: React.FC<ChapterQuizProps> = ({
   const incorrectCount = activeQuestions.length - correctCount;
 
   if (activeQuestions.length === 0) {
-    return null;
+    return (
+      <div
+        id={`kuis-${chapterId}`}
+        className="my-10 p-8 rounded-2xl border-2 border-[var(--border-default)] bg-[var(--bg-surface)] text-center space-y-3 shadow-xs"
+      >
+        <div className="w-8 h-8 mx-auto rounded-full bg-[var(--accent-terracotta)]/20 text-[var(--accent-terracotta)] flex items-center justify-center animate-pulse">
+          <SparklesIcon className="w-4 h-4" />
+        </div>
+        <h3 className="font-display font-bold text-base text-[var(--text-primary)]">
+          {title}
+        </h3>
+        <p className="text-xs font-mono text-[var(--text-muted)]">
+          Menyiapkan bank soal evaluasi bab & pengacakan acak dinamis...
+        </p>
+      </div>
+    );
   }
 
   return (
@@ -260,15 +288,17 @@ export const ChapterQuiz: React.FC<ChapterQuizProps> = ({
                       <button
                         key={`${compId}-opt-${optIdx}`}
                         type="button"
+                        role="radio"
+                        aria-checked={isSelected}
                         onClick={() => handleSelect(qIdx, optIdx)}
                         disabled={submitted}
-                        className={`w-full text-left p-3.5 rounded-xl border text-xs sm:text-sm font-mono transition-all cursor-pointer flex items-start gap-3 ${styleClass}`}
+                        className={`w-full text-left p-3.5 rounded-xl border text-xs sm:text-sm transition-all cursor-pointer flex items-start gap-3 ${styleClass}`}
                       >
-                        <span className="w-5 h-5 rounded-full border border-current flex items-center justify-center shrink-0 text-xs font-bold mt-0.5">
+                        <span className="w-5 h-5 rounded-full border border-current font-mono flex items-center justify-center shrink-0 text-xs font-bold mt-0.5">
                           {String.fromCharCode(65 + optIdx)}
                         </span>
-                        <div className="flex-1">
-                          <div className="leading-snug">{opt.text}</div>
+                        <div className="flex-1 font-sans">
+                          <div className="leading-snug font-medium text-current">{opt.text}</div>
                           {submitted && (
                             <div className="mt-2 text-xs font-sans text-[var(--text-secondary)] font-normal leading-relaxed pt-2 border-t border-current/15">
                               {opt.isCorrect ? (

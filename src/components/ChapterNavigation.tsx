@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { PYTHON_CHAPTERS } from '../lib/pythonQuizBank';
+import { PYTHON_CHAPTERS, isPythonChapterUnlocked } from '../lib/pythonQuizBank';
 import { isExerciseCompleted } from '../lib/userStore';
 import { TrophyIcon } from './Icons';
 
@@ -28,18 +28,59 @@ export const ChapterNavigation: React.FC<ChapterNavigationProps> = ({
     updateCompletions();
 
     if (typeof window !== 'undefined') {
-      setCurrentHash(window.location.hash);
-      const handleHashChange = () => setCurrentHash(window.location.hash);
-      window.addEventListener('hashchange', handleHashChange);
       window.addEventListener('belajar:user-updated', updateCompletions);
       return () => {
-        window.removeEventListener('hashchange', handleHashChange);
         window.removeEventListener('belajar:user-updated', updateCompletions);
       };
     }
   }, []);
 
   const currentChapter = PYTHON_CHAPTERS.find((c) => c.chapterId === currentChapterId);
+
+  // Scroll spy & hash detection
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    if (window.location.hash) {
+      setCurrentHash(window.location.hash);
+    } else if (currentChapter && currentChapter.subBabs.length > 0) {
+      setCurrentHash(currentChapter.subBabs[0].hash);
+    }
+
+    const handleHashChange = () => setCurrentHash(window.location.hash);
+    window.addEventListener('hashchange', handleHashChange);
+
+    let observer: IntersectionObserver | null = null;
+    if ('IntersectionObserver' in window && currentChapter) {
+      const targets = [
+        ...currentChapter.subBabs.map((s) => document.getElementById(s.hash.replace('#', ''))),
+        document.getElementById(`kuis-${currentChapterId}`),
+      ].filter(Boolean) as HTMLElement[];
+
+      if (targets.length > 0) {
+        observer = new IntersectionObserver(
+          (entries) => {
+            const visible = entries.find((e) => e.isIntersecting);
+            if (visible && visible.target) {
+              setCurrentHash(`#${visible.target.id}`);
+            }
+          },
+          {
+            rootMargin: '-10% 0px -60% 0px',
+            threshold: 0,
+          }
+        );
+
+        targets.forEach((t) => observer?.observe(t));
+      }
+    }
+
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+      observer?.disconnect();
+    };
+  }, [currentChapterId, currentChapter]);
+
   const completedCount = Object.values(completedQuizzes).filter(Boolean).length;
   const progressPercent = Math.round((completedCount / PYTHON_CHAPTERS.length) * 100);
 
@@ -92,7 +133,8 @@ export const ChapterNavigation: React.FC<ChapterNavigationProps> = ({
             <div className="space-y-2">
               {PYTHON_CHAPTERS.map((chap) => {
                 const isCurrent = chap.chapterId === currentChapterId;
-                const isDone = completedQuizzes[chap.chapterId];
+                const isDone = Boolean(completedQuizzes[chap.chapterId]);
+                const isUnlocked = isPythonChapterUnlocked(chap.chapterId, completedQuizzes);
 
                 return (
                   <div
@@ -100,6 +142,8 @@ export const ChapterNavigation: React.FC<ChapterNavigationProps> = ({
                     className={`rounded-lg border transition-all ${
                       isCurrent
                         ? 'border-[var(--accent-terracotta)] bg-[var(--accent-terracotta)]/5'
+                        : !isUnlocked
+                        ? 'border-[var(--border-default)]/60 bg-[var(--bg-subtle)]/40 opacity-75'
                         : 'border-[var(--border-default)] bg-[var(--bg-canvas)]'
                     }`}
                   >
@@ -115,20 +159,32 @@ export const ChapterNavigation: React.FC<ChapterNavigationProps> = ({
                           <span className="text-xs font-mono px-1.5 py-0.2 rounded bg-[var(--bg-subtle)] text-[var(--text-secondary)]">
                             {chap.level}
                           </span>
+                          {!isUnlocked && (
+                            <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20">
+                              🔒 Terkunci
+                            </span>
+                          )}
                         </div>
                         <div className="text-xs font-display font-semibold text-[var(--text-primary)]">
                           {chap.title}
                         </div>
+                        {!isUnlocked && (
+                          <div className="text-[10px] font-mono text-[var(--text-muted)]">
+                            Selesaikan Kuis Bab {chap.chapterNumber - 1} untuk membuka
+                          </div>
+                        )}
                       </div>
 
                       {isDone ? (
-                        <span className="w-5 h-5 rounded-full bg-[var(--state-success)] text-white flex items-center justify-center text-[10px] shrink-0">
+                        <span className="w-5 h-5 rounded-full bg-[var(--state-success)] text-white flex items-center justify-center text-[10px] shrink-0" title="Bab Terverifikasi Lulus">
                           ✓
                         </span>
                       ) : isCurrent ? (
                         <span className="text-[10px] font-mono text-[var(--accent-terracotta)] font-bold">
                           Aktif
                         </span>
+                      ) : !isUnlocked ? (
+                        <span className="text-xs text-[var(--text-muted)]">🔒</span>
                       ) : null}
                     </a>
 
@@ -218,7 +274,8 @@ export const ChapterNavigation: React.FC<ChapterNavigationProps> = ({
         <nav className="space-y-2.5">
           {PYTHON_CHAPTERS.map((chap) => {
             const isCurrent = chap.chapterId === currentChapterId;
-            const isDone = completedQuizzes[chap.chapterId];
+            const isDone = Boolean(completedQuizzes[chap.chapterId]);
+            const isUnlocked = isPythonChapterUnlocked(chap.chapterId, completedQuizzes);
 
             return (
               <div
@@ -226,6 +283,8 @@ export const ChapterNavigation: React.FC<ChapterNavigationProps> = ({
                 className={`rounded-xl border transition-all overflow-hidden ${
                   isCurrent
                     ? 'border-[var(--accent-terracotta)] bg-[var(--bg-surface)] shadow-xs ring-1 ring-[var(--accent-terracotta)]/20'
+                    : !isUnlocked
+                    ? 'border-[var(--border-default)]/60 bg-[var(--bg-surface)]/60 opacity-80'
                     : 'border-[var(--border-default)] bg-[var(--bg-surface)] hover:border-[var(--border-focused)] opacity-90'
                 }`}
               >
@@ -245,6 +304,11 @@ export const ChapterNavigation: React.FC<ChapterNavigationProps> = ({
                         <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-[var(--bg-subtle)] text-[var(--text-secondary)] border border-[var(--border-default)]">
                           {chap.level}
                         </span>
+                        {!isUnlocked && (
+                          <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20">
+                            🔒 Terkunci
+                          </span>
+                        )}
                       </div>
                       <div
                         className={`text-xs font-display font-semibold transition-colors ${
@@ -255,6 +319,11 @@ export const ChapterNavigation: React.FC<ChapterNavigationProps> = ({
                       >
                         {chap.title}
                       </div>
+                      {!isUnlocked && (
+                        <div className="text-[10px] font-mono text-[var(--text-muted)]">
+                          Prasyarat: Lulus Kuis Bab {chap.chapterNumber - 1}
+                        </div>
+                      )}
                     </div>
 
                     {isDone ? (
@@ -266,6 +335,8 @@ export const ChapterNavigation: React.FC<ChapterNavigationProps> = ({
                       </span>
                     ) : isCurrent ? (
                       <span className="w-2 h-2 rounded-full bg-[var(--accent-terracotta)] animate-pulse shrink-0 mt-1.5"></span>
+                    ) : !isUnlocked ? (
+                      <span className="text-xs text-[var(--text-muted)] shrink-0 mt-0.5" title="Bab Terkunci">🔒</span>
                     ) : null}
                   </div>
                 </a>

@@ -2,6 +2,8 @@
 import { getCollection, render } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
 import { ChapterNavigation } from '../../components/ChapterNavigation';
+import { ChapterLockBanner } from '../../components/ChapterLockBanner';
+import { ChapterFooterNav } from '../../components/ChapterFooterNav';
 import { PYTHON_CHAPTERS } from '../../lib/pythonQuizBank';
 
 export async function getStaticPaths() {
@@ -73,6 +75,8 @@ if (isPythonTrack && currentChapter) {
         <ChapterNavigation client:load currentChapterId={chapterId} />
 
         <article class="flex-1 min-w-0 max-w-4xl mx-auto lg:mx-0">
+          <ChapterLockBanner client:load chapterId={chapterId} />
+
           <!-- Chapter Banner Header -->
           <div class="mb-8 pb-6 border-b border-[var(--border-default)]">
             <div class="flex flex-wrap items-center gap-2 mb-3">
@@ -145,41 +149,13 @@ if (isPythonTrack && currentChapter) {
           </div>
 
           <!-- Chapter Navigation Footer -->
-          <div class="mt-12 pt-6 border-t border-[var(--border-default)] flex flex-wrap items-center justify-between gap-4 font-mono text-xs">
-            {prevChapter ? (
-              <a
-                href={`/${prevChapter.slug}`}
-                class="px-4 py-2.5 rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface)] text-[var(--text-secondary)] hover:border-[var(--border-focused)] hover:text-[var(--text-primary)] transition-colors text-decoration-none flex items-center gap-1.5 shadow-2xs"
-              >
-                ← Bab {prevChapter.number}: {prevChapter.title}
-              </a>
-            ) : (
-              <a
-                href="/"
-                class="px-4 py-2.5 rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface)] text-[var(--text-secondary)] hover:border-[var(--border-focused)] hover:text-[var(--text-primary)] transition-colors text-decoration-none"
-              >
-                ← Beranda
-              </a>
-            )}
-
-            {nextChapter ? (
-              <a
-                href={`/${nextChapter.slug}`}
-                class="px-5 py-2.5 rounded-lg bg-[var(--accent-terracotta)] text-white font-bold hover:opacity-95 transition-opacity text-decoration-none flex items-center gap-1.5 shadow-2xs"
-              >
-                <span>Lanjut ke Bab {nextChapter.number}: {nextChapter.title}</span>
-                <span>→</span>
-              </a>
-            ) : (
-              <a
-                href="/dashboard"
-                class="px-5 py-2.5 rounded-lg bg-[var(--accent-terracotta)] text-white font-bold hover:opacity-95 transition-opacity text-decoration-none flex items-center gap-1.5 shadow-2xs"
-              >
-                <span>Kembali ke Meja Kerja (Selesai!)</span>
-                <span>✓</span>
-              </a>
-            )}
-          </div>
+          <ChapterFooterNav
+            client:load
+            currentChapterId={chapterId}
+            currentChapterNumber={currentChapter?.chapterNumber || 1}
+            prevChapter={prevChapter}
+            nextChapter={nextChapter}
+          />
         </article>
       </div>
     ) : (
