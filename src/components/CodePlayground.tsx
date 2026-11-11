@@ -284,18 +284,17 @@ export const CodePlayground: React.FC<CodePlaygroundProps> = ({
             type="button"
             onClick={handleRun}
             disabled={isRunning}
-            className="px-3.5 py-1 text-xs font-mono font-bold rounded-lg bg-[var(--accent-terracotta)] text-white hover:opacity-95 active:scale-95 transition-all disabled:opacity-50 cursor-pointer flex items-center gap-1.5 shadow-xs"
+            className="px-3.5 py-1 text-xs font-mono font-bold rounded-lg bg-[var(--text-primary)] text-[var(--bg-canvas)] hover:opacity-90 active:scale-95 transition-all disabled:opacity-50 cursor-pointer flex items-center gap-1.5 shadow-2xs"
             aria-label="Jalankan kode"
             title="Jalankan kode (Ctrl + Enter)"
           >
             {isRunning ? (
               <>
-                <span className="w-2.5 h-2.5 rounded-full border-2 border-white border-t-transparent animate-spin"></span>
+                <span className="w-2.5 h-2.5 rounded-full border-2 border-current border-t-transparent animate-spin"></span>
                 <span>Mengeksekusi...</span>
               </>
             ) : (
               <>
-                <span>▶</span>
                 <span>Jalankan</span>
                 <span className="hidden sm:inline text-[10px] opacity-75">(Ctrl+⏎)</span>
               </>
@@ -331,14 +330,14 @@ export const CodePlayground: React.FC<CodePlaygroundProps> = ({
           <div className="flex items-center justify-between mb-2.5 pb-2 border-b border-[#27272a] text-[#a1a1aa]">
             <span className="flex items-center gap-2 font-semibold">
               <span
-                className={`w-2 h-2 rounded-full ${output.success ? 'bg-emerald-400 shadow-[0_0_8px_#34d399]' : 'bg-rose-500 shadow-[0_0_8px_#f43f5e]'}`}
+                className={`w-2 h-2 rounded-full ${output.success ? 'bg-emerald-400' : 'bg-rose-500'}`}
               ></span>
               <span className={output.success ? 'text-emerald-400' : 'text-rose-400'}>
                 {output.success ? 'Eksekusi Berhasil' : 'Galat (Runtime Error)'}
               </span>
             </span>
             <span className="px-2 py-0.5 rounded bg-[#1c1c22] border border-[#2d2d38] text-[11px] text-[#a1a1aa]">
-              ⚡ {Math.round(output.executionTimeMs)} ms
+              {Math.round(output.executionTimeMs)} ms
             </span>
           </div>
 
@@ -396,7 +395,6 @@ export const CodePlayground: React.FC<CodePlaygroundProps> = ({
 
           {expectedOutput && !awardResult && output.success && (
             <div className="mt-2 pt-2 border-t border-[#27272a] text-amber-400/90 text-[11px] font-mono flex items-center gap-1.5">
-              <span>⚠️</span>
               <span>Output belum sesuai dengan target ekspektasi latihan. Silakan tinjau kembali instruksi.</span>
             </div>
           )}

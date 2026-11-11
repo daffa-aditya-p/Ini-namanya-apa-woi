@@ -28,25 +28,25 @@ const { title, description = 'belajar.in - Bengkel Kode & Buku Teks Hidup Pemrog
     />
   </head>
   <body class="min-h-screen flex flex-col selection:bg-[var(--accent-terracotta)] selection:text-white">
-    <header class="border-b border-[var(--border-default)] bg-[var(--bg-surface)] sticky top-0 z-50">
+    <header class="border-b border-[var(--border-default)] bg-[var(--bg-surface)]/95 backdrop-blur-sm sticky top-0 z-50">
       <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-        <a href="/" class="flex items-center gap-2 group text-decoration-none">
-          <span class="w-8 h-8 rounded bg-[var(--accent-terracotta)] text-white font-mono font-bold flex items-center justify-center text-sm shadow-xs">
+        <a href="/" class="flex items-center gap-2.5 group text-decoration-none">
+          <span class="w-7 h-7 rounded-md bg-[var(--text-primary)] text-[var(--bg-canvas)] font-mono font-bold flex items-center justify-center text-xs tracking-tighter">
             b.i
           </span>
-          <span class="font-display font-bold text-lg text-[var(--text-primary)] tracking-tight">
+          <span class="font-display font-bold text-base sm:text-lg text-[var(--text-primary)] tracking-tight">
             belajar<span class="text-[var(--accent-terracotta)]">.in</span>
           </span>
         </a>
 
-        <nav class="flex items-center gap-3 sm:gap-4 text-sm font-display font-medium">
+        <nav class="flex items-center gap-2 sm:gap-4 text-xs sm:text-sm font-display font-medium">
           <a href="/curriculum/javascript/j1" class="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors hidden lg:inline">
-            JS (J1-J3)
+            JavaScript
           </a>
           <a href="/curriculum/python/p1" class="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors hidden lg:inline">
-            Python (P1-P3)
+            Python
           </a>
-          <a href="/placement" class="text-[var(--text-secondary)] hover:text-[var(--accent-terracotta)] transition-colors hidden sm:inline">
+          <a href="/placement" class="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors hidden sm:inline">
             Placement Test
           </a>
           <a href="/leaderboard" class="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors hidden md:inline">
@@ -56,7 +56,7 @@ const { title, description = 'belajar.in - Bengkel Kode & Buku Teks Hidup Pemrog
           <button
             id="theme-toggle"
             type="button"
-            class="px-2.5 py-1 text-xs rounded border border-[var(--border-default)] bg-[var(--bg-subtle)] text-[var(--text-secondary)] hover:border-[var(--border-focused)] transition-colors cursor-pointer"
+            class="px-2.5 py-1 text-xs rounded-md border border-[var(--border-default)] bg-[var(--bg-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-focused)] transition-colors cursor-pointer font-mono"
             aria-label="Ganti Mode Tema"
           >
             Tema
@@ -69,10 +69,10 @@ const { title, description = 'belajar.in - Bengkel Kode & Buku Teks Hidup Pemrog
       <slot />
     </main>
 
-    <footer class="border-t border-[var(--border-default)] bg-[var(--bg-surface)] py-6 mt-12 text-sm text-[var(--text-muted)] font-display">
+    <footer class="border-t border-[var(--border-default)] bg-[var(--bg-surface)] py-6 mt-16 text-xs sm:text-sm text-[var(--text-muted)] font-display">
       <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <p>© 2026 belajar.in — Bengkel Kode & Buku Teks Hidup. Bebas AI Slop.</p>
-        <div class="flex items-center gap-4">
+        <p>© 2026 belajar.in — Platform Rekayasa Pemrograman & Runtime Eksekusi Nyata.</p>
+        <div class="flex items-center gap-3 text-xs font-mono">
           <span>ES2024</span>
           <span>•</span>
           <span>Python 3.12 (Pyodide)</span>

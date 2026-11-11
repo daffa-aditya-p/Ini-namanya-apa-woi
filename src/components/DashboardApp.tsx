@@ -115,7 +115,7 @@ export function DashboardApp() {
             className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-dashed border-[var(--border-default)] bg-[var(--bg-subtle)] text-xs font-mono text-[var(--accent-teal)] hover:border-[var(--border-focused)] transition-colors cursor-pointer"
           >
             <SparklesIcon className="w-3.5 h-3.5" />
-            <span>⚡ Buka Instan via Akun Demo (Budi • Master 750 XP)</span>
+            <span>Buka Instan via Akun Demo (Budi • Master 750 XP)</span>
           </button>
         </div>
 

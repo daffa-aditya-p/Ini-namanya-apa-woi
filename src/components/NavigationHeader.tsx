@@ -6,6 +6,8 @@ import {
 } from '../lib/userStore';
 import { getRankInfo } from '../lib/ranks';
 
+import { FlameIcon } from './Icons';
+
 export function NavigationHeader() {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [isClient, setIsClient] = useState(false);
@@ -44,16 +46,16 @@ export function NavigationHeader() {
   // SSR fallback / loading state
   if (!isClient) {
     return (
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 sm:gap-3">
         <a
           href="/login"
-          className="text-xs font-mono font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+          className="text-xs font-mono font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors px-2.5 py-1.5"
         >
           Masuk
         </a>
         <a
           href="/register"
-          className="text-xs font-mono font-semibold px-2.5 py-1 rounded bg-[var(--accent-terracotta)] text-white hover:opacity-95 transition-opacity"
+          className="text-xs font-mono font-semibold px-3 py-1.5 rounded-lg bg-[var(--text-primary)] text-[var(--bg-canvas)] hover:opacity-90 transition-opacity"
         >
           Daftar
         </a>
@@ -61,33 +63,33 @@ export function NavigationHeader() {
     );
   }
 
-  // When Logged In: Username, rank badge, streak 🔥, link to "Dashboard", and logout
+  // When Logged In: Username, rank badge, streak, link to "Dashboard", and logout
   if (user) {
     const rank = getRankInfo(user.xp);
 
     return (
-      <div className="flex items-center gap-2 sm:gap-3">
-        {/* Streak 🔥 */}
+      <div className="flex items-center gap-2 sm:gap-2.5">
+        {/* Streak Indicator */}
         <span
-          className="inline-flex items-center gap-1 text-xs font-mono font-semibold px-2 py-0.5 rounded bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20"
-          title={`Streak harian: ${user.streak} hari`}
+          className="inline-flex items-center gap-1.5 text-xs font-mono font-medium px-2 py-1 rounded-md bg-[var(--bg-subtle)] text-[var(--text-primary)] border border-[var(--border-default)]"
+          title={`Streak harian: ${user.streak} hari berturut-turut`}
         >
-          <span>🔥</span>
-          <span>{user.streak}</span>
+          <FlameIcon className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+          <span>{user.streak}h</span>
         </span>
 
         {/* Rank Badge */}
         <a
           href="/leaderboard"
-          className={`px-2 py-0.5 rounded text-xs font-mono font-bold transition-transform hover:scale-105 ${rank.definition.badgeClass}`}
-          title={`Peringkat: ${rank.tier} (${user.xp} XP). Klik untuk melihat Leaderboard.`}
+          className="px-2 py-1 rounded-md text-[11px] font-mono font-semibold border border-[var(--border-default)] bg-[var(--bg-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-focused)] transition-colors"
+          title={`Peringkat: ${rank.tier} (${user.xp} XP)`}
         >
           {rank.tier}
         </a>
 
         {/* Username */}
         <span
-          className="text-xs font-mono text-[var(--text-secondary)] hidden sm:inline truncate max-w-[120px]"
+          className="text-xs font-mono text-[var(--text-secondary)] hidden sm:inline truncate max-w-[110px]"
           title={`Masuk sebagai @${user.username}`}
         >
           @{user.username}
@@ -96,7 +98,7 @@ export function NavigationHeader() {
         {/* Link to Dashboard */}
         <a
           href="/dashboard"
-          className="px-2.5 py-1 rounded text-xs font-mono font-medium border border-[var(--border-default)] bg-[var(--bg-subtle)] text-[var(--text-primary)] hover:border-[var(--border-focused)] hover:text-[var(--accent-terracotta)] transition-all"
+          className="px-2.5 py-1 rounded-md text-xs font-mono font-medium bg-[var(--text-primary)] text-[var(--bg-canvas)] hover:opacity-90 transition-opacity shadow-2xs"
         >
           Dashboard
         </a>
@@ -105,8 +107,9 @@ export function NavigationHeader() {
         <button
           type="button"
           onClick={handleLogout}
-          className="text-xs font-mono px-2 py-1 rounded text-[var(--text-muted)] hover:text-[var(--state-danger)] hover:bg-[var(--state-danger)]/10 transition-colors cursor-pointer"
+          className="text-xs font-mono px-2 py-1 rounded-md text-[var(--text-muted)] hover:text-[var(--state-danger)] hover:bg-[var(--state-danger)]/10 transition-colors cursor-pointer"
           title="Keluar dari sesi saat ini"
+          aria-label="Keluar dari akun"
         >
           Keluar
         </button>
@@ -116,16 +119,16 @@ export function NavigationHeader() {
 
   // When Logged Out: "Masuk" and "Daftar"
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-2 sm:gap-3">
       <a
         href="/login"
-        className="text-xs font-mono font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+        className="text-xs font-mono font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors px-2.5 py-1.5"
       >
         Masuk
       </a>
       <a
         href="/register"
-        className="text-xs font-mono font-semibold px-2.5 py-1 rounded bg-[var(--accent-terracotta)] text-white hover:opacity-95 transition-opacity"
+        className="text-xs font-mono font-semibold px-3 py-1.5 rounded-lg bg-[var(--text-primary)] text-[var(--bg-canvas)] hover:opacity-90 transition-opacity"
       >
         Daftar
       </a>

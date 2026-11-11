@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { PYTHON_CHAPTERS, isPythonChapterUnlocked } from '../lib/pythonQuizBank';
 import { isExerciseCompleted } from '../lib/userStore';
-import { TrophyIcon } from './Icons';
+import { TrophyIcon, LockIcon, ChevronDownIcon, ChevronUpIcon, CheckIcon } from './Icons';
 
 interface ChapterNavigationProps {
   currentChapterId: string;
@@ -107,8 +107,12 @@ export const ChapterNavigation: React.FC<ChapterNavigationProps> = ({
             <span className="text-[11px] text-[var(--text-muted)]">
               {completedCount}/{PYTHON_CHAPTERS.length} Bab Selesai
             </span>
-            <span className="text-xs transition-transform transform">
-              {isMobileOpen ? '▲' : '▼'}
+            <span className="text-[var(--text-secondary)]">
+              {isMobileOpen ? (
+                <ChevronUpIcon className="w-3.5 h-3.5" />
+              ) : (
+                <ChevronDownIcon className="w-3.5 h-3.5" />
+              )}
             </span>
           </div>
         </button>
@@ -160,8 +164,9 @@ export const ChapterNavigation: React.FC<ChapterNavigationProps> = ({
                             {chap.level}
                           </span>
                           {!isUnlocked && (
-                            <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20">
-                              🔒 Terkunci
+                            <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-[var(--bg-subtle)] text-[var(--text-muted)] border border-[var(--border-default)] flex items-center gap-1">
+                              <LockIcon className="w-2.5 h-2.5" />
+                              <span>Terkunci</span>
                             </span>
                           )}
                         </div>
@@ -177,14 +182,14 @@ export const ChapterNavigation: React.FC<ChapterNavigationProps> = ({
 
                       {isDone ? (
                         <span className="w-5 h-5 rounded-full bg-[var(--state-success)] text-white flex items-center justify-center text-[10px] shrink-0" title="Bab Terverifikasi Lulus">
-                          ✓
+                          <CheckIcon className="w-3 h-3" />
                         </span>
                       ) : isCurrent ? (
                         <span className="text-[10px] font-mono text-[var(--accent-terracotta)] font-bold">
                           Aktif
                         </span>
                       ) : !isUnlocked ? (
-                        <span className="text-xs text-[var(--text-muted)]">🔒</span>
+                        <span className="text-xs text-[var(--text-muted)]"><LockIcon className="w-3.5 h-3.5" /></span>
                       ) : null}
                     </a>
 
@@ -214,17 +219,19 @@ export const ChapterNavigation: React.FC<ChapterNavigationProps> = ({
                         <a
                           href={`#kuis-${chap.chapterId}`}
                           onClick={() => setIsMobileOpen(false)}
-                          className="block px-2 py-1.5 rounded text-[11px] font-mono font-bold text-[var(--accent-terracotta)] hover:bg-[var(--accent-terracotta)]/10 text-decoration-none"
+                          className="flex items-center gap-1.5 px-2 py-1.5 rounded text-[11px] font-mono font-bold text-[var(--accent-terracotta)] hover:bg-[var(--accent-terracotta)]/10 text-decoration-none"
                         >
-                          ★ Kuis Evaluasi Bab {chap.chapterNumber}
+                          <TrophyIcon className="w-3 h-3" />
+                          <span>Kuis Evaluasi Bab {chap.chapterNumber}</span>
                         </a>
                         {chap.chapterId === 'python-bab5' && (
                           <a
                             href="#ujian-akhir-modul"
                             onClick={() => setIsMobileOpen(false)}
-                            className="block px-2 py-1.5 rounded text-[11px] font-mono font-bold text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 text-decoration-none border border-amber-500/20 bg-amber-500/5 mt-1"
+                            className="flex items-center gap-1.5 px-2 py-1.5 rounded text-[11px] font-mono font-bold text-[var(--text-primary)] hover:bg-[var(--bg-subtle)] text-decoration-none border border-[var(--border-default)] bg-[var(--bg-subtle)] mt-1"
                           >
-                            🏆 Ujian Akhir Komprehensif (Bab 1–5)
+                            <TrophyIcon className="w-3 h-3" />
+                            <span>Ujian Akhir Komprehensif (Bab 1–5)</span>
                           </a>
                         )}
                       </div>
@@ -314,8 +321,9 @@ export const ChapterNavigation: React.FC<ChapterNavigationProps> = ({
                           {chap.level}
                         </span>
                         {!isUnlocked && (
-                          <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20">
-                            🔒 Terkunci
+                          <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-[var(--bg-subtle)] text-[var(--text-muted)] border border-[var(--border-default)] flex items-center gap-1">
+                            <LockIcon className="w-2.5 h-2.5" />
+                            <span>Terkunci</span>
                           </span>
                         )}
                       </div>
@@ -340,12 +348,14 @@ export const ChapterNavigation: React.FC<ChapterNavigationProps> = ({
                         title="Bab ini telah lulus evaluasi"
                         className="w-5 h-5 rounded-full bg-[var(--state-success)] text-white flex items-center justify-center text-[10px] shrink-0 mt-0.5 shadow-2xs"
                       >
-                        ✓
+                        <CheckIcon className="w-3 h-3" />
                       </span>
                     ) : isCurrent ? (
-                      <span className="w-2 h-2 rounded-full bg-[var(--accent-terracotta)] animate-pulse shrink-0 mt-1.5"></span>
+                      <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-terracotta)] shrink-0 mt-1.5"></span>
                     ) : !isUnlocked ? (
-                      <span className="text-xs text-[var(--text-muted)] shrink-0 mt-0.5" title="Bab Terkunci">🔒</span>
+                      <span className="text-xs text-[var(--text-muted)] shrink-0 mt-0.5" title="Bab Terkunci">
+                        <LockIcon className="w-3.5 h-3.5" />
+                      </span>
                     ) : null}
                   </div>
                 </a>
@@ -389,9 +399,9 @@ export const ChapterNavigation: React.FC<ChapterNavigationProps> = ({
                     {chap.chapterId === 'python-bab5' && (
                       <a
                         href="#ujian-akhir-modul"
-                        className="flex items-center gap-1.5 px-2.5 py-2 mt-1.5 rounded-lg text-xs font-mono font-bold text-amber-700 dark:text-amber-300 hover:bg-amber-500/15 transition-colors text-decoration-none border border-amber-500/40 bg-amber-500/10 shadow-2xs"
+                        className="flex items-center gap-1.5 px-2.5 py-2 mt-1.5 rounded-lg text-xs font-mono font-bold text-[var(--text-primary)] hover:bg-[var(--bg-subtle)] transition-colors text-decoration-none border border-[var(--border-default)] bg-[var(--bg-subtle)]"
                       >
-                        <TrophyIcon className="w-3.5 h-3.5 shrink-0 text-amber-500" />
+                        <TrophyIcon className="w-3.5 h-3.5 shrink-0" />
                         <span>Ujian Akhir Final (Bab 1–5)</span>
                       </a>
                     )}

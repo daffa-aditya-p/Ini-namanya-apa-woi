@@ -7,13 +7,148 @@ import {
 import { getRankInfo } from '../lib/ranks';
 import { AuthModal, type AuthMode } from './AuthModal';
 import { CodePlayground } from './CodePlayground';
-import { ArrowRightIcon, SparklesIcon, FlameIcon, TrophyIcon } from './Icons';
+import {
+  ArrowRightIcon,
+  FlameIcon,
+  TrophyIcon,
+  BookOpenIcon,
+  CodeIcon,
+  CheckCircleIcon,
+  UserIcon,
+} from './Icons';
+
+type TrackFilter = 'all' | 'javascript' | 'python';
+
+interface TrackCard {
+  id: string;
+  lang: 'javascript' | 'python';
+  tag: string;
+  runtime: string;
+  title: string;
+  description: string;
+  href: string;
+  linkText: string;
+}
+
+const TRACKS: TrackCard[] = [
+  {
+    id: 'j1',
+    lang: 'javascript',
+    tag: 'J1 • JavaScript',
+    runtime: 'ES2024',
+    title: 'Fondasi Komputasi & Nilai',
+    description:
+      'Console inspector, eksekusi kode pertama, mutabilitas let vs immutabilitas const, serta 7 tipe data primitif ECMAScript.',
+    href: '/curriculum/javascript/j1',
+    linkText: 'Buka Modul J1',
+  },
+  {
+    id: 'p1',
+    lang: 'python',
+    tag: 'P1 • Python',
+    runtime: 'Python 3.12 WASM',
+    title: 'Dasar Pemrograman & Variabel',
+    description:
+      'Fungsi print, name binding variabel dinamis, operator aritmatika presisi, dan f-strings format PEP 498. Dilengkapi kuis evaluasi.',
+    href: '/curriculum/python/p1',
+    linkText: 'Buka Bab 1',
+  },
+  {
+    id: 'j2',
+    lang: 'javascript',
+    tag: 'J2 • JavaScript',
+    runtime: 'ES2024',
+    title: 'Core JS & Struktur Data',
+    description:
+      'Array FP (map/filter/reduce), closure di heap memory, immutability structuredClone, dan OOP Class dengan error handling bertingkat.',
+    href: '/curriculum/javascript/j2',
+    linkText: 'Buka Modul J2',
+  },
+  {
+    id: 'p2',
+    lang: 'python',
+    tag: 'P2 • Python',
+    runtime: 'Python 3.12 Logika',
+    title: 'Logika & Alur Kontrol',
+    description:
+      'Percabangan if-elif-else, perulangan for & range, perulangan while, dan kontrol break/continue. Dilengkapi kuis evaluasi.',
+    href: '/curriculum/python/p2',
+    linkText: 'Buka Bab 2',
+  },
+  {
+    id: 'j3',
+    lang: 'javascript',
+    tag: 'J3 • JavaScript',
+    runtime: 'ES2024 Event Loop',
+    title: 'Asinkron, Web APIs & Event Loop',
+    description:
+      'Call Stack vs Web APIs, Microtask vs Macrotask, Promise combinators (allSettled), AbortController timeout, dan retry resilience.',
+    href: '/curriculum/javascript/j3',
+    linkText: 'Buka Modul J3',
+  },
+  {
+    id: 'p3',
+    lang: 'python',
+    tag: 'P3 • Python',
+    runtime: 'Python 3.12 Koleksi',
+    title: 'Struktur Data Koleksi',
+    description:
+      'List & slicing [start:stop:step], Tuple immutability, Dictionary hash map O(1) merge (|), dan Set himpunan. Dilengkapi kuis evaluasi.',
+    href: '/curriculum/python/p3',
+    linkText: 'Buka Bab 3',
+  },
+  {
+    id: 'j4',
+    lang: 'javascript',
+    tag: 'J4 • JavaScript',
+    runtime: 'Vitest & Tooling',
+    title: 'Modern Tooling & Mini Test Runner',
+    description:
+      'Test-Driven Development (TDD), assertion matchers toBe/toEqual/toThrow, mini Vitest runner, reactive store subscription, dan autocomplete engine.',
+    href: '/curriculum/javascript/j4',
+    linkText: 'Buka Modul J4',
+  },
+  {
+    id: 'p4',
+    lang: 'python',
+    tag: 'P4 • Python',
+    runtime: 'Python 3.12 Fungsi',
+    title: 'Fungsi & Modularitas',
+    description:
+      'Definisi fungsi modular, parameter fleksibel *args & **kwargs, return tuple, LEGB scope, lambda, dan comprehensions.',
+    href: '/curriculum/python/p4',
+    linkText: 'Buka Bab 4',
+  },
+  {
+    id: 'j5',
+    lang: 'javascript',
+    tag: 'J5 • JavaScript',
+    runtime: 'Metaprogramming',
+    title: 'Metaprogramming & Sistem Reaktivitas',
+    description:
+      'Proxy traps & Reflect, Generator function* paginasi, proteksi memori WeakMap bebas leak, Functional Pipe Currying, dan Reactive Signal Store.',
+    href: '/curriculum/javascript/j5',
+    linkText: 'Buka Modul J5',
+  },
+  {
+    id: 'p5',
+    lang: 'python',
+    tag: 'P5 • Python',
+    runtime: 'Python 3.12 OOP',
+    title: 'Pemrograman Berorientasi Objek',
+    description:
+      'Class & Object, atribut instance & self, pewarisan super(), enkapsulasi @property & setter, dan magic dunder methods.',
+    href: '/curriculum/python/p5',
+    linkText: 'Buka Bab 5',
+  },
+];
 
 export function HomeApp() {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState<AuthMode>('login');
   const [previewTab, setPreviewTab] = useState<'javascript' | 'python'>('javascript');
+  const [trackFilter, setTrackFilter] = useState<TrackFilter>('all');
 
   useEffect(() => {
     const existing = getSavedSession();
@@ -46,7 +181,6 @@ export function HomeApp() {
 
   const handleAuthSuccess = (_authenticatedUser: UserProfile) => {
     setIsAuthOpen(false);
-    // Redirect to /dashboard upon successful login/register
     if (typeof window !== 'undefined') {
       window.location.href = '/dashboard';
     }
@@ -59,44 +193,50 @@ export function HomeApp() {
     }
   };
 
-  // Pure Landing Page - Never replaced by Dashboard!
+  const filteredTracks =
+    trackFilter === 'all'
+      ? TRACKS
+      : TRACKS.filter((t) => t.lang === trackFilter);
+
   return (
-    <div className="space-y-12 py-4">
+    <div className="space-y-14 py-4">
       {/* Hero Section */}
-      <section className="max-w-3xl mx-auto text-center sm:text-left pt-2 pb-6">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono bg-[var(--bg-subtle)] text-[var(--accent-teal)] border border-[var(--border-default)] mb-6">
-          <span className="w-2 h-2 rounded-full bg-[var(--state-success)] animate-pulse"></span>
-          Fase 1-2 • Vertical Slice J1 + P1 Aktif & Bebas AI Slop
+      <section className="max-w-3xl mx-auto text-center sm:text-left pt-2 pb-4">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono bg-[var(--bg-subtle)] text-[var(--text-secondary)] border border-[var(--border-default)] mb-6">
+          <span className="w-1.5 h-1.5 rounded-full bg-[var(--state-success)]"></span>
+          <span>Laboratorium Komputasi WebAssembly & JavaScript ES2024</span>
         </div>
 
-        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6 text-[var(--text-primary)] font-display leading-[1.12]">
-          Bengkel Kode & Buku Teks Hidup
+        <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight mb-5 text-[var(--text-primary)] font-display leading-[1.15]">
+          Bengkel Rekayasa Kode & Buku Teks Hidup
         </h1>
 
-        <p className="text-lg sm:text-xl leading-relaxed text-[var(--text-secondary)] mb-8 font-serif">
-          Mari kita mulai dari hal paling mendasar: bagaimana komputer mengingat data dan mengeksekusi instruksi. Setiap contoh kode di platform ini dapat kamu jalankan dan telusuri secara nyata langsung di browsermu tanpa instalasi rumit.
+        <p className="text-base sm:text-lg leading-relaxed text-[var(--text-secondary)] mb-8 font-serif">
+          Eksplorasi konsep fundamental komputasi: representasi memori, tipe data primitif, alur kontrol, dan eksekusi instruksi. Setiap baris contoh kode dapat kamu jalankan dan telusuri secara nyata langsung di browsermu tanpa instalasi rumit.
         </p>
 
-        {/* Clear CTAs */}
+        {/* Action Buttons */}
         {user ? (
           <div className="space-y-4">
-            <div className="inline-flex flex-wrap items-center gap-2 px-3.5 py-1.5 rounded-lg bg-[var(--bg-subtle)] border border-[var(--border-default)] text-xs font-mono">
-              <span className="text-[var(--text-secondary)]">Sesi aktif:</span>
+            <div className="inline-flex flex-wrap items-center gap-2.5 px-3.5 py-1.5 rounded-lg bg-[var(--bg-subtle)] border border-[var(--border-default)] text-xs font-mono">
+              <span className="text-[var(--text-muted)]">Sesi:</span>
               <strong className="text-[var(--text-primary)]">@{user.username}</strong>
               <span className="text-[var(--text-muted)]">•</span>
-              <span className="inline-flex items-center gap-1 text-orange-600 dark:text-orange-400 font-semibold">
-                <FlameIcon className="w-3.5 h-3.5" /> {user.streak} hari
+              <span className="inline-flex items-center gap-1 text-[var(--text-secondary)] font-medium">
+                <FlameIcon className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+                {user.streak} hari
               </span>
               <span className="text-[var(--text-muted)]">•</span>
-              <span className="inline-flex items-center gap-1 text-indigo-600 dark:text-indigo-400 font-semibold">
-                <TrophyIcon className="w-3.5 h-3.5" /> {getRankInfo(user.xp).tier} ({user.xp} XP)
+              <span className="inline-flex items-center gap-1 text-[var(--text-secondary)] font-medium">
+                <TrophyIcon className="w-3.5 h-3.5 text-[var(--accent-teal)]" />
+                {getRankInfo(user.xp).tier} ({user.xp} XP)
               </span>
             </div>
 
             <div className="flex flex-wrap items-center gap-3 justify-center sm:justify-start">
               <a
                 href="/dashboard"
-                className="px-5 py-2.5 rounded-lg bg-[var(--accent-terracotta)] text-white font-display font-medium text-sm hover:opacity-95 active:scale-98 transition-all flex items-center gap-2 shadow-xs text-decoration-none"
+                className="px-5 py-2.5 rounded-lg bg-[var(--text-primary)] text-[var(--bg-canvas)] font-display font-medium text-sm hover:opacity-90 active:scale-98 transition-all flex items-center gap-2 text-decoration-none shadow-xs"
               >
                 <span>Buka Meja Kerja (Dashboard)</span>
                 <ArrowRightIcon className="w-4 h-4" />
@@ -122,7 +262,7 @@ export function HomeApp() {
             <button
               type="button"
               onClick={() => handleOpenAuth('login')}
-              className="px-5 py-2.5 rounded-lg bg-[var(--accent-terracotta)] text-white font-display font-medium text-sm hover:opacity-95 active:scale-98 transition-all cursor-pointer shadow-xs"
+              className="px-5 py-2.5 rounded-lg bg-[var(--text-primary)] text-[var(--bg-canvas)] font-display font-medium text-sm hover:opacity-90 active:scale-98 transition-all cursor-pointer shadow-xs"
             >
               Masuk ke Meja Kerja
             </button>
@@ -138,11 +278,11 @@ export function HomeApp() {
             <button
               type="button"
               onClick={handleQuickDemo}
-              className="px-4 py-2.5 rounded-lg border border-dashed border-[var(--border-default)] bg-[var(--bg-subtle)] text-[var(--accent-teal)] font-mono text-xs hover:border-[var(--border-focused)] transition-all cursor-pointer flex items-center gap-1.5"
-              title="Masuk seketika sebagai pengguna demo untuk mencoba dashboard"
+              className="px-4 py-2.5 rounded-lg border border-[var(--border-default)] bg-[var(--bg-subtle)] text-[var(--text-secondary)] font-mono text-xs hover:border-[var(--border-focused)] hover:text-[var(--text-primary)] transition-all cursor-pointer flex items-center gap-1.5"
+              title="Masuk seketika sebagai pengguna demo untuk mencoba fitur platform"
             >
-              <SparklesIcon className="w-3.5 h-3.5" />
-              Coba Demo Cepat (Budi • Master)
+              <UserIcon className="w-3.5 h-3.5" />
+              <span>Akun Demo (Budi • Master)</span>
             </button>
           </div>
         )}
@@ -151,29 +291,30 @@ export function HomeApp() {
       {/* Interactive Code Preview Section */}
       <section
         aria-labelledby="preview-heading"
-        className="p-6 sm:p-8 rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] shadow-xs space-y-4"
+        className="p-5 sm:p-7 rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] shadow-xs space-y-4"
       >
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[var(--border-default)] pb-4">
           <div>
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-[var(--accent-teal)]/10 text-[var(--accent-teal)] mb-1">
-              Interactive Preview
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[11px] font-mono font-medium bg-[var(--bg-subtle)] text-[var(--text-secondary)] border border-[var(--border-default)] mb-1.5">
+              <CodeIcon className="w-3.5 h-3.5" />
+              <span>Interactive Preview</span>
             </div>
-            <h2 id="preview-heading" className="text-xl sm:text-2xl font-bold font-display text-[var(--text-primary)]">
-              Coba Eksekusi Riil di Browser
+            <h2 id="preview-heading" className="text-lg sm:text-xl font-bold font-display text-[var(--text-primary)]">
+              Eksekusi Langsung di Browser
             </h2>
             <p className="text-xs sm:text-sm text-[var(--text-secondary)] mt-0.5">
-              Jalankan langsung di JavaScript sandbox worker atau Pyodide WebAssembly tanpa instalasi lokal.
+              Jalankan kode di JavaScript worker sandbox atau runtime CPython WebAssembly secara aman.
             </p>
           </div>
 
-          <div className="flex items-center gap-1.5 bg-[var(--bg-subtle)] p-1 rounded-lg border border-[var(--border-default)] shrink-0 self-start sm:self-auto">
+          <div className="flex items-center gap-1 bg-[var(--bg-subtle)] p-1 rounded-lg border border-[var(--border-default)] shrink-0 self-start sm:self-auto">
             <button
               type="button"
               onClick={() => setPreviewTab('javascript')}
-              className={`px-3 py-1 text-xs font-mono font-medium rounded-md transition-all cursor-pointer ${
+              className={`px-3 py-1.5 text-xs font-mono font-medium rounded-md transition-all cursor-pointer ${
                 previewTab === 'javascript'
-                  ? 'bg-[var(--bg-surface)] text-[var(--accent-terracotta)] shadow-xs font-bold'
-                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                  ? 'bg-[var(--bg-surface)] text-[var(--text-primary)] shadow-2xs font-semibold'
+                  : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
               }`}
             >
               JavaScript (ES2024)
@@ -181,10 +322,10 @@ export function HomeApp() {
             <button
               type="button"
               onClick={() => setPreviewTab('python')}
-              className={`px-3 py-1 text-xs font-mono font-medium rounded-md transition-all cursor-pointer ${
+              className={`px-3 py-1.5 text-xs font-mono font-medium rounded-md transition-all cursor-pointer ${
                 previewTab === 'python'
-                  ? 'bg-[var(--bg-surface)] text-[#20527B] dark:text-[#68B0EB] shadow-xs font-bold'
-                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                  ? 'bg-[var(--bg-surface)] text-[var(--text-primary)] shadow-2xs font-semibold'
+                  : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
               }`}
             >
               Python 3.12 (Pyodide)
@@ -226,287 +367,159 @@ print(f"Total elemen: {len(pangkat)}")`}
         )}
       </section>
 
-      {/* Curriculum Tracks Preview */}
-      <section aria-labelledby="tracks-preview-heading">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+      {/* Curriculum Tracks Section with Clean Tab Filters */}
+      <section aria-labelledby="tracks-preview-heading" className="space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[var(--border-default)] pb-4">
           <div>
             <h2 id="tracks-preview-heading" className="text-xl sm:text-2xl font-bold text-[var(--text-primary)] font-display">
-              Pilihan Modul Kurikulum (Jalur J & P)
+              Kurikulum Pemrograman
             </h2>
             <p className="text-xs sm:text-sm text-[var(--text-secondary)] mt-0.5">
-              Tiap level dirancang berjenjang dengan mastery gates dan simulasi WebAssembly murni.
+              Pilih alur pembelajaran berjenjang dengan evaluasi penguasaan konsep terstruktur.
             </p>
           </div>
-          <a
-            href="/placement"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-mono font-medium rounded-lg border border-[var(--border-focused)] bg-[var(--bg-surface)] text-[var(--accent-terracotta)] hover:bg-[var(--bg-subtle)] transition-colors w-fit text-decoration-none"
-          >
-            <SparklesIcon className="w-3.5 h-3.5" />
-            Uji Penempatan (Placement Test)
-          </a>
+
+          <div className="flex items-center gap-2">
+            {/* Filter buttons */}
+            <div className="inline-flex rounded-lg border border-[var(--border-default)] bg-[var(--bg-subtle)] p-0.5">
+              <button
+                type="button"
+                onClick={() => setTrackFilter('all')}
+                className={`px-2.5 py-1 text-xs font-mono rounded-md transition-colors cursor-pointer ${
+                  trackFilter === 'all'
+                    ? 'bg-[var(--bg-surface)] text-[var(--text-primary)] font-semibold shadow-2xs'
+                    : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                }`}
+              >
+                Semua ({TRACKS.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setTrackFilter('javascript')}
+                className={`px-2.5 py-1 text-xs font-mono rounded-md transition-colors cursor-pointer ${
+                  trackFilter === 'javascript'
+                    ? 'bg-[var(--bg-surface)] text-[var(--text-primary)] font-semibold shadow-2xs'
+                    : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                }`}
+              >
+                JavaScript (5)
+              </button>
+              <button
+                type="button"
+                onClick={() => setTrackFilter('python')}
+                className={`px-2.5 py-1 text-xs font-mono rounded-md transition-colors cursor-pointer ${
+                  trackFilter === 'python'
+                    ? 'bg-[var(--bg-surface)] text-[var(--text-primary)] font-semibold shadow-2xs'
+                    : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                }`}
+              >
+                Python (5)
+              </button>
+            </div>
+
+            <a
+              href="/placement"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-mono font-medium rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface)] text-[var(--text-primary)] hover:border-[var(--border-focused)] transition-colors text-decoration-none"
+            >
+              <span>Placement Test</span>
+              <ArrowRightIcon className="w-3.5 h-3.5" />
+            </a>
+          </div>
         </div>
 
-        <div className="grid sm:grid-cols-2 gap-6 my-4">
-          {/* Track JavaScript J1 */}
-          <a
-            href="/curriculum/javascript/j1"
-            className="block p-6 rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] hover:border-[var(--border-focused)] transition-all group shadow-xs text-decoration-none"
-          >
-            <div className="flex items-center justify-between mb-3">
-              <span className="px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-[#F7DF1E]/20 text-[#857000] dark:text-[#F7DF1E]">
-                J1 • JavaScript
-              </span>
-              <span className="text-xs font-mono text-[var(--text-muted)]">ES2024</span>
-            </div>
-            <h3 className="text-xl font-bold mb-2 text-[var(--text-primary)] group-hover:text-[var(--accent-terracotta)] transition-colors font-display">
-              Fondasi Komputasi & Nilai
-            </h3>
-            <p className="text-sm text-[var(--text-secondary)] leading-relaxed mb-4">
-              Console inspector, eksekusi kode pertama, mutabilitas let vs immutabilitas const, serta 7 tipe data primitif ECMAScript.
-            </p>
-            <div className="text-xs font-mono font-medium text-[var(--accent-terracotta)] flex items-center gap-1">
-              Buka Modul J1 <ArrowRightIcon className="w-3 h-3" />
-            </div>
-          </a>
+        {/* Track Grid */}
+        <div className="grid sm:grid-cols-2 gap-4">
+          {filteredTracks.map((track) => (
+            <a
+              key={track.id}
+              href={track.href}
+              className="p-5 rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] hover:border-[var(--border-focused)] transition-all group shadow-2xs text-decoration-none flex flex-col justify-between"
+            >
+              <div>
+                <div className="flex items-center justify-between mb-2.5">
+                  <span className="px-2 py-0.5 rounded text-[11px] font-mono font-semibold bg-[var(--bg-subtle)] text-[var(--text-primary)] border border-[var(--border-default)]">
+                    {track.tag}
+                  </span>
+                  <span className="text-[11px] font-mono text-[var(--text-muted)]">
+                    {track.runtime}
+                  </span>
+                </div>
 
-          {/* Track JavaScript J2 */}
-          <a
-            href="/curriculum/javascript/j2"
-            className="block p-6 rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] hover:border-[var(--border-focused)] transition-all group shadow-xs text-decoration-none"
-          >
-            <div className="flex items-center justify-between mb-3">
-              <span className="px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-[#F7DF1E]/20 text-[#857000] dark:text-[#F7DF1E]">
-                J2 • JavaScript (Baru)
-              </span>
-              <span className="text-xs font-mono text-[var(--text-muted)]">ES2024</span>
-            </div>
-            <h3 className="text-xl font-bold mb-2 text-[var(--text-primary)] group-hover:text-[var(--accent-terracotta)] transition-colors font-display">
-              Core JavaScript & Struktur Data
-            </h3>
-            <p className="text-sm text-[var(--text-secondary)] leading-relaxed mb-4">
-              Array FP (map/filter/reduce), closure di heap memory, immutability structuredClone, dan OOP Class dengan error handling bertingkat.
-            </p>
-            <div className="text-xs font-mono font-medium text-[var(--accent-terracotta)] flex items-center gap-1">
-              Buka Modul J2 <ArrowRightIcon className="w-3 h-3" />
-            </div>
-          </a>
+                <h3 className="text-base font-bold mb-1.5 text-[var(--text-primary)] group-hover:text-[var(--accent-terracotta)] transition-colors font-display">
+                  {track.title}
+                </h3>
 
-          {/* Track Python P1 */}
-          {/* Track Python Bab 1 */}
-          <a
-            href="/curriculum/python/p1"
-            className="block p-6 rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] hover:border-[var(--border-focused)] transition-all group shadow-xs text-decoration-none"
-          >
-            <div className="flex items-center justify-between mb-3">
-              <span className="px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-[#3776AB]/20 text-[#20527B] dark:text-[#68B0EB]">
-                Bab 1 • Python (P1)
-              </span>
-              <span className="text-xs font-mono text-[var(--text-muted)]">Python 3.12 WASM</span>
-            </div>
-            <h3 className="text-xl font-bold mb-2 text-[var(--text-primary)] group-hover:text-[var(--accent-terracotta)] transition-colors font-display">
-              Dasar Pemrograman & Variabel
-            </h3>
-            <p className="text-sm text-[var(--text-secondary)] leading-relaxed mb-4">
-              Fungsi print, name binding variabel dinamis, operator aritmatika presisi, dan f-strings format PEP 498. Dilengkapi Kuis Evaluasi Bab 1.
-            </p>
-            <div className="text-xs font-mono font-medium text-[var(--accent-terracotta)] flex items-center gap-1">
-              Buka Bab 1 <ArrowRightIcon className="w-3 h-3" />
-            </div>
-          </a>
+                <p className="text-xs text-[var(--text-secondary)] leading-relaxed mb-4">
+                  {track.description}
+                </p>
+              </div>
 
-          {/* Track Python Bab 2 */}
-          <a
-            href="/curriculum/python/p2"
-            className="block p-6 rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] hover:border-[var(--border-focused)] transition-all group shadow-xs text-decoration-none"
-          >
-            <div className="flex items-center justify-between mb-3">
-              <span className="px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-[#3776AB]/20 text-[#20527B] dark:text-[#68B0EB]">
-                Bab 2 • Python (P2)
-              </span>
-              <span className="text-xs font-mono text-[var(--text-muted)]">Python 3.12 Logika</span>
-            </div>
-            <h3 className="text-xl font-bold mb-2 text-[var(--text-primary)] group-hover:text-[var(--accent-terracotta)] transition-colors font-display">
-              Logika & Alur Kontrol
-            </h3>
-            <p className="text-sm text-[var(--text-secondary)] leading-relaxed mb-4">
-              Percabangan if-elif-else, perulangan for & range, perulangan while, dan kontrol break/continue. Dilengkapi Kuis Evaluasi Bab 2.
-            </p>
-            <div className="text-xs font-mono font-medium text-[var(--accent-terracotta)] flex items-center gap-1">
-              Buka Bab 2 <ArrowRightIcon className="w-3 h-3" />
-            </div>
-          </a>
-
-          {/* Track JavaScript J3 */}
-          <a
-            href="/curriculum/javascript/j3"
-            className="block p-6 rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] hover:border-[var(--border-focused)] transition-all group shadow-xs text-decoration-none"
-          >
-            <div className="flex items-center justify-between mb-3">
-              <span className="px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-[#F7DF1E]/20 text-[#857000] dark:text-[#F7DF1E]">
-                J3 • JavaScript (Baru)
-              </span>
-              <span className="text-xs font-mono text-[var(--text-muted)]">ES2024 Event Loop</span>
-            </div>
-            <h3 className="text-xl font-bold mb-2 text-[var(--text-primary)] group-hover:text-[var(--accent-terracotta)] transition-colors font-display">
-              Asinkron, Web APIs & Event Loop
-            </h3>
-            <p className="text-sm text-[var(--text-secondary)] leading-relaxed mb-4">
-              Call Stack vs Web APIs, Microtask vs Macrotask, Promise combinators (allSettled), AbortController timeout, dan retry resilience.
-            </p>
-            <div className="text-xs font-mono font-medium text-[var(--accent-terracotta)] flex items-center gap-1">
-              Buka Modul J3 <ArrowRightIcon className="w-3 h-3" />
-            </div>
-          </a>
-
-          {/* Track Python Bab 3 */}
-          <a
-            href="/curriculum/python/p3"
-            className="block p-6 rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] hover:border-[var(--border-focused)] transition-all group shadow-xs text-decoration-none"
-          >
-            <div className="flex items-center justify-between mb-3">
-              <span className="px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-[#3776AB]/20 text-[#20527B] dark:text-[#68B0EB]">
-                Bab 3 • Python (P3)
-              </span>
-              <span className="text-xs font-mono text-[var(--text-muted)]">Python 3.12 Koleksi</span>
-            </div>
-            <h3 className="text-xl font-bold mb-2 text-[var(--text-primary)] group-hover:text-[var(--accent-terracotta)] transition-colors font-display">
-              Struktur Data Koleksi
-            </h3>
-            <p className="text-sm text-[var(--text-secondary)] leading-relaxed mb-4">
-              List & slicing [start:stop:step], Tuple immutability, Dictionary hash map O(1) merge (|), dan Set himpunan. Dilengkapi Kuis Evaluasi Bab 3.
-            </p>
-            <div className="text-xs font-mono font-medium text-[var(--accent-terracotta)] flex items-center gap-1">
-              Buka Bab 3 <ArrowRightIcon className="w-3 h-3" />
-            </div>
-          </a>
-
-          {/* Track JavaScript J4 */}
-          <a
-            href="/curriculum/javascript/j4"
-            className="block p-6 rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] hover:border-[var(--border-focused)] transition-all group shadow-xs text-decoration-none"
-          >
-            <div className="flex items-center justify-between mb-3">
-              <span className="px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-[#F7DF1E]/20 text-[#857000] dark:text-[#F7DF1E]">
-                J4 • JavaScript (Baru)
-              </span>
-              <span className="text-xs font-mono text-[var(--text-muted)]">Vitest & Tooling</span>
-            </div>
-            <h3 className="text-xl font-bold mb-2 text-[var(--text-primary)] group-hover:text-[var(--accent-terracotta)] transition-colors font-display">
-              Modern Tooling & Mini Test Runner
-            </h3>
-            <p className="text-sm text-[var(--text-secondary)] leading-relaxed mb-4">
-              Test-Driven Development (TDD), assertion matchers toBe/toEqual/toThrow, mini Vitest runner, reactive store subscription, dan autocomplete engine.
-            </p>
-            <div className="text-xs font-mono font-medium text-[var(--accent-terracotta)] flex items-center gap-1">
-              Buka Modul J4 <ArrowRightIcon className="w-3 h-3" />
-            </div>
-          </a>
-
-          {/* Track Python Bab 4 */}
-          <a
-            href="/curriculum/python/p4"
-            className="block p-6 rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] hover:border-[var(--border-focused)] transition-all group shadow-xs text-decoration-none"
-          >
-            <div className="flex items-center justify-between mb-3">
-              <span className="px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-[#3776AB]/20 text-[#20527B] dark:text-[#68B0EB]">
-                Bab 4 • Python (P4)
-              </span>
-              <span className="text-xs font-mono text-[var(--text-muted)]">Python 3.12 Fungsi</span>
-            </div>
-            <h3 className="text-xl font-bold mb-2 text-[var(--text-primary)] group-hover:text-[var(--accent-terracotta)] transition-colors font-display">
-              Fungsi & Modularitas
-            </h3>
-            <p className="text-sm text-[var(--text-secondary)] leading-relaxed mb-4">
-              Definisi fungsi modular, parameter fleksibel *args & **kwargs, return tuple, LEGB scope, lambda, dan comprehensions. Dilengkapi Kuis Evaluasi Bab 4.
-            </p>
-            <div className="text-xs font-mono font-medium text-[var(--accent-terracotta)] flex items-center gap-1">
-              Buka Bab 4 <ArrowRightIcon className="w-3 h-3" />
-            </div>
-          </a>
-
-          {/* Track JavaScript J5 (Baru!) */}
-          <a
-            href="/curriculum/javascript/j5"
-            className="block p-6 rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] hover:border-[var(--border-focused)] transition-all group shadow-xs text-decoration-none"
-          >
-            <div className="flex items-center justify-between mb-3">
-              <span className="px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-[#F7DF1E]/20 text-[#857000] dark:text-[#F7DF1E]">
-                J5 • JavaScript (Baru)
-              </span>
-              <span className="text-xs font-mono text-[var(--text-muted)]">Metaprogramming & Signals</span>
-            </div>
-            <h3 className="text-xl font-bold mb-2 text-[var(--text-primary)] group-hover:text-[var(--accent-terracotta)] transition-colors font-display">
-              Metaprogramming & Sistem Reaktivitas
-            </h3>
-            <p className="text-sm text-[var(--text-secondary)] leading-relaxed mb-4">
-              Proxy traps & Reflect, Generator function* paginasi, proteksi memori WeakMap bebas leak, Functional Pipe Currying, dan Reactive Signal Store.
-            </p>
-            <div className="text-xs font-mono font-medium text-[var(--accent-terracotta)] flex items-center gap-1">
-              Buka Modul J5 <ArrowRightIcon className="w-3 h-3" />
-            </div>
-          </a>
-
-          {/* Track Python Bab 5 */}
-          <a
-            href="/curriculum/python/p5"
-            className="block p-6 rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] hover:border-[var(--border-focused)] transition-all group shadow-xs text-decoration-none"
-          >
-            <div className="flex items-center justify-between mb-3">
-              <span className="px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-[#3776AB]/20 text-[#20527B] dark:text-[#68B0EB]">
-                Bab 5 • Python (P5)
-              </span>
-              <span className="text-xs font-mono text-[var(--text-muted)]">Python 3.12 OOP</span>
-            </div>
-            <h3 className="text-xl font-bold mb-2 text-[var(--text-primary)] group-hover:text-[var(--accent-terracotta)] transition-colors font-display">
-              Pemrograman Berorientasi Objek
-            </h3>
-            <p className="text-sm text-[var(--text-secondary)] leading-relaxed mb-4">
-              Class & Object, atribut instance & self, pewarisan super(), enkapsulasi @property & setter, dan magic dunder methods. Dilengkapi Kuis Evaluasi Bab 5.
-            </p>
-            <div className="text-xs font-mono font-medium text-[var(--accent-terracotta)] flex items-center gap-1">
-              Buka Bab 5 <ArrowRightIcon className="w-3 h-3" />
-            </div>
-          </a>
+              <div className="text-xs font-mono font-medium text-[var(--text-primary)] group-hover:text-[var(--accent-terracotta)] flex items-center gap-1 pt-3 border-t border-[var(--border-default)]">
+                <span>{track.linkText}</span>
+                <ArrowRightIcon className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+              </div>
+            </a>
+          ))}
         </div>
       </section>
 
       {/* Leaderboard Teaser */}
       <section className="p-6 rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <span className="text-xs font-mono text-[var(--accent-teal)] font-semibold uppercase tracking-wider block mb-1">
-            Kompetisi Sehat
+          <span className="text-xs font-mono text-[var(--text-muted)] font-semibold uppercase tracking-wider block mb-1">
+            Peringkat & Pencapaian
           </span>
           <h2 className="text-lg font-bold text-[var(--text-primary)] font-display">
-            Papan Peringkat & Rank Sistem
+            Sistem Peringkat Kompetitif
           </h2>
-          <p className="text-xs text-[var(--text-secondary)] mt-1">
-            Mulai dari Bronze I (0-50 XP) hingga Immortal (2001+ XP). Cek posisimu di antara para pembelajar.
+          <p className="text-xs text-[var(--text-secondary)] mt-0.5">
+            Mulai dari Bronze I (0–50 XP) hingga Immortal (2001+ XP). Pantau kemajuanmu di antara para pembelajar.
           </p>
         </div>
         <a
           href="/leaderboard"
-          className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-mono font-medium rounded-lg border border-[var(--border-default)] bg-[var(--bg-subtle)] hover:border-[var(--border-focused)] transition-colors text-[var(--text-primary)] shrink-0 text-decoration-none"
+          className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-mono font-medium rounded-lg border border-[var(--border-default)] bg-[var(--bg-subtle)] hover:border-[var(--border-focused)] hover:text-[var(--text-primary)] transition-colors text-[var(--text-secondary)] shrink-0 text-decoration-none"
         >
-          Lihat Leaderboard <ArrowRightIcon className="w-3.5 h-3.5" />
+          <span>Buka Leaderboard</span>
+          <ArrowRightIcon className="w-3.5 h-3.5" />
         </a>
       </section>
 
-      {/* Engineering Manifesto Callout */}
-      <section className="p-6 rounded-xl border border-[var(--border-default)] bg-[var(--bg-subtle)] text-sm leading-relaxed text-[var(--text-secondary)]">
-        <h3 className="font-bold text-[var(--text-primary)] mb-2 font-display text-base">
-          Prinsip Bengkel & Integritas Rekayasa:
+      {/* Engineering Principles */}
+      <section className="p-6 rounded-xl border border-[var(--border-default)] bg-[var(--bg-subtle)] space-y-3">
+        <h3 className="font-bold text-[var(--text-primary)] font-display text-sm tracking-tight flex items-center gap-2">
+          <BookOpenIcon className="w-4 h-4 text-[var(--text-muted)]" />
+          <span>Prinsip Perancangan Platform</span>
         </h3>
-        <ul className="space-y-1.5 list-disc list-inside">
-          <li>
-            <strong>Eksekusi Riil:</strong> Seluruh kode materi dieksekusi di runner JavaScript worker dan Pyodide WebAssembly nyata tanpa simulasi palsu.
-          </li>
-          <li>
-            <strong>Zero JS Default:</strong> Konten disajikan cepat dan terstruktur, hanya memuat runtime interaktif saat kamu berinteraksi dengan editor.
-          </li>
-          <li>
-            <strong>Aksesibilitas Teruji:</strong> Dirancang dengan standar kontras warna WCAG 2.2 AA pada palet Warm Paper & Slate Ink.
-          </li>
-        </ul>
+        <div className="grid sm:grid-cols-3 gap-4 pt-1">
+          <div className="space-y-1">
+            <div className="text-xs font-semibold font-display text-[var(--text-primary)] flex items-center gap-1.5">
+              <CheckCircleIcon className="w-3.5 h-3.5 text-[var(--state-success)]" />
+              <span>Eksekusi Nyata</span>
+            </div>
+            <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
+              Semua kode dieksekusi di runner JavaScript worker dan WebAssembly CPython tanpa simulasi tiruan.
+            </p>
+          </div>
+          <div className="space-y-1">
+            <div className="text-xs font-semibold font-display text-[var(--text-primary)] flex items-center gap-1.5">
+              <CheckCircleIcon className="w-3.5 h-3.5 text-[var(--state-success)]" />
+              <span>Bebas AI Slop</span>
+            </div>
+            <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
+              Materi disusun sistematis dengan penjelasan mendalam, contoh kontekstual, dan latihan nyata.
+            </p>
+          </div>
+          <div className="space-y-1">
+            <div className="text-xs font-semibold font-display text-[var(--text-primary)] flex items-center gap-1.5">
+              <CheckCircleIcon className="w-3.5 h-3.5 text-[var(--state-success)]" />
+              <span>Aksesibilitas Teruji</span>
+            </div>
+            <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
+              Desain kontras tinggi memenuhi standar WCAG 2.2 AA pada mode terang dan gelap.
+            </p>
+          </div>
+        </div>
       </section>
 
       {/* Auth Modal Container */}

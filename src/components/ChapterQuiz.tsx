@@ -313,7 +313,7 @@ export const ChapterQuiz: React.FC<ChapterQuizProps> = ({
     'mostly-choice': 'Dominan Tanya-Jawab (Pilihan Ganda)',
     balanced: 'Kombinasi Seimbang (Tanya-Jawab + Live Coding)',
     'mostly-coding': 'Dominan Live Coding',
-    'full-coding': 'Tantangan Full Live Coding ⚡',
+    'full-coding': 'Tantangan Full Live Coding',
   }[mixMode];
 
   if (activeItems.length === 0) {
@@ -322,7 +322,7 @@ export const ChapterQuiz: React.FC<ChapterQuizProps> = ({
         id={`kuis-${chapterId}`}
         className="my-10 p-8 rounded-2xl border-2 border-[var(--border-default)] bg-[var(--bg-surface)] text-center space-y-3 shadow-xs"
       >
-        <div className="w-8 h-8 mx-auto rounded-full bg-[var(--accent-terracotta)]/20 text-[var(--accent-terracotta)] flex items-center justify-center animate-pulse">
+        <div className="w-8 h-8 mx-auto rounded-full bg-[var(--accent-terracotta)]/20 text-[var(--accent-terracotta)] flex items-center justify-center">
           <SparklesIcon className="w-4 h-4" />
         </div>
         <h3 className="font-display font-bold text-base text-[var(--text-primary)]">
@@ -341,20 +341,19 @@ export const ChapterQuiz: React.FC<ChapterQuizProps> = ({
       onCopy={handleCopyProtection}
       onCut={handleCopyProtection}
       onContextMenu={handleContextMenuProtection}
-      className="my-10 rounded-2xl border-2 border-[var(--border-focused)] bg-[var(--bg-surface)] overflow-hidden shadow-lg select-none relative"
+      className="my-10 rounded-2xl border border-[var(--border-focused)] bg-[var(--bg-surface)] overflow-hidden shadow-sm select-none relative"
       style={{ WebkitUserSelect: 'none', userSelect: 'none' }}
     >
       {/* Proctoring Warning Toast / Alert */}
       {recentAlert && (
-        <div className="sticky top-2 z-50 mx-4 my-2 p-3.5 rounded-xl bg-amber-500/95 text-slate-950 font-sans text-xs font-semibold shadow-xl border border-amber-600 flex items-center justify-between gap-3 animate-bounce">
+        <div className="sticky top-2 z-50 mx-4 my-2 p-3 rounded-lg bg-[var(--state-warning)] text-white font-sans text-xs font-semibold shadow-md border border-[var(--border-focused)] flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <span>🛡️</span>
             <span>{recentAlert}</span>
           </div>
           <button
             type="button"
             onClick={dismissAlert}
-            className="px-2 py-0.5 rounded bg-amber-600/50 hover:bg-amber-600 text-slate-950 text-[11px] font-bold cursor-pointer"
+            className="px-2 py-0.5 rounded bg-black/20 hover:bg-black/30 text-white text-[11px] font-bold cursor-pointer"
           >
             Tutup
           </button>
@@ -364,7 +363,7 @@ export const ChapterQuiz: React.FC<ChapterQuizProps> = ({
       {/* Top Banner & Anti-Cheat Controls */}
       <div className="px-5 py-4 bg-[var(--bg-subtle)] border-b border-[var(--border-default)] flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <span className="w-3 h-3 rounded-full bg-[var(--accent-terracotta)] animate-pulse"></span>
+          <span className="w-2.5 h-2.5 rounded-full bg-[var(--text-primary)]"></span>
           <div>
             <h3 className="font-display font-bold text-sm sm:text-base text-[var(--text-primary)]">
               {title}
@@ -372,7 +371,7 @@ export const ChapterQuiz: React.FC<ChapterQuizProps> = ({
             <div className="flex flex-wrap items-center gap-2 mt-0.5 text-xs font-mono text-[var(--text-secondary)]">
               <span>Percobaan #{attemptCount}</span>
               <span>•</span>
-              <span className="text-[var(--accent-teal)] font-medium">
+              <span className="text-[var(--text-primary)] font-medium">
                 {modeBadgeLabel}
               </span>
             </div>
@@ -382,7 +381,7 @@ export const ChapterQuiz: React.FC<ChapterQuizProps> = ({
         {/* Proctoring status pills & Fullscreen Toggle */}
         <div className="flex flex-wrap items-center gap-2 text-xs font-mono">
           {isPreviouslyMastered && (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold bg-[var(--state-success)]/10 text-[var(--state-success)] border border-[var(--state-success)]/20">
               <CheckIcon className="w-3.5 h-3.5" /> Bab Terverifikasi Lulus
             </span>
           )}
@@ -391,29 +390,29 @@ export const ChapterQuiz: React.FC<ChapterQuizProps> = ({
           <button
             type="button"
             onClick={toggleFullscreen}
-            className={`px-2.5 py-1 rounded-lg border font-mono text-xs font-medium transition-all cursor-pointer flex items-center gap-1.5 ${
+            className={`px-2.5 py-1 rounded-md border font-mono text-xs font-medium transition-all cursor-pointer flex items-center gap-1.5 ${
               isFullscreen
-                ? 'bg-[var(--accent-teal)] text-white border-[var(--accent-teal)]'
+                ? 'bg-[var(--text-primary)] text-[var(--bg-canvas)] border-[var(--text-primary)]'
                 : 'bg-[var(--bg-surface)] text-[var(--text-secondary)] border-[var(--border-default)] hover:border-[var(--border-focused)] hover:text-[var(--text-primary)]'
             }`}
             title="Aktifkan mode layar penuh untuk kenyamanan fokus & integritas evaluasi"
           >
-            <span>{isFullscreen ? '⤓ Keluar Layar Penuh' : '⤢ Mode Layar Penuh'}</span>
+            <span>{isFullscreen ? 'Keluar Layar Penuh' : 'Layar Penuh'}</span>
           </button>
 
           {/* Violations Counter */}
           <span
-            className={`px-2.5 py-1 rounded-lg border font-mono text-xs ${
+            className={`px-2.5 py-1 rounded-md border font-mono text-xs ${
               totalViolations > 0
-                ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30 font-bold'
+                ? 'bg-[var(--state-danger)]/10 text-[var(--state-danger)] border-[var(--state-danger)]/30 font-semibold'
                 : 'bg-[var(--bg-canvas)] text-[var(--text-muted)] border-[var(--border-default)]'
             }`}
             title="Pelanggaran perpindahan tab, kehilangan fokus, atau usaha copy"
           >
-            {totalViolations > 0 ? `⚠️ Peringatan: ${totalViolations}` : 'Integritas: Terjaga'}
+            {totalViolations > 0 ? `Peringatan: ${totalViolations}` : 'Integritas: Terjaga'}
           </span>
 
-          <span className="px-2.5 py-1 rounded-lg bg-[var(--bg-canvas)] text-[var(--text-secondary)] border border-[var(--border-default)]">
+          <span className="px-2.5 py-1 rounded-md bg-[var(--bg-canvas)] text-[var(--text-secondary)] border border-[var(--border-default)]">
             Standar: ≥{passingScore}%
           </span>
         </div>
@@ -423,16 +422,16 @@ export const ChapterQuiz: React.FC<ChapterQuizProps> = ({
       <div className="p-5 sm:p-7 space-y-8">
         {/* Anti-Cheat & Mixed Notice */}
         {!submitted && (
-          <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/25 text-xs text-[var(--text-secondary)] space-y-1.5">
-            <div className="flex items-center gap-2 font-bold text-amber-800 dark:text-amber-400">
-              <span>🛡️ Aturan Pengawasan & Mode Acak:</span>
+          <div className="p-3.5 rounded-lg bg-[var(--bg-subtle)] border border-[var(--border-default)] text-xs text-[var(--text-secondary)] space-y-1.5">
+            <div className="font-semibold text-[var(--text-primary)]">
+              Aturan Pengawasan & Mode Evaluasi:
             </div>
             <p className="leading-relaxed font-sans">
-              Soal diacak dinamis antara <strong>Tanya-Jawab Konseptual</strong> dan <strong>Live Coding Langsung (Pyodide WASM)</strong>. Teks soal diproteksi dari penyalinan. Dilarang berpindah tab atau membagi layar multitasking selama kuis berlangsung.
+              Soal diacak secara dinamis antara <strong>Tanya-Jawab Konseptual</strong> dan <strong>Live Coding (Pyodide WASM)</strong>. Teks soal dilindungi dari penyalinan. Dilarang berpindah tab atau membagi layar selama evaluasi berlangsung.
             </p>
             {splitScreenDetected && (
-              <div className="p-2 rounded bg-rose-500/20 text-rose-700 dark:text-rose-300 font-mono text-[11px] font-bold">
-                ⚠️ PERINGATAN: Layar terdeteksi sempit atau terbelah (Split-Screen / Multitasking). Maksimalkan jendela browser!
+              <div className="p-2 rounded bg-rose-500/10 text-rose-700 dark:text-rose-300 font-mono text-[11px] font-semibold">
+                Peringatan: Layar terdeteksi sempit atau terbelah. Maksimalkan jendela browser untuk kenyamanan pengerjaan.
               </div>
             )}
           </div>
@@ -612,7 +611,7 @@ export const ChapterQuiz: React.FC<ChapterQuizProps> = ({
                             : 'bg-[var(--state-danger)] text-white'
                         }`}
                       >
-                        {isPassed ? '★ LULUS EVALUASI BAB' : 'BELUM MEMENUHI SYARAT KELULUSAN'}
+                        {isPassed ? 'LULUS EVALUASI BAB' : 'BELUM MEMENUHI AMBANG KELULUSAN'}
                       </span>
                       <span className="text-sm font-mono font-bold">
                         Skor: {score}% ({correctCount}/{activeItems.length} Benar)
@@ -621,13 +620,13 @@ export const ChapterQuiz: React.FC<ChapterQuizProps> = ({
 
                     <p className="text-xs sm:text-sm text-[var(--text-secondary)] leading-relaxed pt-1 font-sans">
                       {isPassed
-                        ? `Luar biasa! Kamu berhasil menuntaskan evaluasi dengan ${correctCount} soal/tantangan tepat dari ${activeItems.length} total soal. Konsep di Bab ini telah dikuasai!`
-                        : `Kamu belum memenuhi ambang batas kelulusan (salah ${incorrectCount} soal dari ${activeItems.length} soal, standar ≥${passingScore}%). Silakan kocok ulang dan ulangi kuis untuk memantapkan pemahaman.`}
+                        ? `Evaluasi berhasil dituntaskan dengan ${correctCount} jawaban/tantangan tepat dari ${activeItems.length} total soal. Konsep di Bab ini telah terverifikasi.`
+                        : `Ambang batas kelulusan belum terpenuhi (salah ${incorrectCount} dari ${activeItems.length} soal, standar ≥${passingScore}%). Silakan pelajari kembali materi dan ulangi kuis.`}
                     </p>
 
                     {totalViolations > 0 && (
                       <div className="mt-2 text-xs font-mono text-amber-700 dark:text-amber-400">
-                        Catatan Pengawasan: Terdeteksi {totalViolations} pelanggaran integritas (pindah tab/fokus: {tabSwitches + blurCount}, fullscreen exit: {fullscreenExits}, copy attempt: {copyAttempts}).
+                        Catatan Pengawasan: Terdeteksi {totalViolations} peringatan integritas (pindah tab: {tabSwitches + blurCount}, fullscreen exit: {fullscreenExits}, copy attempt: {copyAttempts}).
                       </div>
                     )}
                   </div>
@@ -647,7 +646,7 @@ export const ChapterQuiz: React.FC<ChapterQuizProps> = ({
                   onClick={handleRetry}
                   className="px-5 py-2.5 rounded-xl text-xs sm:text-sm font-mono font-medium border border-[var(--border-default)] bg-[var(--bg-surface)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-focused)] transition-colors cursor-pointer flex items-center gap-2"
                 >
-                  ↻ Ulangi Kuis (Kocok Ulang Soal & Tipe Acak)
+                  <span>Ulangi Kuis (Kocok Ulang Soal)</span>
                 </button>
 
                 {isPassed && nextChapterUrl && (
