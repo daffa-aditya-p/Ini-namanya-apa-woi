@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, beforeAll } from 'vitest';
 import {
   PYTHON_CHAPTERS,
   PYTHON_FINAL_EXAM,
@@ -13,7 +13,7 @@ import {
   LocalAuthManager,
   getSavedSession,
 } from '../src/lib/userStore';
-import { PythonRunner } from '../src/lib/runner/python';
+import { PythonRunner, getPyodideInstance } from '../src/lib/runner/python';
 import { isSplitScreenDetected } from '../src/lib/useProctoring';
 
 describe('Python Chapter Live Coding Challenges & Syllabus Integrity', () => {
@@ -204,6 +204,10 @@ describe('Comprehensive Final Exam Scoring & Official Certification Award', () =
 });
 
 describe('Live Coding Scaffolding & Pyodide Execution Verification', () => {
+  beforeAll(async () => {
+    await getPyodideInstance();
+  }, 60000);
+
   it('provides authentic scaffolding (TODOs) in starterCode for learners to write code', () => {
     PYTHON_CHAPTERS.forEach((chap) => {
       chap.codingChallenges?.forEach((challenge) => {
