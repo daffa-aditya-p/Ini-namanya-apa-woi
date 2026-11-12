@@ -194,21 +194,21 @@ export const LiveCodingExercise: React.FC<LiveCodingExerciseProps> = ({
       <div className="p-4 sm:p-5 border-b border-[var(--border-default)] bg-[var(--bg-surface)] select-none">
         <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
           <div className="flex items-center gap-2">
-            <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#3776AB]/15 text-[#20527B] dark:text-[#68B0EB] border border-[#3776AB]/30 uppercase">
-              ⚡ Live Coding Pyodide
+            <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[var(--bg-subtle)] text-[var(--text-primary)] border border-[var(--border-default)] uppercase">
+              Live Coding Pyodide
             </span>
-            <span className="text-xs font-mono font-semibold text-[var(--accent-terracotta)]">
+            <span className="text-xs font-mono font-medium text-[var(--text-secondary)]">
               Sub-bab {challenge.subBab}
             </span>
           </div>
 
           <div>
             {hasPassed ? (
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
-                <CheckIcon className="w-3.5 h-3.5" /> Lolos Verifikasi
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-[var(--state-success)]/15 text-[var(--state-success)] border border-[var(--state-success)]/30">
+                <CheckIcon className="w-3.5 h-3.5" /> Terverifikasi
               </span>
             ) : (
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-mono text-amber-600 dark:text-amber-400 bg-amber-500/10 border border-amber-500/25">
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-mono text-[var(--text-muted)] bg-[var(--bg-subtle)] border border-[var(--border-default)]">
                 Belum Terverifikasi
               </span>
             )}
@@ -234,9 +234,9 @@ export const LiveCodingExercise: React.FC<LiveCodingExerciseProps> = ({
             <button
               type="button"
               onClick={() => setShowHint(!showHint)}
-              className="text-[11px] text-[var(--accent-teal)] hover:underline cursor-pointer"
+              className="text-[11px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:underline cursor-pointer"
             >
-              {showHint ? 'Tutup Petunjuk' : '💡 Butuh Petunjuk?'}
+              {showHint ? 'Tutup Petunjuk' : 'Petunjuk'}
             </button>
           )}
         </div>
@@ -297,7 +297,7 @@ export const LiveCodingExercise: React.FC<LiveCodingExerciseProps> = ({
             </>
           ) : hasPassed ? (
             <>
-              <span>✓</span>
+              <CheckIcon className="w-3.5 h-3.5" />
               <span>Terverifikasi (Jalankan Ulang)</span>
             </>
           ) : (
@@ -319,12 +319,12 @@ export const LiveCodingExercise: React.FC<LiveCodingExerciseProps> = ({
                   hasPassed ? 'bg-emerald-400' : 'bg-rose-500'
                 }`}
               ></span>
-              <span className={hasPassed ? 'text-emerald-400 font-bold' : 'text-rose-400'}>
-                {hasPassed ? '✓ Berhasil! Output Cocok' : 'Output Belum Sesuai Ekspektasi'}
+              <span className={hasPassed ? 'text-emerald-400 font-medium' : 'text-rose-400'}>
+                {hasPassed ? 'Berhasil: Output Valid' : 'Output Belum Sesuai Target'}
               </span>
             </span>
             <span className="text-[11px] text-[#71717a]">
-              ⚡ {Math.round(output.executionTimeMs)} ms
+              {Math.round(output.executionTimeMs)} ms
             </span>
           </div>
 

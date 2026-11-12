@@ -416,7 +416,7 @@ export function awardFinalExamCompletion(
     coinsEarned: coinsAmount,
     user: updatedUser,
     alreadyCompleted: false,
-    message: `🎓 SELAMAT! Kamu Resmi Lulus Ujian Akhir Komprehensif Python! Mendapatkan +${xpAmount} XP, +${coinsAmount} Koin, dan Sertifikat Kelulusan Resmi belajar.in!`,
+    message: `SELAMAT! Kamu Resmi Lulus Ujian Akhir Komprehensif Python! Mendapatkan +${xpAmount} XP, +${coinsAmount} Koin, dan Sertifikat Kelulusan Resmi belajar.in!`,
   };
 }
 

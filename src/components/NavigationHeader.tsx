@@ -81,7 +81,7 @@ export function NavigationHeader() {
         {/* Rank Badge */}
         <a
           href="/leaderboard"
-          className="px-2 py-1 rounded-md text-[11px] font-mono font-semibold border border-[var(--border-default)] bg-[var(--bg-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-focused)] transition-colors"
+          className="hidden sm:inline-flex px-2 py-1 rounded-md text-[11px] font-mono font-semibold border border-[var(--border-default)] bg-[var(--bg-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-focused)] transition-colors"
           title={`Peringkat: ${rank.tier} (${user.xp} XP)`}
         >
           {rank.tier}
@@ -89,7 +89,7 @@ export function NavigationHeader() {
 
         {/* Username */}
         <span
-          className="text-xs font-mono text-[var(--text-secondary)] hidden sm:inline truncate max-w-[110px]"
+          className="text-xs font-mono text-[var(--text-secondary)] hidden md:inline truncate max-w-[110px]"
           title={`Masuk sebagai @${user.username}`}
         >
           @{user.username}
@@ -107,7 +107,7 @@ export function NavigationHeader() {
         <button
           type="button"
           onClick={handleLogout}
-          className="text-xs font-mono px-2 py-1 rounded-md text-[var(--text-muted)] hover:text-[var(--state-danger)] hover:bg-[var(--state-danger)]/10 transition-colors cursor-pointer"
+          className="hidden sm:inline-block text-xs font-mono px-2 py-1 rounded-md text-[var(--text-muted)] hover:text-[var(--state-danger)] hover:bg-[var(--state-danger)]/10 transition-colors cursor-pointer"
           title="Keluar dari sesi saat ini"
           aria-label="Keluar dari akun"
         >

@@ -239,12 +239,12 @@ export const SocraticTutorPanel: React.FC<SocraticTutorPanelProps> = ({
                         <p className="text-[var(--text-primary)] leading-relaxed">{hintItem.hint}</p>
                         {hintItem.suggestedAction && (
                           <div className="text-xs font-mono text-[var(--accent-teal)]">
-                            👉 Tindakan yang Disarankan: {hintItem.suggestedAction}
+                            Tindakan yang Disarankan: {hintItem.suggestedAction}
                           </div>
                         )}
                         {/* Citations */}
                         <div className="pt-2 border-t border-[var(--border-default)] text-[11px] font-mono text-[var(--text-muted)] flex flex-wrap items-center gap-1.5">
-                          <span>Rujukan Resmi (Citations):</span>
+                          <span>Rujukan Resmi:</span>
                           {hintItem.citations.map((cite, cIdx) => (
                             <span
                               key={cIdx}
@@ -294,7 +294,8 @@ export const SocraticTutorPanel: React.FC<SocraticTutorPanelProps> = ({
           {reviewResult && (
             <div className="p-3.5 rounded-lg border border-[var(--state-success)]/30 bg-[var(--state-success)]/10 text-xs font-sans space-y-1.5 animate-in fade-in duration-150">
               <div className="font-bold font-mono text-[var(--state-success)] flex items-center gap-1.5">
-                <span>✓ Hasil Review Tutor ({language.toUpperCase()})</span>
+                <CheckIcon className="w-3.5 h-3.5" />
+                <span>Hasil Review Tutor ({language.toUpperCase()})</span>
               </div>
               <p className="text-[var(--text-primary)] leading-relaxed">{reviewResult.feedback}</p>
               <div className="text-[11px] font-mono text-[var(--text-muted)] flex items-center gap-1.5">

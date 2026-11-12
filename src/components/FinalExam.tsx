@@ -17,6 +17,8 @@ import {
   CheckIcon,
   SparklesIcon,
   ClockIcon,
+  ShieldIcon,
+  AlertTriangleIcon,
 } from './Icons';
 
 export interface FinalExamProps {
@@ -223,11 +225,12 @@ export const FinalExam: React.FC<FinalExamProps> = ({
       >
         <div className="p-6 sm:p-10 bg-linear-to-br from-[#1c1917] via-[#292524] to-[#1c1917] text-white">
           <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
-            <span className="px-3.5 py-1 rounded-full text-xs font-mono font-bold uppercase tracking-wider bg-[var(--accent-terracotta)] text-white shadow-xs">
-              🏆 Evaluasi Akhir Modul P1 - P5
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold uppercase tracking-wider bg-[var(--text-primary)] text-[var(--bg-canvas)] shadow-xs">
+              <TrophyIcon className="w-3.5 h-3.5" />
+              <span>Evaluasi Akhir Modul P1 - P5</span>
             </span>
             {isGraduated && (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold bg-[var(--state-success)]/20 text-[var(--state-success)] border border-[var(--state-success)]/40">
                 <CheckIcon className="w-4 h-4" /> Gelar Lulusan Python Terverifikasi
               </span>
             )}
@@ -237,7 +240,7 @@ export const FinalExam: React.FC<FinalExamProps> = ({
             Ujian Akhir Komprehensif Python (Final Exam)
           </h2>
           <p className="text-sm sm:text-base text-neutral-300 font-serif leading-relaxed max-w-2xl mb-6">
-            Ujian akhir resmi mencakup seluruh 5 Bab kurikulum Python (Dasar, Alur Kontrol, Koleksi Data, Fungsi Modular, & OOP). Dilengkapi sistem pengawasan anti-curang proctored dan batas waktu 25 menit.
+            Ujian akhir resmi mencakup seluruh 5 Bab kurikulum Python (Dasar, Alur Kontrol, Koleksi Data, Fungsi Modular, & OOP). Dilengkapi sistem pengawasan integritas proctored dan batas waktu 25 menit.
           </p>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-mono mb-8">
@@ -267,24 +270,27 @@ export const FinalExam: React.FC<FinalExamProps> = ({
             </div>
           </div>
 
-          <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-200 font-sans mb-8 leading-relaxed">
-            <strong>🛡️ Peraturan Pengawasan Integritas (Anti-Cheat):</strong> Selama ujian berlangsung, teks soal dikunci dari penyalinan/pemotongan, dilarang beralih tab atau aplikasi, dan dilarang membagi layar multitasking. Setiap pelanggaran akan dicatat dalam lembar evaluasi akhir.
+          <div className="p-4 rounded-xl bg-white/5 border border-white/10 text-xs text-neutral-300 font-sans mb-8 leading-relaxed flex items-start gap-2.5">
+            <ShieldIcon className="w-4 h-4 text-neutral-400 shrink-0 mt-0.5" />
+            <div>
+              <strong>Peraturan Integritas (Anti-Cheat):</strong> Selama ujian berlangsung, teks soal dikunci dari penyalinan, dilarang beralih tab atau aplikasi, dan dilarang membagi layar multitasking. Setiap indikasi pelanggaran dicatat dalam rekap evaluasi akhir.
+            </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-4">
             <button
               type="button"
               onClick={handleStartExam}
-              className="px-8 py-3.5 rounded-xl text-sm font-mono font-bold bg-[var(--accent-terracotta)] text-white hover:opacity-95 active:scale-95 transition-all cursor-pointer shadow-lg flex items-center gap-2"
+              className="px-8 py-3.5 rounded-xl text-sm font-mono font-bold bg-[var(--text-primary)] text-[var(--bg-canvas)] hover:opacity-90 active:scale-95 transition-all cursor-pointer shadow-lg flex items-center gap-2"
             >
-              <SparklesIcon className="w-4 h-4" /> Mulai Ujian Akhir Komprehensif
+              <SparklesIcon className="w-4 h-4" /> Mulai Ujian Akhir
             </button>
             <button
               type="button"
               onClick={toggleFullscreen}
               className="px-4 py-3.5 rounded-xl text-xs font-mono font-medium border border-white/20 bg-white/5 hover:bg-white/10 text-neutral-200 transition-colors cursor-pointer"
             >
-              {isFullscreen ? '⤓ Keluar Layar Penuh' : '⤢ Masuk Layar Penuh Sebelum Mulai'}
+              {isFullscreen ? 'Keluar Layar Penuh' : 'Layar Penuh (Disarankan)'}
             </button>
           </div>
         </div>
@@ -304,15 +310,15 @@ export const FinalExam: React.FC<FinalExamProps> = ({
     >
       {/* Proctoring Warning Toast */}
       {recentAlert && (
-        <div className="sticky top-2 z-50 mx-4 my-2 p-3.5 rounded-xl bg-amber-500 text-slate-950 font-sans text-xs font-semibold shadow-xl border border-amber-600 flex items-center justify-between gap-3 animate-bounce">
+        <div className="sticky top-2 z-50 mx-4 my-2 p-3.5 rounded-xl bg-[var(--bg-surface)] text-[var(--text-primary)] font-sans text-xs font-semibold shadow-xl border border-[var(--border-focused)] flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <span>🛡️</span>
+            <ShieldIcon className="w-4 h-4 text-[var(--accent-teal)] shrink-0" />
             <span>{recentAlert}</span>
           </div>
           <button
             type="button"
             onClick={dismissAlert}
-            className="px-2 py-0.5 rounded bg-amber-600/50 hover:bg-amber-600 text-slate-950 text-[11px] font-bold cursor-pointer"
+            className="px-2 py-0.5 rounded bg-[var(--bg-subtle)] hover:bg-[var(--border-default)] text-[var(--text-primary)] text-[11px] font-bold cursor-pointer"
           >
             Tutup
           </button>
@@ -322,7 +328,7 @@ export const FinalExam: React.FC<FinalExamProps> = ({
       {/* Sticky Countdown Timer & Proctor Header */}
       <div className="sticky top-0 z-40 px-5 py-3.5 bg-[var(--bg-subtle)]/95 backdrop-blur-md border-b border-[var(--border-default)] flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <span className="w-3 h-3 rounded-full bg-[var(--accent-terracotta)] animate-pulse"></span>
+          <span className="w-3 h-3 rounded-full bg-[var(--accent-terracotta)]"></span>
           <div>
             <h3 className="font-display font-bold text-sm sm:text-base text-[var(--text-primary)]">
               Ujian Akhir Python (Bab 1–5)
@@ -339,7 +345,7 @@ export const FinalExam: React.FC<FinalExamProps> = ({
             <div
               className={`px-3 py-1.5 rounded-xl border font-mono text-sm font-bold flex items-center gap-2 ${
                 isUrgent
-                  ? 'bg-rose-500/20 text-rose-600 dark:text-rose-400 border-rose-500/40 animate-pulse'
+                  ? 'bg-rose-500/20 text-rose-600 dark:text-rose-400 border-rose-500/40'
                   : 'bg-[var(--bg-surface)] text-[var(--text-primary)] border-[var(--border-default)]'
               }`}
             >
@@ -353,7 +359,7 @@ export const FinalExam: React.FC<FinalExamProps> = ({
             onClick={toggleFullscreen}
             className="hidden sm:inline-flex px-2.5 py-1 text-xs font-mono rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
           >
-            {isFullscreen ? '⤓ Normal' : '⤢ Fullscreen'}
+            {isFullscreen ? 'Normal' : 'Fullscreen'}
           </button>
 
           <span
@@ -384,16 +390,18 @@ export const FinalExam: React.FC<FinalExamProps> = ({
       <div className="p-5 sm:p-8 space-y-10">
         {/* Anti-cheat banner */}
         {!submitted && (
-          <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/25 text-xs text-[var(--text-secondary)] space-y-1">
-            <div className="font-bold text-amber-800 dark:text-amber-400 flex items-center gap-1.5">
-              <span>🛡️ Ujian Sedang Berlangsung:</span>
+          <div className="p-3.5 rounded-xl bg-[var(--bg-subtle)] border border-[var(--border-default)] text-xs text-[var(--text-secondary)] space-y-1">
+            <div className="font-bold text-[var(--text-primary)] flex items-center gap-1.5">
+              <ShieldIcon className="w-4 h-4 text-[var(--accent-teal)]" />
+              <span>Ujian Sedang Berlangsung</span>
             </div>
             <p className="leading-relaxed">
               Waktu terus berjalan. Harap selesaikan 10 soal pilihan ganda dan 5 tantangan live coding di bawah ini. Jawaban akan otomatis terkirim saat waktu habis.
             </p>
             {splitScreenDetected && (
-              <div className="p-2 rounded bg-rose-500/20 text-rose-700 dark:text-rose-300 font-mono text-[11px] font-bold">
-                ⚠️ Peringatan: Layar terbelah / multitasking terdeteksi. Maksimalkan jendela browser!
+              <div className="p-2 rounded bg-rose-500/10 text-rose-700 dark:text-rose-300 font-mono text-[11px] font-bold flex items-center gap-1.5">
+                <AlertTriangleIcon className="w-3.5 h-3.5" />
+                <span>Peringatan: Layar terbelah / multitasking terdeteksi. Maksimalkan jendela browser!</span>
               </div>
             )}
           </div>
@@ -566,11 +574,11 @@ export const FinalExam: React.FC<FinalExamProps> = ({
                       <span
                         className={`px-3 py-1 rounded-full text-xs font-mono font-bold uppercase tracking-wider ${
                           isPassed
-                            ? 'bg-emerald-600 text-white'
+                            ? 'bg-[var(--state-success)] text-white'
                             : 'bg-rose-600 text-white'
                         }`}
                       >
-                        {isPassed ? '🎓 LULUS UJIAN AKHIR KOMPREHENSIF' : 'BELUM MEMENUHI KELULUSAN'}
+                        {isPassed ? 'LULUS UJIAN AKHIR KOMPREHENSIF' : 'BELUM MEMENUHI KELULUSAN'}
                       </span>
                       <span className="text-base font-mono font-bold">
                         Skor Akhir: {score}% ({correctCount}/{totalQuestions} Soal Tuntas)
@@ -579,7 +587,7 @@ export const FinalExam: React.FC<FinalExamProps> = ({
 
                     <p className="text-sm text-[var(--text-secondary)] font-sans leading-relaxed max-w-xl">
                       {isPassed
-                        ? `Selamat luar biasa! Kamu telah menuntaskan seluruh 5 Bab kurikulum Python belajar.in dengan gemilang (${correctCount} dari ${totalQuestions} soal berhasil dijawab dan diverifikasi). Sertifikat kelulusan resmimu telah diterbitkan!`
+                        ? `Selamat! Kamu telah menyelesaikan seluruh 5 Bab kurikulum Python belajar.in (${correctCount} dari ${totalQuestions} soal berhasil dijawab dan diverifikasi). Sertifikat kelulusan resmimu telah diterbitkan.`
                         : `Kamu memperoleh skor ${score}%. Ambang batas kelulusan kurikulum adalah ≥${passingScore}%. Silakan pelajari kembali bab-bab yang masih kurang dipahami lalu coba ujian kembali.`}
                     </p>
 
@@ -591,9 +599,12 @@ export const FinalExam: React.FC<FinalExamProps> = ({
                   </div>
 
                   {awardFeedback && (
-                    <div className="p-4 rounded-xl bg-[var(--bg-surface)] border border-emerald-500 text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400 shrink-0 shadow-md text-center">
-                      <div>🏆 HADIAH KELULUSAN:</div>
-                      <div className="text-sm mt-1">{awardFeedback}</div>
+                    <div className="p-4 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-default)] text-xs font-mono font-medium text-[var(--text-primary)] shrink-0 shadow-2xs text-center space-y-1">
+                      <div className="flex items-center justify-center gap-1.5 font-bold text-[var(--state-success)]">
+                        <TrophyIcon className="w-4 h-4" />
+                        <span>HADIAH KELULUSAN</span>
+                      </div>
+                      <div className="text-xs text-[var(--text-secondary)]">{awardFeedback}</div>
                     </div>
                   )}
                 </div>
@@ -601,46 +612,44 @@ export const FinalExam: React.FC<FinalExamProps> = ({
 
               {/* Official Graduation Certificate (Rendered when Passed) */}
               {isPassed && (
-                <div className="p-6 sm:p-10 rounded-3xl border-4 border-amber-600/40 bg-linear-to-b from-stone-900 via-neutral-900 to-stone-900 text-white shadow-2xl relative overflow-hidden">
-                  {/* Watermark / Seal Background */}
-                  <div className="absolute -right-10 -bottom-10 opacity-5 pointer-events-none select-none text-9xl font-display font-black">
-                    PYTHON
-                  </div>
-
+                <div className="p-6 sm:p-10 rounded-2xl border border-[var(--border-focused)] bg-[var(--bg-surface)] text-[var(--text-primary)] shadow-md relative overflow-hidden">
                   <div className="text-center space-y-4 max-w-xl mx-auto">
-                    <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full text-xs font-mono tracking-widest uppercase bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                      ★ SERTIFIKAT KELULUSAN RESMI • BELAJAR.IN ★
+                    <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full text-xs font-mono tracking-widest uppercase bg-[var(--bg-subtle)] text-[var(--text-secondary)] border border-[var(--border-default)]">
+                      SERTIFIKAT KELULUSAN RESMI • BELAJAR.IN
                     </div>
 
-                    <h3 className="text-2xl sm:text-3xl font-extrabold font-display text-amber-200 tracking-tight">
+                    <h3 className="text-2xl sm:text-3xl font-extrabold font-display text-[var(--text-primary)] tracking-tight">
                       Python Software Engineering Certification
                     </h3>
 
-                    <p className="text-xs text-neutral-400 font-mono">
+                    <p className="text-xs text-[var(--text-muted)] font-mono">
                       Dengan ini menyatakan bahwa:
                     </p>
 
-                    <div className="text-2xl sm:text-3xl font-bold font-serif text-white tracking-wide underline decoration-amber-500 decoration-2 underline-offset-8">
+                    <div className="text-2xl sm:text-3xl font-bold font-serif text-[var(--text-primary)] tracking-wide underline decoration-[var(--accent-terracotta)] decoration-2 underline-offset-8">
                       {activeUser?.name || activeUser?.username || 'Pembelajar Berdedikasi'}
                     </div>
 
-                    <p className="text-xs sm:text-sm text-neutral-300 font-sans leading-relaxed pt-2">
+                    <p className="text-xs sm:text-sm text-[var(--text-secondary)] font-sans leading-relaxed pt-2">
                       Telah berhasil menyelesaikan seluruh silabus kurikulum <strong>Python 3.12 (Bab 1–5)</strong> dan dinyatakan lulus <strong>Ujian Akhir Komprehensif</strong> dengan nilai kelulusan <strong>{score}%</strong>.
                     </p>
 
                     {/* Certificate Meta Details */}
-                    <div className="pt-6 grid grid-cols-2 sm:grid-cols-3 gap-3 text-left border-t border-white/10 text-xs font-mono">
+                    <div className="pt-6 grid grid-cols-2 sm:grid-cols-3 gap-3 text-left border-t border-[var(--border-default)] text-xs font-mono">
                       <div>
-                        <span className="text-neutral-500 block text-[10px]">ID KREDENSIAL:</span>
-                        <span className="text-amber-400 font-bold">{certCredentialId}</span>
+                        <span className="text-[var(--text-muted)] block text-[10px]">ID KREDENSIAL:</span>
+                        <span className="text-[var(--text-primary)] font-bold">{certCredentialId}</span>
                       </div>
                       <div>
-                        <span className="text-neutral-500 block text-[10px]">TANGGAL PENERBITAN:</span>
-                        <span className="text-white font-medium">{new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                        <span className="text-[var(--text-muted)] block text-[10px]">TANGGAL PENERBITAN:</span>
+                        <span className="text-[var(--text-secondary)] font-medium">{new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
                       </div>
                       <div className="col-span-2 sm:col-span-1">
-                        <span className="text-neutral-500 block text-[10px]">STATUS:</span>
-                        <span className="text-emerald-400 font-bold">✓ VERIFIED MASTER</span>
+                        <span className="text-[var(--text-muted)] block text-[10px]">STATUS:</span>
+                        <span className="text-[var(--state-success)] font-bold flex items-center gap-1">
+                          <CheckIcon className="w-3.5 h-3.5" />
+                          <span>VERIFIED MASTER</span>
+                        </span>
                       </div>
                     </div>
                   </div>

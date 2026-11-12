@@ -60,15 +60,15 @@ export const FadedExample: React.FC<FadedExampleProps> = ({
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-xs font-mono text-amber-700 dark:text-amber-300 font-semibold">
-            {activeCodeMode === 'starter' ? '80% Kode Siap • Lengkapi Bagian Kosong' : '✓ Solusi Terbuka'}
+          <span className="text-xs font-mono text-[var(--text-secondary)] font-medium">
+            {activeCodeMode === 'starter' ? '80% Kode Siap • Lengkapi Bagian Kosong' : 'Solusi Terbuka'}
           </span>
           {effectiveStarter && (
             activeCodeMode === 'starter' ? (
               <button
                 type="button"
                 onClick={handleShowSolution}
-                className="px-2 py-0.5 text-[11px] font-mono rounded border border-[var(--border-default)] bg-[var(--bg-canvas)] text-[var(--accent-teal)] hover:border-[var(--border-focused)] cursor-pointer"
+                className="px-2 py-0.5 text-[11px] font-mono rounded border border-[var(--border-default)] bg-[var(--bg-canvas)] text-[var(--text-primary)] hover:border-[var(--border-focused)] cursor-pointer"
               >
                 Lihat Solusi
               </button>
@@ -78,7 +78,7 @@ export const FadedExample: React.FC<FadedExampleProps> = ({
                 onClick={handleResetToStarter}
                 className="px-2 py-0.5 text-[11px] font-mono rounded border border-[var(--border-default)] bg-[var(--bg-canvas)] text-[var(--text-muted)] hover:text-[var(--text-primary)] cursor-pointer"
               >
-                ↺ Reset ke Latihan (80%)
+                Reset ke Latihan (80%)
               </button>
             )
           )}
@@ -86,11 +86,11 @@ export const FadedExample: React.FC<FadedExampleProps> = ({
       </div>
 
       <div className="p-4 sm:p-5">
-        <div className="mb-4 p-3 rounded-lg bg-[var(--bg-canvas)] border border-dashed border-amber-500/30 text-xs sm:text-sm">
-          <div className="font-bold font-sans text-[var(--text-primary)] mb-1">Tugasmu:</div>
+        <div className="mb-4 p-3 rounded-lg bg-[var(--bg-canvas)] border border-[var(--border-default)] text-xs sm:text-sm">
+          <div className="font-bold font-sans text-[var(--text-primary)] mb-1">Tugas:</div>
           <p className="text-[var(--text-secondary)] mb-2">{effectiveTask}</p>
-          <div className="text-[11px] font-mono text-[var(--accent-teal)]">
-            💡 Petunjuk Kunci: {effectiveHint}
+          <div className="text-[11px] font-mono text-[var(--text-muted)]">
+            Petunjuk: {effectiveHint}
           </div>
         </div>
 

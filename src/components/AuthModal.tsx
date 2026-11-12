@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { LocalAuthManager, type UserProfile } from '../lib/userStore';
+import { UserIcon } from './Icons';
 
 export type AuthMode = 'login' | 'register' | 'forgot';
 
@@ -234,9 +235,10 @@ export function AuthModal({
               <button
                 type="button"
                 onClick={handleQuickDemo}
-                className="w-full py-2 px-3 rounded-lg border border-dashed border-[var(--border-default)] bg-[var(--bg-subtle)] text-xs font-mono text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-focused)] transition-colors cursor-pointer text-center"
+                className="w-full py-2 px-3 rounded-lg border border-[var(--border-default)] bg-[var(--bg-subtle)] text-xs font-mono text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-focused)] transition-colors cursor-pointer text-center flex items-center justify-center gap-1.5"
               >
-                ⚡ Coba Akun Demo Cepat (Budi • Master 750 XP)
+                <UserIcon className="w-3.5 h-3.5" />
+                <span>Akun Demo (Budi • Master 750 XP)</span>
               </button>
             </div>
 

@@ -87,7 +87,7 @@ export function useProctoring({
 
   const notifyViolation = useCallback(
     (reason: string, newTotal: number) => {
-      triggerAlert(`⚠️ Peringatan Integritas: ${reason} (Pelanggaran #${newTotal})`);
+      triggerAlert(`Peringatan Integritas: ${reason} (Pelanggaran #${newTotal})`);
       if (onViolation) {
         onViolation(reason, newTotal);
       }
@@ -240,7 +240,7 @@ export function useProctoring({
       setSplitScreenDetected(isSplit);
       if (isSplit) {
         triggerAlert(
-          '⚠️ Terdeteksi Layar Terbelah (Split-Screen / Multitasking). Gunakan layar penuh agar evaluasi valid!'
+          'Terdeteksi Layar Terbelah (Split-Screen / Multitasking). Gunakan layar penuh agar evaluasi valid!'
         );
       }
     };

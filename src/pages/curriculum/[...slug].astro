@@ -87,10 +87,10 @@ if (isPythonTrack && currentChapter) {
                 {entry.data.languageVersion}
               </span>
               <span class="px-2.5 py-0.5 rounded text-xs font-mono bg-[var(--bg-subtle)] text-[var(--text-secondary)] border border-[var(--border-default)]">
-                ⏱ {entry.data.estimatedMinutes} Menit
+                {entry.data.estimatedMinutes} Menit
               </span>
-              <span class="px-2.5 py-0.5 rounded text-xs font-mono bg-[var(--state-success)]/10 text-[var(--state-success)] border border-[var(--state-success)]/30">
-                ★ Termasuk Kuis Evaluasi Bab
+              <span class="px-2.5 py-0.5 rounded text-xs font-mono bg-[var(--bg-subtle)] text-[var(--text-primary)] border border-[var(--border-default)]">
+                Kuis Evaluasi Bab
               </span>
             </div>
 
@@ -122,18 +122,18 @@ if (isPythonTrack && currentChapter) {
                   ))}
                   <a
                     href={`#kuis-${currentChapter.chapterId}`}
-                    class="p-2 rounded-lg bg-[var(--accent-terracotta)]/10 border border-[var(--accent-terracotta)]/30 text-[var(--accent-terracotta)] font-bold transition-colors flex items-center justify-between text-decoration-none col-span-1 sm:col-span-2"
+                    class="p-2 rounded-lg bg-[var(--bg-surface)] border border-[var(--border-default)] text-[var(--text-primary)] font-semibold hover:border-[var(--border-focused)] transition-colors flex items-center justify-between text-decoration-none col-span-1 sm:col-span-2"
                   >
-                    <span>★ Kuis Evaluasi Bab (Soal Acak & Standar Lulus)</span>
-                    <span class="text-[10px]">↓</span>
+                    <span>Kuis Evaluasi Bab (Soal Acak & Standar Lulus)</span>
+                    <span class="text-[10px] opacity-60">↓</span>
                   </a>
                   {currentChapter.chapterId === 'python-bab5' && (
                     <a
                       href="#ujian-akhir-modul"
-                      class="p-2 rounded-lg bg-amber-500/15 border border-amber-500/40 text-amber-800 dark:text-amber-300 font-bold transition-colors flex items-center justify-between text-decoration-none col-span-1 sm:col-span-2 shadow-2xs"
+                      class="p-2 rounded-lg bg-[var(--bg-surface)] border border-[var(--border-focused)] text-[var(--text-primary)] font-bold transition-colors flex items-center justify-between text-decoration-none col-span-1 sm:col-span-2 shadow-2xs"
                     >
-                      <span>🏆 Ujian Akhir Komprehensif (Final Exam Bab 1–5 • Timed 25m)</span>
-                      <span class="text-[10px]">↓</span>
+                      <span>Ujian Akhir Komprehensif (Final Exam Bab 1–5 • Timed 25m)</span>
+                      <span class="text-[10px] opacity-60">↓</span>
                     </a>
                   )}
                 </div>
@@ -179,7 +179,7 @@ if (isPythonTrack && currentChapter) {
               {entry.data.languageVersion}
             </span>
             <span class="px-2.5 py-0.5 rounded text-xs font-mono bg-[var(--bg-subtle)] text-[var(--text-secondary)] border border-[var(--border-default)]">
-              ⏱ {entry.data.estimatedMinutes} Menit
+              {entry.data.estimatedMinutes} Menit
             </span>
           </div>
 

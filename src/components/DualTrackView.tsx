@@ -56,22 +56,22 @@ export const DualTrackView: React.FC<DualTrackViewProps> = ({
             onClick={() => handleSelectMode('santai')}
             className={`px-3 py-1 rounded text-xs font-mono font-medium transition-all cursor-pointer ${
               mode === 'santai'
-                ? 'bg-[var(--accent-terracotta)] text-white shadow-2xs font-bold'
+                ? 'bg-[var(--text-primary)] text-[var(--bg-canvas)] shadow-2xs font-semibold'
                 : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
             }`}
           >
-            🍃 Jalur Santai
+            Jalur Santai
           </button>
           <button
             type="button"
             onClick={() => handleSelectMode('cepat')}
             className={`px-3 py-1 rounded text-xs font-mono font-medium transition-all cursor-pointer ${
               mode === 'cepat'
-                ? 'bg-[var(--accent-teal)] text-white shadow-2xs font-bold'
+                ? 'bg-[var(--text-primary)] text-[var(--bg-canvas)] shadow-2xs font-semibold'
                 : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
             }`}
           >
-            ⚡ Jalur Cepat
+            Jalur Cepat
           </button>
         </div>
       </div>
